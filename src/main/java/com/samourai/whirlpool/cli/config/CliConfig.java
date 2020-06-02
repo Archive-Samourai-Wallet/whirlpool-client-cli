@@ -8,7 +8,6 @@ import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
-import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +28,6 @@ public class CliConfig extends CliConfigFile {
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
-      WhirlpoolWalletPersistHandler persistHandler,
       BackendApi backendApi) {
 
     // check valid
@@ -38,8 +36,7 @@ public class CliConfig extends CliConfigFile {
     }
 
     WhirlpoolWalletConfig config =
-        super.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, persistHandler, backendApi);
+        super.computeWhirlpoolWalletConfig(httpClientService, stompClientService, backendApi);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }

@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
 import java.util.Collection;
@@ -42,14 +43,11 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
           if (car.equals('T')) {
             printThreads();
           } else if (car.equals('D')) {
-            WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-            printUtxos("DEPOSIT", whirlpoolWallet.getUtxosDeposit());
+            printUtxos(WhirlpoolAccount.DEPOSIT);
           } else if (car.equals('P')) {
-            WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-            printUtxos("PREMIX", whirlpoolWallet.getUtxosPremix());
+            printUtxos(WhirlpoolAccount.PREMIX);
           } else if (car.equals('O')) {
-            WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-            printUtxos("POSTMIX", whirlpoolWallet.getUtxosPostmix());
+            printUtxos(WhirlpoolAccount.POSTMIX);
           } else if (car.equals('S')) {
             printSystem();
           }
@@ -72,13 +70,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
       log.info("⣿ MIXING THREADS:");
       int i = 0;
       for (WhirlpoolUtxo whirlpoolUtxo : mixingState.getUtxosMixing()) {
-        log.info(
-            "⣿ Thread #"
-                + (i + 1)
-                + ": MIXING "
-                + whirlpoolUtxo.toString()
-                + " ; "
-                + whirlpoolUtxo.getUtxoConfig());
+        log.info("⣿ Thread #" + (i + 1) + ": MIXING " + whirlpoolUtxo.toString());
         i++;
       }
     } catch (NoSessionWalletException e) {
@@ -117,10 +109,12 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
     log.info("⣿ MEM USE: " + CliUtils.bytesToMB(used) + "M/" + CliUtils.bytesToMB(total) + "M");
   }
 
-  private void printUtxos(String account, Collection<WhirlpoolUtxo> utxos) {
+  private void printUtxos(WhirlpoolAccount account) throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
     try {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-      log.info("⣿ " + account + " UTXOS:");
+      log.info("⣿ " + account.name() + " UTXOS:");
       ClientUtils.logWhirlpoolUtxos(utxos, cliConfig.getMix().getMixsTarget());
 
     } catch (Exception e) {

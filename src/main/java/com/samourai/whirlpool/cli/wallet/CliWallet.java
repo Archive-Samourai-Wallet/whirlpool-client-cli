@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.wallet;
 
-import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
@@ -10,11 +10,9 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;
-import com.samourai.whirlpool.client.tx0.Tx0Config;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixProgress;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,31 +91,20 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   private void autoRefill(EmptyWalletException e) throws Exception {
-    long requiredBalance = e.getBalanceRequired();
-    Bip84ApiWallet depositWallet = getWalletDeposit();
-    Bip84ApiWallet premixWallet = getWalletPremix();
-    Bip84ApiWallet postmixWallet = getWalletPostmix();
-
-    // check total balance
-    long depositBalance = depositWallet.fetchBalance();
-    long premixBalance = premixWallet.fetchBalance();
-    long postmixBalance = postmixWallet.fetchBalance();
-    long totalBalance = depositBalance + premixBalance + postmixBalance;
+    // check balance
+    long totalBalance = getUtxoSupplier().getBalanceTotal();
     if (log.isDebugEnabled()) {
-      log.debug("depositBalance=" + depositBalance);
-      log.debug("premixBalance=" + premixBalance);
-      log.debug("postmixBalance=" + postmixBalance);
       log.debug("totalBalance=" + totalBalance);
     }
 
-    long missingBalance = requiredBalance - totalBalance;
+    /*long missingBalance = requiredBalance - totalBalance;
     if (log.isDebugEnabled()) {
       log.debug("requiredBalance=" + requiredBalance + " => missingBalance=" + missingBalance);
     }
     if (missingBalance > 0) {
       // cannot autoAggregatePostmix
       throw new EmptyWalletException("Insufficient balance to continue", missingBalance);
-    }
+    }*/
 
     // auto aggregate postmix is possible
     log.info(" o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
@@ -141,33 +128,11 @@ public class CliWallet extends WhirlpoolWallet {
     // reset mixing threads to avoid mixing obsolete consolidated utxos
     mixOrchestrator.stopMixingClients();
 
-    clearCache();
+    getUtxoSupplier().expire();
 
     if (aggregateException != null) {
       throw aggregateException;
     }
-  }
-
-  @Override
-  public Tx0Config getTx0Config(Pool pool) {
-    Tx0Config tx0Config = super.getTx0Config(pool);
-
-    // maxOutputs
-    if (cliConfig.getMix().getTx0MaxOutputs() > 0) {
-      int maxOutputs = cliConfig.getMix().getTx0MaxOutputs();
-      tx0Config.setMaxOutputs(maxOutputs);
-    }
-
-    // overspend
-    String poolId = pool.getPoolId();
-    Long overspendOrNull =
-        cliConfig.getMix().getOverspend() != null
-            ? cliConfig.getMix().getOverspend().get(poolId)
-            : null;
-    if (overspendOrNull != null) {
-      tx0Config.setOverspend(overspendOrNull);
-    }
-    return tx0Config;
   }
 
   @Override
@@ -178,17 +143,17 @@ public class CliWallet extends WhirlpoolWallet {
   // make public
 
   @Override
-  public Bip84ApiWallet getWalletDeposit() {
+  public Bip84Wallet getWalletDeposit() {
     return super.getWalletDeposit();
   }
 
   @Override
-  public Bip84ApiWallet getWalletPremix() {
+  public Bip84Wallet getWalletPremix() {
     return super.getWalletPremix();
   }
 
   @Override
-  public Bip84ApiWallet getWalletPostmix() {
+  public Bip84Wallet getWalletPostmix() {
     return super.getWalletPostmix();
   }
 }

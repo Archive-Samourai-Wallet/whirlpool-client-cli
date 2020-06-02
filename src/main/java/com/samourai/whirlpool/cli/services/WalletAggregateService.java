@@ -3,7 +3,6 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.MinerFeeTarget;
 import com.samourai.wallet.api.backend.beans.UnspentResponse;
-import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
@@ -12,6 +11,7 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +44,8 @@ public class WalletAggregateService {
     this.txAggregateService = txAggregateService;
   }
 
-  public boolean toWallet(
-      Bip84ApiWallet sourceWallet,
+  private boolean toWallet(
+      Bip84Wallet sourceWallet,
       Bip84Wallet destinationWallet,
       int feeSatPerByte,
       BackendApi backendApi)
@@ -53,27 +53,26 @@ public class WalletAggregateService {
     return doAggregate(sourceWallet, null, destinationWallet, feeSatPerByte, backendApi);
   }
 
-  public boolean toAddress(
-      Bip84ApiWallet sourceWallet, String destinationAddress, CliWallet cliWallet)
+  public boolean toAddress(Bip84Wallet sourceWallet, String destinationAddress, CliWallet cliWallet)
       throws Exception {
     if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
       throw new NotifiableException(
           "aggregate toAddress is disabled on mainnet for security reasons.");
     }
 
-    int feeSatPerByte = cliWallet.getFee(MinerFeeTarget.BLOCKS_2);
+    int feeSatPerByte = cliWallet.getMinerFeeSupplier().getFee(MinerFeeTarget.BLOCKS_2);
     BackendApi backendApi = cliWallet.getConfig().getBackendApi();
     return doAggregate(sourceWallet, destinationAddress, null, feeSatPerByte, backendApi);
   }
 
   private boolean doAggregate(
-      Bip84ApiWallet sourceWallet,
+      Bip84Wallet sourceWallet,
       String destinationAddress,
       Bip84Wallet destinationWallet,
       int feeSatPerByte,
       BackendApi backendApi)
       throws Exception {
-    List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
+    List<UnspentResponse.UnspentOutput> utxos = backendApi.fetchUtxos(sourceWallet.getZpub());
     if (utxos.isEmpty()) {
       // maybe you need to declare zpub as bip84 with /multiaddr?bip84=
       log.info("AggregateWallet result: no utxo to aggregate");
@@ -102,8 +101,6 @@ public class WalletAggregateService {
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
         txAggregate(sourceWallet, subsetUtxos, toAddress, feeSatPerByte, backendApi);
         success = true;
-
-        ClientUtils.sleepRefreshUtxos(cliConfig.getServer().getParams());
       }
       round++;
     }
@@ -111,7 +108,7 @@ public class WalletAggregateService {
   }
 
   private void txAggregate(
-      Bip84ApiWallet sourceWallet,
+      Bip84Wallet sourceWallet,
       List<UnspentResponse.UnspentOutput> postmixUtxos,
       String toAddress,
       int feeSatPerByte,
@@ -145,11 +142,11 @@ public class WalletAggregateService {
       log.warn("You should NOT consolidateWallet on mainnet for privacy reasons!");
     }
 
-    Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
-    Bip84ApiWallet premixWallet = cliWallet.getWalletPremix();
-    Bip84ApiWallet postmixWallet = cliWallet.getWalletPostmix();
+    Bip84Wallet depositWallet = cliWallet.getWalletDeposit();
+    Bip84Wallet premixWallet = cliWallet.getWalletPremix();
+    Bip84Wallet postmixWallet = cliWallet.getWalletPostmix();
 
-    int feeSatPerByte = cliWallet.getFee(MinerFeeTarget.BLOCKS_2);
+    int feeSatPerByte = cliWallet.getMinerFeeSupplier().getFee(MinerFeeTarget.BLOCKS_2);
     BackendApi backendApi = cliWallet.getConfig().getBackendApi();
 
     log.info(" • Consolidating postmix -> deposit...");
@@ -158,10 +155,12 @@ public class WalletAggregateService {
     log.info(" • Consolidating premix -> deposit...");
     toWallet(premixWallet, depositWallet, feeSatPerByte, backendApi);
 
-    if (depositWallet.fetchUtxos().size() < 2) {
+    if (cliWallet.getUtxoSupplier().findUtxos(WhirlpoolAccount.DEPOSIT).size() < 2) {
       log.info(" • Consolidating deposit... nothing to aggregate.");
       return false;
     }
+
+    ClientUtils.sleepRefreshUtxos(params);
     log.info(" • Consolidating deposit...");
     boolean success = toWallet(depositWallet, depositWallet, feeSatPerByte, backendApi);
     return success;

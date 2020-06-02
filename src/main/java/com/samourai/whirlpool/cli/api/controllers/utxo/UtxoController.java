@@ -24,7 +24,8 @@ public class UtxoController extends AbstractRestController {
 
   private WhirlpoolUtxo findUtxo(String utxoHash, int utxoIndex) throws Exception {
     // find utxo
-    WhirlpoolUtxo whirlpoolUtxo = cliWalletService.getSessionWallet().findUtxo(utxoHash, utxoIndex);
+    WhirlpoolUtxo whirlpoolUtxo =
+        cliWalletService.getSessionWallet().getUtxoSupplier().findUtxo(utxoHash, utxoIndex);
     if (whirlpoolUtxo == null) {
       throw new NotifiableException("Utxo not found: " + utxoHash + ":" + utxoIndex);
     }
@@ -68,13 +69,13 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
-    Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
+    Pool pool = whirlpoolWallet.getPoolSupplier().findPoolById(payload.poolId);
     if (pool == null) {
       throw new NotifiableException("poolId is not valid");
     }
 
     // tx0 preview
-    Tx0Config tx0Config = whirlpoolWallet.getTx0Config(pool);
+    Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
     Tx0Preview tx0Preview =
         whirlpoolWallet.tx0Preview(Lists.of(whirlpoolUtxo), pool, tx0Config, payload.feeTarget);
     return new ApiTx0PreviewResponse(tx0Preview);
@@ -98,13 +99,13 @@ public class UtxoController extends AbstractRestController {
       whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
     }
 
-    Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
+    Pool pool = whirlpoolWallet.getPoolSupplier().findPoolById(payload.poolId);
     if (pool == null) {
       throw new NotifiableException("poolId is not valid");
     }
 
     // tx0
-    Tx0Config tx0Config = whirlpoolWallet.getTx0Config(pool);
+    Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
     Tx0 tx0 = whirlpoolWallet.tx0(Lists.of(whirlpoolUtxo), pool, payload.feeTarget, tx0Config);
     return new ApiTx0Response(tx0);
   }

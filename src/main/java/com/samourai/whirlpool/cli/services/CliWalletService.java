@@ -29,8 +29,6 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolDataService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
-import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHandler;
-import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
@@ -120,21 +118,23 @@ public class CliWalletService extends WhirlpoolWalletService {
     }
 
     // backend connexion
-    BackendApi BackendApiService = computeBackendApiService(passphrase);
-    if (!BackendApiService.testConnectivity()) {
+    BackendApi backendApiService = computeBackendApiService(passphrase);
+    if (!backendApiService.testConnectivity()) {
       throw new NotifiableException(
-          "Unable to connect to wallet backend: " + BackendApiService.getUrlBackend());
+          "Unable to connect to wallet backend: " + backendApiService.getUrlBackend());
     }
 
     // open wallet
-    WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
-    WhirlpoolWalletConfig whirlpoolWalletConfig =
+    WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, persistHandler, BackendApiService);
-    WhirlpoolDataService whirlpoolDataService =
-        new WhirlpoolDataService(whirlpoolWalletConfig, this);
+            httpClientService, stompClientService, backendApiService);
+
+    String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
+    String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();
+    WhirlpoolDataService dataService = new WhirlpoolDataService(config);
+
     WhirlpoolWallet whirlpoolWallet =
-        computeWhirlpoolWallet(whirlpoolWalletConfig, whirlpoolDataService, bip84w);
+        computeWhirlpoolWallet(dataService, bip84w, walletStateFileName, utxoConfigFileName);
     CliWallet cliWallet =
         new CliWallet(
             whirlpoolWallet,
@@ -158,15 +158,6 @@ public class CliWalletService extends WhirlpoolWalletService {
     }
     JavaHttpClient httpClient = httpClientService.getHttpClient(HttpUsage.BACKEND);
     return new BackendApi(httpClient, backendUrl, oAuthManager);
-  }
-
-  private WhirlpoolWalletPersistHandler computePersistHandler(String walletIdentifier)
-      throws NotifiableException {
-    File indexFile = computeIndexFile(walletIdentifier);
-    File utxosFile = computeUtxosFile(walletIdentifier);
-    WhirlpoolWalletPersistHandler persistHandler =
-        new FileWhirlpoolWalletPersistHandler(indexFile, utxosFile);
-    return persistHandler;
   }
 
   protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
@@ -198,17 +189,11 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private File computeIndexFile(String walletIdentifier) throws NotifiableException {
     String path = "whirlpool-cli-state-" + walletIdentifier + ".json";
-    if (log.isDebugEnabled()) {
-      log.debug("indexFile: " + path);
-    }
     return CliUtils.computeFile(path);
   }
 
   private File computeUtxosFile(String walletIdentifier) throws NotifiableException {
     String path = "whirlpool-cli-utxos-" + walletIdentifier + ".json";
-    if (log.isDebugEnabled()) {
-      log.debug("utxosFile: " + path);
-    }
     return CliUtils.computeFile(path);
   }
 

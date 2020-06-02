@@ -9,7 +9,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
-import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
+import com.samourai.whirlpool.client.whirlpool.ServerApi;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,8 +33,6 @@ public abstract class CliConfigFile {
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
   @NotEmpty private boolean seedAppendPassphrase;
-  @NotEmpty private int persistDelay;
-  @NotEmpty private int refreshPoolsDelay;
   @NotEmpty private int tx0MinConfirmations;
   @NotEmpty private String proxy;
 
@@ -63,8 +61,6 @@ public abstract class CliConfigFile {
     this.apiKey = copy.apiKey;
     this.seed = copy.seed;
     this.seedAppendPassphrase = copy.seedAppendPassphrase;
-    this.persistDelay = copy.persistDelay;
-    this.refreshPoolsDelay = copy.refreshPoolsDelay;
     this.tx0MinConfirmations = copy.tx0MinConfirmations;
     this.proxy = copy.proxy;
     this.requestTimeout = copy.requestTimeout;
@@ -142,22 +138,6 @@ public abstract class CliConfigFile {
 
   public void setSeedAppendPassphrase(boolean seedAppendPassphrase) {
     this.seedAppendPassphrase = seedAppendPassphrase;
-  }
-
-  public int getPersistDelay() {
-    return persistDelay;
-  }
-
-  public void setPersistDelay(int persistDelay) {
-    this.persistDelay = persistDelay;
-  }
-
-  public int getRefreshPoolsDelay() {
-    return refreshPoolsDelay;
-  }
-
-  public void setRefreshPoolsDelay(int refreshPoolsDelay) {
-    this.refreshPoolsDelay = refreshPoolsDelay;
   }
 
   public int getTx0MinConfirmations() {
@@ -523,32 +503,26 @@ public abstract class CliConfigFile {
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
-      WhirlpoolWalletPersistHandler persistHandler,
       BackendApi backendApi) {
     String serverUrl = computeServerUrl();
     NetworkParameters params = server.getParams();
+    ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClientService,
-            stompClientService,
-            persistHandler,
-            serverUrl,
-            params,
-            false,
-            backendApi);
+            httpClientService, stompClientService, serverApi, params, false, backendApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
-    config.setPersistDelay(persistDelay);
-    config.setRefreshPoolsDelay(refreshPoolsDelay);
     config.setTx0MinConfirmations(tx0MinConfirmations);
 
     config.setMaxClients(mix.getClients());
     config.setMaxClientsPerPool(mix.getClientsPerPool());
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
+    config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
+    config.setOverspend(mix.getOverspend());
 
     return config;
   }
@@ -566,8 +540,6 @@ public abstract class CliConfigFile {
     }
     configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey));
     configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
-    configInfo.put("cli/persistDelay", Integer.toString(persistDelay));
-    configInfo.put("cli/refreshPoolsDelay", Integer.toString(refreshPoolsDelay));
     configInfo.put("cli/tx0MinConfirmations", Integer.toString(tx0MinConfirmations));
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());

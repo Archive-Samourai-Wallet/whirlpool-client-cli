@@ -56,10 +56,7 @@ public class Application implements ApplicationRunner {
     // run
     WebApplicationType wat = listen ? WebApplicationType.SERVLET : WebApplicationType.NONE;
     applicationContext =
-        new SpringApplicationBuilder(Application.class)
-            .logStartupInfo(debugClient)
-            .web(wat)
-            .run(args);
+        new SpringApplicationBuilder(Application.class).logStartupInfo(false).web(wat).run(args);
 
     if (restart) {
       // restart

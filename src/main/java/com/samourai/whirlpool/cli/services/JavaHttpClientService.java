@@ -30,6 +30,7 @@ public class JavaHttpClientService implements IHttpClientService {
     this.httpClients = new ConcurrentHashMap<>();
   }
 
+  @Override
   public JavaHttpClient getHttpClient(HttpUsage httpUsage) {
     JavaHttpClient httpClient = httpClients.get(httpUsage);
     if (httpClient == null) {

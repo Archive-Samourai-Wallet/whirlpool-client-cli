@@ -124,7 +124,11 @@ public class JavaStompClient implements IStompClient {
           byte[] payload,
           Throwable exception) {
         super.handleException(session, command, headers, payload, exception);
-        log.error(" ! transportException", exception);
+        log.error(
+            " ! transportException: "
+                + exception.getClass().getName()
+                + ": "
+                + exception.getMessage());
       }
 
       @Override
@@ -134,10 +138,6 @@ public class JavaStompClient implements IStompClient {
             " ! transportError: " + exception.getClass().getName() + ": " + exception.getMessage());
         disconnect();
         onConnectOnDisconnectListener.onError(exception);
-
-        if (log.isDebugEnabled()) {
-          log.error("", exception);
-        }
       }
     };
   }

@@ -17,6 +17,8 @@ You can configure a log file in whirlpool-cli-config.properties:
 ```
 logging.file = /tmp/whirlpool-cli.log
 ```
+See this doc for advanced log settings (rotation, limits...):
+https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-logging-file-output
 
 #### Testing loop
 You can run CLI in loop mode on testnet to generate liquidity on testnet server:

@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -38,7 +38,7 @@ public class RunCliCommand {
       // should we move to a specific address?
       String toAddress = appArgs.getAggregatePostmix();
       if (toAddress != null && !"true".equals(toAddress)) {
-        Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
+        Bip84Wallet depositWallet = cliWallet.getWalletDeposit();
         log.info(" • Moving funds to: " + toAddress);
         walletAggregateService.toAddress(depositWallet, toAddress, cliWallet);
       }

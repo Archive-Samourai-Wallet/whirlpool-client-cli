@@ -18,7 +18,7 @@ public class RunListPools {
   }
 
   public void run() throws Exception {
-    Collection<Pool> pools = cliWallet.getPools(true);
+    Collection<Pool> pools = cliWallet.getPoolSupplier().getPools();
 
     // show available pools
     String lineFormat = "| %15s | %6s | %15s | %14s | %12s | %15s | %23s |\n";

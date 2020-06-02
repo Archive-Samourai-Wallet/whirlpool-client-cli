@@ -228,11 +228,6 @@ public class CliService {
       log.debug("shutdown");
     }
 
-    // stop cliStatusOrchestrator
-    if (cliStatusOrchestrator != null) {
-      cliStatusOrchestrator.stop();
-    }
-
     // stop cliWallet
     try {
       CliWallet cliWallet =
@@ -248,6 +243,11 @@ public class CliService {
     // disconnect Tor
     if (cliTorClientService != null) {
       cliTorClientService.shutdown();
+    }
+
+    // stop cliStatusOrchestrator
+    if (cliStatusOrchestrator != null) {
+      cliStatusOrchestrator.stop();
     }
   }
 }

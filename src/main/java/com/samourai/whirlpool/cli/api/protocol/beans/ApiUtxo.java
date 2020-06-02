@@ -33,7 +33,6 @@ public class ApiUtxo {
     this.path = utxo.xpub.path;
 
     this.account = whirlpoolUtxo.getAccount();
-    WhirlpoolUtxoConfig utxoConfig = whirlpoolUtxo.getUtxoConfig();
     WhirlpoolUtxoState utxoState = whirlpoolUtxo.getUtxoState();
     this.status = utxoState.getStatus();
     this.mixStep =
@@ -41,10 +40,10 @@ public class ApiUtxo {
     this.mixableStatus = utxoState.getMixableStatus();
     this.progressPercent =
         utxoState.getMixProgress() != null ? utxoState.getMixProgress().getProgressPercent() : null;
-    this.poolId = utxoConfig.getPoolId();
-    this.mixsTarget = utxoConfig.getMixsTarget();
-    this.mixsTargetOrDefault = utxoConfig.getMixsTargetOrDefault(mixsTargetMin);
-    this.mixsDone = utxoConfig.getMixsDone();
+    this.poolId = whirlpoolUtxo.getPoolId();
+    this.mixsTarget = whirlpoolUtxo.getMixsTarget();
+    this.mixsTargetOrDefault = whirlpoolUtxo.getMixsTargetOrDefault(mixsTargetMin);
+    this.mixsDone = whirlpoolUtxo.getMixsDone();
     this.message = utxoState.getMessage();
     this.error = utxoState.getError();
     this.lastActivityElapsed =

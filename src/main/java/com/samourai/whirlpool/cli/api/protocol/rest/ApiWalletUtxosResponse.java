@@ -3,8 +3,10 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 import com.google.common.primitives.Ints;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoState;
+import java.util.Collection;
 import java.util.Comparator;
 import java8.lang.Longs;
 
@@ -35,25 +37,19 @@ public class ApiWalletUtxosResponse {
           // last confirmed
           return Ints.compare(o1.getUtxo().confirmations, o2.getUtxo().confirmations);
         };
+    this.deposit = computeApiWallet(WhirlpoolAccount.DEPOSIT, whirlpoolWallet, comparator);
+    this.premix = computeApiWallet(WhirlpoolAccount.PREMIX, whirlpoolWallet, comparator);
+    this.postmix = computeApiWallet(WhirlpoolAccount.POSTMIX, whirlpoolWallet, comparator);
+  }
+
+  private ApiWallet computeApiWallet(
+      WhirlpoolAccount account,
+      WhirlpoolWallet whirlpoolWallet,
+      Comparator<WhirlpoolUtxo> comparator) {
+    Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
+    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account).getZpub();
     int mixsTargetMin = whirlpoolWallet.getConfig().getMixsTarget();
-    this.deposit =
-        new ApiWallet(
-            whirlpoolWallet.getUtxosDeposit(),
-            whirlpoolWallet.getZpubDeposit(),
-            comparator,
-            mixsTargetMin);
-    this.premix =
-        new ApiWallet(
-            whirlpoolWallet.getUtxosPremix(),
-            whirlpoolWallet.getZpubPremix(),
-            comparator,
-            mixsTargetMin);
-    this.postmix =
-        new ApiWallet(
-            whirlpoolWallet.getUtxosPostmix(),
-            whirlpoolWallet.getZpubPostmix(),
-            comparator,
-            mixsTargetMin);
+    return new ApiWallet(utxos, zpub, comparator, mixsTargetMin);
   }
 
   public ApiWallet getDeposit() {
