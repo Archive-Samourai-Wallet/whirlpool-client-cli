@@ -149,8 +149,12 @@ public class CliConfigService {
       throw new NotifiableException("Invalid mnemonic");
     }
 
-    // generate apiKey
-    String apiKey = CliUtils.generateUniqueString();
+    // preserve apiKey when already defined
+    String apiKey = cliConfig.getApiKey();
+    if (StringUtils.isEmpty(apiKey)) {
+      // generate apiKey when missing
+      apiKey = CliUtils.generateUniqueString();
+    }
 
     // save configuration file
     Properties props = new Properties();
