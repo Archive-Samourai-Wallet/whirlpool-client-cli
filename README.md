@@ -20,7 +20,7 @@ You can setup whirlpool-client-cli in 2 ways:
 ```
 java -jar target/whirlpool-client-version-run.jar
 ```
-See [doc/README.md](doc/README.md) for documentation.
+See [doc/](doc/) for documentation.
 
 
 ## Resources
