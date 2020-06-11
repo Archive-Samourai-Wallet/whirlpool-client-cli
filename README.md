@@ -2,12 +2,12 @@
 
 # whirlpool-client-cli
 
-Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool) by Samourai-Wallet.
+Command line client for [Whirlpool](https://code.samourai.io/whirlpool/whirlpool) by Samourai-Wallet.
 
 ## Getting started
 
 #### Download and verify CLI
-- Download whirlpool-client-cli-\[version\]-run.jar from [releases](https://github.com/Samourai-Wallet/whirlpool-client-cli/releases)
+- Download whirlpool-client-cli-\[version\]-run.jar from [releases](https://code.samourai.io/whirlpool/whirlpool-client-cli/-/releases)
 - Verify sha256 hash of the jar with signed message in whirlpool-client-cli-\[version\]-run.jar.sig
 - Verify signature with [@SamouraiDev](https://github.com/SamouraiDev) 's key
 
@@ -21,22 +21,15 @@ You can setup whirlpool-client-cli in 2 ways:
 java -jar target/whirlpool-client-version-run.jar
 ```
 
-Optional arguments:
-- ```--listen```: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
-- ```--mixs-target```: minimum number of mixs to achieve per UTXO
-- ```--authenticate```: will ask for your passphrase at startup
-- ```--list-pools```: list pools and exit
-
-
-#### Advanced
-See [README-API.md](README-API.md) to manage whirlpool-client-cli remotely with REST API. 
-
-See [README-ADVANCED.md](README-ADVANCED.md) for advanced usage, integration and development.
+- [doc/USAGE.md](doc/USAGE.md) for CLI usage.
+- [doc/API.md](doc/API.md) to manage CLI remotely. 
+- [doc/CONFIG.md](doc/CONFIG.md) for advanced usage, integration and development.
+- [doc/DEV.md](doc/DEV.md) for developers. 
 
 
 ## Resources
- * [whirlpool](https://github.com/Samourai-Wallet/Whirlpool)
- * [whirlpool-protocol](https://github.com/Samourai-Wallet/whirlpool-protocol)
- * [whirlpool-client](https://github.com/Samourai-Wallet/whirlpool-client)
- * [whirlpool-server](https://github.com/Samourai-Wallet/whirlpool-server)
+ * [whirlpool](https://code.samourai.io/whirlpool/Whirlpool)
+ * [whirlpool-protocol](https://code.samourai.io/whirlpool/whirlpool-protocol)
+ * [whirlpool-client](https://code.samourai.io/whirlpool/whirlpool-client)
+ * [whirlpool-server](https://code.samourai.io/whirlpool/whirlpool-server)
 
