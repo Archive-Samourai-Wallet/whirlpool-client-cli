@@ -2,21 +2,21 @@
 
 #### Basic
 
-| Argument | Default value | Description |
-| ----------- | ----------- | ----------- |
-| --init | - | Initialize CLI (by setting wallet seed and generating API key) |
-| --authenticate | - | Enable interactive authentication on startup |
-| --listen | - | Enable CLI API for remote commands & GUI (see [API.md](API.md))|
-| --list-pools | - | List pools and exit|
-| --dump-payload | - | Dump pairing-payload of current wallet and exit |
+| Argument | Description |
+| ---------|------------ |
+| --init | Initialize CLI (by setting wallet seed and generating API key) |
+| --authenticate | Enable interactive authentication on startup |
+| --listen | Enable CLI API for remote commands & GUI (see [API.md](API.md))|
+| --list-pools | List pools and exit|
+| --dump-payload | Dump pairing-payload of current wallet and exit |
 
 
 #### Debugging
 
-| Argument | Default value | Description |
-| ----------- | ----------- | ----------- |
-| --debug | - | Enable debug logs for CLI |
-| --debug-client | - | Enable debug logs for whirlpool-client |
+| Argument | Description |
+| -----------------|-------------- |
+| --debug | Enable debug logs for CLI |
+| --debug-client | Enable debug logs for whirlpool-client |
 
 Any problem with a remote CLI? Test it locally:
 - Configure CLI manually: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --init```
