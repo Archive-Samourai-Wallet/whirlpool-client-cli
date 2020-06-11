@@ -20,11 +20,7 @@ You can setup whirlpool-client-cli in 2 ways:
 ```
 java -jar target/whirlpool-client-version-run.jar
 ```
-
-- [doc/USAGE.md](doc/USAGE.md) for CLI usage.
-- [doc/API.md](doc/API.md) to manage CLI remotely. 
-- [doc/CONFIG.md](doc/CONFIG.md) for advanced usage, integration and development.
-- [doc/DEV.md](doc/DEV.md) for developers. 
+See [doc/README.md](doc/README.md) for documentation.
 
 
 ## Resources
