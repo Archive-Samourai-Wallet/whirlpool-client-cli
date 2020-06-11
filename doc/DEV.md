@@ -9,7 +9,7 @@ mvn clean install -Dmaven.test.skip=true
 ```
 
 
-#### Testing loop
+#### Testing loop for testnet
 You can run CLI in loop mode on testnet to generate liquidity on testnet server:
 - automatically run TX0 while possible
 - mix while possible
