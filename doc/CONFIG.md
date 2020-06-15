@@ -4,7 +4,7 @@ CLI is configured in `whirlpool-cli-config.properties` or with equivalent argume
 ```
 --cli.tor=true --cli.apiKey=foo...
 ```
-Default configuration is [src/main/resources/application.properties].  
+Default configuration is [../src/main/resources/application.properties].  
 
 
 #### Basic
@@ -13,7 +13,7 @@ Default configuration is [src/main/resources/application.properties].
 | cli.server | TESTNET | Bitcoin network (TESTNET or MAINNET) |
 | cli.apiKey | *generated on --init* | Secret key for using CLI API |
 | cli.seed | *generated on --init* | Wallet seed encrypted with passphrase (AES) |
-| cli.seedAppendPassphrase | true | Append passphrase as additional seed word |
+| cli.seedAppendPassphrase | true | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
 | cli.tor | false | Enable Tor |
 | cli.dojo.enabled | false | Enable Dojo as wallet backend |
 | cli.version | *generated* | Technical setting for tracking CLI upgrades |
