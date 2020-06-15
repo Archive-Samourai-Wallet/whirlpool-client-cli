@@ -13,7 +13,6 @@ Default configuration is [../src/main/resources/application.properties].
 | cli.server | TESTNET | Bitcoin network (TESTNET or MAINNET) |
 | cli.apiKey | *generated on --init* | Secret key for using CLI API |
 | cli.seed | *generated on --init* | Wallet seed encrypted with passphrase (AES) |
-| cli.seedAppendPassphrase | true | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
 | cli.tor | false | Enable Tor |
 | cli.dojo.enabled | false | Enable Dojo as wallet backend |
 | cli.version | *generated* | Technical setting for tracking CLI upgrades |
@@ -93,3 +92,4 @@ You can configure your own cert:
 | cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for unlimited) |
 | cli.mix.clientDelay | 15 | Connecting delay (seconds) between each mixing client |
 | cli.mix.tx0Delay | 30 | Delay (seconds) between each tx0 (when --auto-tx0) |
+| cli.seedAppendPassphrase | true | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
