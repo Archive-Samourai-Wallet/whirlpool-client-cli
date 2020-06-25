@@ -40,6 +40,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
       try {
         Character car = CliUtils.readChar();
         if (car != null) {
+          car = Character.toUpperCase(car);
           if (car.equals('T')) {
             printThreads();
           } else if (car.equals('D')) {
