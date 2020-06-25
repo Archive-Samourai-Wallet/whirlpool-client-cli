@@ -15,7 +15,6 @@ Default configuration is [../src/main/resources/application.properties].
 | cli.seed | *generated on --init* | Wallet seed encrypted with passphrase (AES) |
 | cli.tor | false | Enable Tor |
 | cli.dojo.enabled | false | Enable Dojo as wallet backend |
-| cli.version | *generated* | Technical setting for tracking CLI upgrades |
 | cli.scode | - | SCODE for discount Whirlpool fees |
 | cli.mix.mixsTarget | - | Mixs limit per UTXO (0 for unlimited) |
 | cli.mix.autoMix | true | Automatically (re)mix premix & postmix. When disabled, each utxo must be mixed manually. |
@@ -92,4 +91,5 @@ You can configure your own cert:
 | cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for unlimited) |
 | cli.mix.clientDelay | 15 | Connecting delay (seconds) between each mixing client |
 | cli.mix.tx0Delay | 30 | Delay (seconds) between each tx0 (when --auto-tx0) |
-| cli.seedAppendPassphrase | true | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
+| cli.seedAppendPassphrase | *generated on --init* | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
+| cli.version | *generated* | Technical setting for tracking CLI upgrades |
