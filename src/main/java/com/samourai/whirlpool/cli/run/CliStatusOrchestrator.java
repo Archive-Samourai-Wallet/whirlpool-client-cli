@@ -4,9 +4,12 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
+import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +58,15 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
       MixingState mixingState = whirlpoolWallet.getMixingState();
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
+      UtxoSupplier utxoSupplier = whirlpoolWallet.getUtxoSupplier();
+
+      int nbDeposit = utxoSupplier.findUtxos(WhirlpoolAccount.DEPOSIT).size();
+      int nbPremix = utxoSupplier.findUtxos(WhirlpoolAccount.PREMIX).size();
+      int nbPostmix = utxoSupplier.findUtxos(WhirlpoolAccount.POSTMIX).size();
+      double balanceTotal = ClientUtils.satToBtc(utxoSupplier.getBalanceTotal());
 
       System.out.print(
-          "⣿ Wallet OPENED, mix "
+          "⣿ Whirlpool "
               + (mixingState.isStarted() ? "STARTED" : "STOPPED")
               + (walletConfig.isAutoTx0() ? " +autoTx0=" + walletConfig.getAutoTx0PoolId() : "")
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
@@ -75,7 +84,15 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueuedMustMix()
               + "+"
               + mixingState.getNbQueuedLiquidity()
-              + "). Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix, [S]ystem\r");
+              + "), total "
+              + balanceTotal
+              + "btc. Commands: [T]hreads, [D]eposit("
+              + nbDeposit
+              + "), [P]remix("
+              + nbPremix
+              + "), P[O]stmix("
+              + nbPostmix
+              + "), [S]ystem\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {
