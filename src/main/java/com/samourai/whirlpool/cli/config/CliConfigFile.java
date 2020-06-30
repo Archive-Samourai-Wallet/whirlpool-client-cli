@@ -18,7 +18,9 @@ import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
 import org.bitcoinj.core.NetworkParameters;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Configuration;
 
 @ConfigurationProperties(prefix = "cli")
@@ -43,6 +45,8 @@ public abstract class CliConfigFile {
   @NotEmpty private MixConfig mix;
   @NotEmpty private ApiConfig api;
 
+  @Autowired BuildProperties buildProperties;
+
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
 
@@ -66,6 +70,7 @@ public abstract class CliConfigFile {
     this.requestTimeout = copy.requestTimeout;
     this.api = new ApiConfig(copy.api);
     this.mix = new MixConfig(copy.mix);
+    this.buildProperties = copy.buildProperties;
   }
 
   public int getVersion() {
@@ -544,6 +549,11 @@ public abstract class CliConfigFile {
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
     configInfo.putAll(api.getConfigInfo());
+    configInfo.put("cli/buildVersion", getBuildVersion() != null ? getBuildVersion() : "null");
     return configInfo;
+  }
+
+  public String getBuildVersion() {
+    return buildProperties != null ? buildProperties.getVersion() : null;
   }
 }

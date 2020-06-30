@@ -39,13 +39,7 @@ public class CliController extends AbstractRestController {
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
     ApiCliStateResponse response =
-        new ApiCliStateResponse(
-            cliWalletService.getCliState(),
-            cliConfig.getServer(),
-            cliConfig.computeServerUrl(),
-            cliConfig.getDojo().getUrl(),
-            cliConfig.getTor(),
-            cliConfig.isDojoEnabled());
+        new ApiCliStateResponse(cliWalletService.getCliState(), cliConfig);
     return response;
   }
 

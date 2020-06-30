@@ -92,7 +92,7 @@ public class CliService {
 
     log.info("------------ whirlpool-client-cli starting ------------");
     log.info(
-        "Running whirlpool-client-cli on java {}... {}",
+        "Running whirlpool-client-cli " + cliConfig.getBuildVersion() + " on java {}... {}",
         System.getProperty("java.version"),
         Arrays.toString(args));
 

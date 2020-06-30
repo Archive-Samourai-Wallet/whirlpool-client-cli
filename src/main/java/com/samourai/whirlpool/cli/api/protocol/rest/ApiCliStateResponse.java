@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
+import com.samourai.whirlpool.cli.config.CliConfig;
 
 public class ApiCliStateResponse {
   private CliStatus cliStatus;
@@ -16,25 +16,20 @@ public class ApiCliStateResponse {
   private String dojoUrl;
   private boolean tor;
   private boolean dojo;
+  private String version;
 
-  public ApiCliStateResponse(
-      CliState cliState,
-      WhirlpoolServer server,
-      String serverUrl,
-      String dojoUrl,
-      boolean tor,
-      boolean dojo) {
+  public ApiCliStateResponse(CliState cliState, CliConfig cliConfig) {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
     this.torProgress = cliState.getTorProgress();
-
-    this.network = server.getParams().getPaymentProtocolId();
-    this.serverUrl = serverUrl;
-    this.serverName = server.name();
-    this.dojoUrl = dojoUrl;
-    this.tor = tor;
-    this.dojo = dojo;
+    this.network = cliConfig.getServer().getParams().getPaymentProtocolId();
+    this.serverUrl = cliConfig.computeServerUrl();
+    this.serverName = cliConfig.getServer().name();
+    this.dojoUrl = cliConfig.getDojo().getUrl();
+    this.tor = cliConfig.getTor();
+    this.dojo = cliConfig.isDojoEnabled();
+    this.version = cliConfig.getBuildVersion();
   }
 
   public CliStatus getCliStatus() {
@@ -75,5 +70,9 @@ public class ApiCliStateResponse {
 
   public boolean isDojo() {
     return dojo;
+  }
+
+  public String getVersion() {
+    return version;
   }
 }
