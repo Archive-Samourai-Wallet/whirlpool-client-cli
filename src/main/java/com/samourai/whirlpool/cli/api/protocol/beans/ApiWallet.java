@@ -7,13 +7,11 @@ import java.util.stream.Collectors;
 
 public class ApiWallet {
   private Collection<ApiUtxo> utxos;
-  private long lastUpdate;
   private long balance;
   private String zpub;
 
   public ApiWallet(
       Collection<WhirlpoolUtxo> whirlpoolUtxos,
-      long lastUpdate,
       String zpub,
       Comparator<WhirlpoolUtxo> comparator,
       int mixsTargetMin) {
@@ -23,7 +21,6 @@ public class ApiWallet {
             .sorted(comparator)
             .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, mixsTargetMin))
             .collect(Collectors.toList());
-    this.lastUpdate = lastUpdate;
     this.balance =
         whirlpoolUtxos.stream().mapToLong(whirlpoolUtxo -> whirlpoolUtxo.getUtxo().value).sum();
     this.zpub = zpub;
@@ -31,10 +28,6 @@ public class ApiWallet {
 
   public Collection<ApiUtxo> getUtxos() {
     return utxos;
-  }
-
-  public long getLastUpdate() {
-    return lastUpdate;
   }
 
   public long getBalance() {

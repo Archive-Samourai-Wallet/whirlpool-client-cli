@@ -14,6 +14,8 @@ public class ApiWalletUtxosResponse {
   private ApiWallet deposit;
   private ApiWallet premix;
   private ApiWallet postmix;
+  private long balance;
+  private long lastUpdate;
 
   public ApiWalletUtxosResponse(WhirlpoolWallet whirlpoolWallet) throws Exception {
     Comparator<WhirlpoolUtxo> comparator =
@@ -40,6 +42,8 @@ public class ApiWalletUtxosResponse {
     this.deposit = computeApiWallet(WhirlpoolAccount.DEPOSIT, whirlpoolWallet, comparator);
     this.premix = computeApiWallet(WhirlpoolAccount.PREMIX, whirlpoolWallet, comparator);
     this.postmix = computeApiWallet(WhirlpoolAccount.POSTMIX, whirlpoolWallet, comparator);
+    this.balance = this.deposit.getBalance() + this.premix.getBalance() + this.postmix.getBalance();
+    this.lastUpdate = whirlpoolWallet.getUtxoSupplier().getLastUpdate();
   }
 
   private ApiWallet computeApiWallet(
@@ -47,10 +51,9 @@ public class ApiWalletUtxosResponse {
       WhirlpoolWallet whirlpoolWallet,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    long lastUpdate = whirlpoolWallet.getUtxoSupplier().getLastUpdate();
     String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account).getZpub();
     int mixsTargetMin = whirlpoolWallet.getConfig().getMixsTarget();
-    return new ApiWallet(utxos, lastUpdate, zpub, comparator, mixsTargetMin);
+    return new ApiWallet(utxos, zpub, comparator, mixsTargetMin);
   }
 
   public ApiWallet getDeposit() {
@@ -63,5 +66,13 @@ public class ApiWalletUtxosResponse {
 
   public ApiWallet getPostmix() {
     return postmix;
+  }
+
+  public long getBalance() {
+    return balance;
+  }
+
+  public long getLastUpdate() {
+    return lastUpdate;
   }
 }

@@ -113,6 +113,7 @@ Response:
         balance: 0,
         zpub: ""
     },
+    balance: 0,
     lastUpdate: 0
 }
 ```
