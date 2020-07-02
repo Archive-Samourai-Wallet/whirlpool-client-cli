@@ -10,6 +10,7 @@ public class ApiUtxo {
   private long value;
   private int confirmations;
   private String path;
+  private String address;
 
   private WhirlpoolAccount account;
   private WhirlpoolUtxoStatus status;
@@ -31,6 +32,7 @@ public class ApiUtxo {
     this.value = utxo.value;
     this.confirmations = utxo.confirmations;
     this.path = utxo.xpub.path;
+    this.address = utxo.addr;
 
     this.account = whirlpoolUtxo.getAccount();
     WhirlpoolUtxoState utxoState = whirlpoolUtxo.getUtxoState();
@@ -70,6 +72,10 @@ public class ApiUtxo {
 
   public String getPath() {
     return path;
+  }
+
+  public String getAddress() {
+    return address;
   }
 
   public WhirlpoolAccount getAccount() {
