@@ -112,7 +112,8 @@ Response:
         utxos: [(utxos detail)],
         balance: 0,
         zpub: ""
-    }
+    },
+    lastUpdate: 0
 }
 ```
 
