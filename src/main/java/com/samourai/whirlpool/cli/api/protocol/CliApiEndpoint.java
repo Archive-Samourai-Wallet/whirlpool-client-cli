@@ -7,6 +7,7 @@ public class CliApiEndpoint {
   public static final String REST_CLI_INIT = REST_PREFIX + "cli/init";
   public static final String REST_CLI_LOGIN = REST_PREFIX + "cli/login";
   public static final String REST_CLI_LOGOUT = REST_PREFIX + "cli/logout";
+  public static final String REST_CLI_RESTART = REST_PREFIX + "cli/restart";
   public static final String REST_CLI_CONFIG = REST_PREFIX + "cli/config";
 
   public static final String REST_POOLS = REST_PREFIX + "pools";

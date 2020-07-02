@@ -100,4 +100,14 @@ public class CliController extends AbstractRestController {
     // success
     return state(headers);
   }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_RESTART, method = RequestMethod.POST)
+  public ApiCliStateResponse restart(@RequestHeader HttpHeaders headers) throws Exception {
+    checkHeaders(headers);
+
+    Application.restart();
+
+    // success
+    return state(headers);
+  }
 }

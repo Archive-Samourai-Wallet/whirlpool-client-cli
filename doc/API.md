@@ -253,6 +253,8 @@ Payload:
 }
 ```
 
+### restart: ```POST /rest/cli/restart```
+
 ### get config: ```GET /rest/cli/config```
 
 ### set config: ```PUT /rest/cli/config```
