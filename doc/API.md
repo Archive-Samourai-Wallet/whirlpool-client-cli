@@ -92,6 +92,9 @@ Response:
 ## UTXO controls
 
 ### List utxos: ```GET /rest/utxos```
+Parameters:
+* refresh (optional): "true" to refresh utxos
+
 Response:
 ```
 {
