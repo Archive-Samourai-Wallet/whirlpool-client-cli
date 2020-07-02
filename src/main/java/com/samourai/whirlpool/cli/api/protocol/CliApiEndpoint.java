@@ -32,6 +32,7 @@ public class CliApiEndpoint {
         REST_CLI_INIT,
         REST_CLI_LOGIN,
         REST_CLI_LOGOUT,
+        REST_CLI_RESTART,
         REST_CLI_CONFIG,
         REST_POOLS,
         REST_WALLET_DEPOSIT,

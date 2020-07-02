@@ -52,9 +52,9 @@ public class CliConfigService {
 
   public CliConfigService(CliConfig cliConfig) {
     this.cliConfig = cliConfig;
-    this.cliStatus = CliStatus.NOT_INITIALIZED;
-    if (!Strings.isEmpty(cliConfig.getSeed()) && !Strings.isEmpty(cliConfig.getApiKey())) {
-      this.setCliStatus(CliStatus.READY);
+    this.cliStatus = CliStatus.STARTING;
+    if (Strings.isEmpty(cliConfig.getSeed()) || Strings.isEmpty(cliConfig.getApiKey())) {
+      this.setCliStatus(CliStatus.NOT_INITIALIZED);
     }
   }
 

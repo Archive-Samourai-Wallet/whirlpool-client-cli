@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliResult;
+import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -105,6 +106,13 @@ public class CliService {
           log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
         }
       }
+      if (listen) {
+        String info = "API is listening on https://127.0.0.1:" + cliConfig.getApi().getPort();
+        if (cliConfig.getApi().isHttpEnable()) {
+          info += " and http://127.0.0.1:" + cliConfig.getApi().getHttpPort();
+        }
+        log.info(info);
+      }
 
       // connect Tor
       cliTorClientService.connect();
@@ -145,15 +153,7 @@ public class CliService {
         log.warn(CliUtils.LOG_SEPARATOR);
         return CliResult.RESTART;
       }
-
-      if (listen) {
-        String info = "API is listening on https://127.0.0.1:" + cliConfig.getApi().getPort();
-        if (cliConfig.getApi().isHttpEnable()) {
-          info += " and http://127.0.0.1:" + cliConfig.getApi().getHttpPort();
-        }
-        log.info(info);
-      }
-
+      cliConfigService.setCliStatus(CliStatus.READY);
       if (!appArgs.isAuthenticate()
           && listen
           && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
