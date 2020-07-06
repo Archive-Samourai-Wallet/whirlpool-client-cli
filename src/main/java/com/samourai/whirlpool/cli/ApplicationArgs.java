@@ -34,6 +34,7 @@ public class ApplicationArgs {
   private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String ARG_MIXS_TARGET = "mixs-target";
   private static final String ARG_DUMP_PAYLOAD = "dump-payload";
+  private static final String ARG_RECONSTRUCT = "reconstruct";
 
   private ApplicationArguments args;
 
@@ -107,6 +108,10 @@ public class ApplicationArgs {
 
   public boolean isDumpPayload() {
     return args.containsOption(ARG_DUMP_PAYLOAD);
+  }
+
+  public boolean isReconstruct() {
+    return args.containsOption(ARG_RECONSTRUCT);
   }
 
   public String getAggregatePostmix() {

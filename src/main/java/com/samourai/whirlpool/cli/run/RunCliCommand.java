@@ -45,6 +45,9 @@ public class RunCliCommand {
     } else if (appArgs.isListPools()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
       new RunListPools(cliWallet).run();
+    } else if (appArgs.isReconstruct()) {
+      CliWallet cliWallet = cliWalletService.getSessionWallet();
+      new RunReconstruct(cliWallet).run();
     } else {
       throw new Exception("Unknown command.");
     }
@@ -55,6 +58,9 @@ public class RunCliCommand {
   }
 
   public static boolean hasCommandToRun(ApplicationArgs appArgs, CliConfig cliConfig) {
-    return appArgs.isDumpPayload() || appArgs.isAggregatePostmix() || appArgs.isListPools();
+    return appArgs.isDumpPayload()
+        || appArgs.isAggregatePostmix()
+        || appArgs.isListPools()
+        || appArgs.isReconstruct();
   }
 }

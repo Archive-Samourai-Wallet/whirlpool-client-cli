@@ -5,7 +5,6 @@ import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
-import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
@@ -228,17 +227,8 @@ public class CliService {
       log.debug("shutdown");
     }
 
-    // stop cliWallet
-    try {
-      CliWallet cliWallet =
-          cliWalletService != null && cliWalletService.hasSessionWallet()
-              ? cliWalletService.getSessionWallet()
-              : null;
-      if (cliWallet != null && cliWallet.getMixingState().isStarted()) {
-        cliWallet.stop();
-      }
-    } catch (NoSessionWalletException e) {
-    }
+    // close cliWallet
+    cliWalletService.closeWallet();
 
     // disconnect Tor
     if (cliTorClientService != null) {
