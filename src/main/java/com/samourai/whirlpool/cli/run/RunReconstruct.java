@@ -32,9 +32,14 @@ public class RunReconstruct {
     if (!userInput.toLowerCase().equals("y")) {
       return;
     }
+    reconstruct();
+  }
 
+  public void reconstruct() throws Exception {
     Collection<WhirlpoolUtxo> whirlpoolUtxos =
         cliWallet.getUtxoSupplier().findUtxos(WhirlpoolAccount.POSTMIX);
+
+    log.info("Reconstructing mix counters...");
 
     Map<String, TxsResponse.Tx> txs = fetchTxs();
 
@@ -74,7 +79,7 @@ public class RunReconstruct {
           txs.put(tx.hash, tx);
         }
       }
-      log.info("Fetching txs... " + txs.size() + "/" + txsResponse.n_tx);
+      log.info("Fetching postmix history... " + txs.size() + "/" + txsResponse.n_tx);
     } while ((page * TXS_PER_PAGE) < txsResponse.n_tx);
     return txs;
   }

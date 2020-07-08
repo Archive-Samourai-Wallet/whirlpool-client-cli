@@ -8,7 +8,6 @@ import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -32,9 +31,6 @@ import org.springframework.util.DefaultPropertiesPersister;
 @Service
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  public static final int CLI_VERSION_4 = 4;
-  public static final int CLI_VERSION = CLI_VERSION_4;
 
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
@@ -158,7 +154,7 @@ public class CliConfigService {
 
     // save configuration file
     Properties props = new Properties();
-    props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
+    props.put(KEY_VERSION, Integer.toString(CliUpgradeService.CURRENT_VERSION.getVersion()));
     props.put(KEY_APIKEY, apiKey);
     props.put(KEY_SEED, encryptedMnemonic);
     props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
@@ -213,9 +209,9 @@ public class CliConfigService {
     Application.restart();
   }
 
-  public synchronized void setVersionCurrent() throws Exception {
+  public synchronized void setVersion(int version) throws Exception {
     Properties props = loadProperties();
-    props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
+    props.put(KEY_VERSION, Integer.toString(version));
 
     // save
     save(props);
@@ -272,31 +268,5 @@ public class CliConfigService {
 
   private File getConfigurationFile() {
     return new File(CLI_CONFIG_FILENAME);
-  }
-
-  public boolean checkUpgrade() throws Exception {
-    boolean shouldRestart = false;
-    int localVersion = cliConfig.getVersion();
-
-    if (localVersion < CLI_VERSION) {
-      // older version => run upgrade
-      if (log.isDebugEnabled()) {
-        log.debug(" • Upgrading cli wallet: " + localVersion + " -> " + CLI_VERSION);
-      }
-      new RunUpgradeCli(cliConfig, this).run(localVersion);
-
-      // set version
-      setVersionCurrent();
-
-      // stop wallet & restart needed
-      this.setCliStatusNotReady("Upgrade success. Restarting CLI...");
-      shouldRestart = true;
-    } else {
-      // up to date
-      if (log.isDebugEnabled()) {
-        log.debug("cli wallet is up to date: " + CLI_VERSION);
-      }
-    }
-    return shouldRestart;
   }
 }
