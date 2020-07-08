@@ -4,5 +4,5 @@ public abstract class CliUpgradeUnauth extends CliUpgrade {
 
   public CliUpgradeUnauth() {}
 
-  public abstract void run() throws Exception;
+  public abstract boolean run() throws Exception;
 }

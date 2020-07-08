@@ -5,7 +5,6 @@ import com.samourai.whirlpool.cli.beans.CliUpgradeAuth;
 import com.samourai.whirlpool.cli.beans.CliUpgradeUnauth;
 import com.samourai.whirlpool.cli.beans.CliVersion;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.run.RunReconstruct;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedHashMap;
@@ -34,13 +33,15 @@ public class CliUpgradeService {
         CliVersion.VERSION_4.getVersion(),
         new CliUpgradeUnauth() {
           @Override
-          public void run() throws Exception {
+          public boolean run() throws Exception {
             // set cli.mix.clients=5 when missing
             if (cliConfig.getMix().getClients() == 0) {
               Properties props = cliConfigService.loadProperties();
               props.put(CliConfigService.KEY_MIX_CLIENTS, "5");
               cliConfigService.saveProperties(props);
+              return true; // restart
             }
+            return false;
           }
         });
 
@@ -49,9 +50,10 @@ public class CliUpgradeService {
         CliVersion.VERSION_5.getVersion(),
         new CliUpgradeAuth() {
           @Override
-          public void run(CliWallet cliWallet) throws Exception {
-            // reconstruct postmix counters
-            new RunReconstruct(cliWallet).reconstruct();
+          public boolean run(CliWallet cliWallet) throws Exception {
+            // resync postmix counters
+            cliWallet.resync();
+            return false;
           }
         });
   }
@@ -70,9 +72,9 @@ public class CliUpgradeService {
     if (log.isDebugEnabled()) {
       log.debug(" • Upgrading CLI (unauth): " + localVersion + " -> " + nextVersion);
     }
-    cliUpgrade.run();
-    afterUpgrade(nextVersion);
-    return true;
+    boolean shouldRestart = cliUpgrade.run();
+    afterUpgrade(nextVersion, shouldRestart);
+    return shouldRestart;
   }
 
   public boolean upgradeAuthenticated(CliWallet cliWallet) throws Exception {
@@ -89,9 +91,9 @@ public class CliUpgradeService {
     if (log.isDebugEnabled()) {
       log.debug(" • Upgrading CLI (auth): " + localVersion + " -> " + nextVersion);
     }
-    cliUpgrade.run(cliWallet);
-    afterUpgrade(nextVersion);
-    return true;
+    boolean shouldRestart = cliUpgrade.run(cliWallet);
+    afterUpgrade(nextVersion, shouldRestart);
+    return shouldRestart;
   }
 
   private CliUpgrade getNextUpgrade(int nextVersion, boolean authenticated) {
@@ -121,8 +123,10 @@ public class CliUpgradeService {
     return cliUpgrade;
   }
 
-  private void afterUpgrade(int nextVersion) throws Exception {
+  private void afterUpgrade(int nextVersion, boolean shouldRestart) throws Exception {
     cliConfigService.setVersion(nextVersion);
-    cliConfigService.setCliStatusNotReady("Upgrade success. Restarting CLI...");
+    if (shouldRestart) {
+      cliConfigService.setCliStatusNotReady("Upgrade success. Restarting CLI...");
+    }
   }
 }

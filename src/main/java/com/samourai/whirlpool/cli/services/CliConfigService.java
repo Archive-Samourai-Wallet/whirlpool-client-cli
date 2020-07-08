@@ -210,11 +210,17 @@ public class CliConfigService {
   }
 
   public synchronized void setVersion(int version) throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug("setVersion: " + version);
+    }
     Properties props = loadProperties();
     props.put(KEY_VERSION, Integer.toString(version));
 
     // save
     save(props);
+
+    // update runtime
+    cliConfig.setVersion(version);
   }
 
   public synchronized void resetConfiguration() throws Exception {
@@ -233,6 +239,7 @@ public class CliConfigService {
 
   public void setCliStatusNotReady(String error) {
     this.setCliStatus(CliStatus.NOT_READY, error);
+    log.warn("status -> " + error);
   }
 
   protected synchronized void save(Properties props) throws Exception {

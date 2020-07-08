@@ -8,5 +8,5 @@ public abstract class CliUpgradeAuth extends CliUpgrade {
     super();
   }
 
-  public abstract void run(CliWallet cliWallet) throws Exception;
+  public abstract boolean run(CliWallet cliWallet) throws Exception;
 }

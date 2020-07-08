@@ -7,8 +7,8 @@
 | --init | Initialize CLI (by setting wallet seed and generating API key) |
 | --authenticate | Enable interactive authentication on startup |
 | --listen | Enable CLI API for remote commands & GUI (see [API.md](API.md))|
+| --resync | Resynchronize mix counters on startup (useful when mixing simultaneously with Android) |
 | --list-pools | List pools and exit|
-| --reconstruct | Reconstruct mix counters and exit |
 | --dump-payload | Dump pairing-payload of current wallet and exit |
 
 
