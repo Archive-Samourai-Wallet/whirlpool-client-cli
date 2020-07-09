@@ -96,6 +96,11 @@ public class ApplicationArgs {
     if (valueInt != null) {
       cliConfig.getMix().setMixsTarget(valueInt);
     }
+
+    valueBool = optionalBoolean(ARG_RESYNC);
+    if (valueBool != null) {
+      cliConfig.setResync(valueBool);
+    }
   }
 
   public boolean isListPools() {

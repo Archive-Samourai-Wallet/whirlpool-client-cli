@@ -200,11 +200,6 @@ public class CliService {
         new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
         return CliResult.EXIT_SUCCESS;
       } else {
-        // resync?
-        if (appArgs.isResync()) {
-          cliWallet.resync();
-        }
-
         // start wallet
         cliWallet.start();
         keepRunning();

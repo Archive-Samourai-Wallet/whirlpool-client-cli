@@ -147,7 +147,7 @@ public class CliWalletService extends WhirlpoolWalletService {
             walletAggregateService,
             cliTorClientService,
             httpClientService);
-    CliWallet result = (CliWallet) openWallet(cliWallet);
+    cliWallet = (CliWallet) openWallet(cliWallet);
 
     // check upgrade
     boolean shouldRestart = cliUpgradeService.upgradeAuthenticated(cliWallet);
@@ -159,7 +159,16 @@ public class CliWalletService extends WhirlpoolWalletService {
       log.warn(CliUtils.LOG_SEPARATOR);
       throw new CliRestartException("Upgrade success, restarting CLI...");
     }
-    return result;
+
+    // resync?
+    if (cliConfig.isResync()) {
+      try {
+        cliWallet.resync();
+      } catch (Exception e) {
+        log.error("", e);
+      }
+    }
+    return cliWallet;
   }
 
   private BackendApi computeBackendApiService(String passphrase) throws Exception {

@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 public class CliConfig extends CliConfigFile {
   private boolean autoAggregatePostmix;
   private String autoTx0PoolId;
+  private boolean resync;
 
   public CliConfig() {
     super();
@@ -57,6 +58,14 @@ public class CliConfig extends CliConfigFile {
     this.autoTx0PoolId = autoTx0PoolId;
   }
 
+  public boolean isResync() {
+    return resync;
+  }
+
+  public void setResync(boolean resync) {
+    this.resync = resync;
+  }
+
   @Override
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = super.getConfigInfo();
@@ -74,6 +83,7 @@ public class CliConfig extends CliConfigFile {
         "cli/proxy", getCliProxy().isPresent() ? getCliProxy().get().toString() : "null");
     configInfo.put("cli/autoAggregatePostmix", Boolean.toString(autoAggregatePostmix));
     configInfo.put("cli/autoTx0PoolId", autoTx0PoolId != null ? autoTx0PoolId : "null");
+    configInfo.put("cli/resync", Boolean.toString(resync));
     return configInfo;
   }
 
