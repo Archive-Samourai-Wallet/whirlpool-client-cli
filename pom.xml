@@ -170,6 +170,6 @@
     </repositories>
     <scm>
         <connection>scm:git:git@code.samourai.io:whirlpool/whirlpool-client-cli.git</connection>
-        <tag>0.10.6-QA</tag>
+        <tag>0.10.8</tag>
     </scm>
 </project>

@@ -8,7 +8,13 @@
 | --authenticate | Enable interactive authentication on startup |
 | --listen | Enable CLI API for remote commands & GUI (see [API.md](API.md))|
 | --list-pools | List pools and exit|
+
+#### Advanced
+
+| Argument | Description |
+| ---------|------------ |
 | --dump-payload | Dump pairing-payload of current wallet and exit |
+| --resync | Resynchronize mix counters on startup (startup will be slower) |
 
 
 #### Debugging

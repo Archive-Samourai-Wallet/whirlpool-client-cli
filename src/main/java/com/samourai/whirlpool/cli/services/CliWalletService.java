@@ -20,6 +20,7 @@ import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
+import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -54,6 +55,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private JavaHttpClientService httpClientService;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
+  private CliUpgradeService cliUpgradeService;
 
   public CliWalletService(
       CliConfig cliConfig,
@@ -62,7 +64,8 @@ public class CliWalletService extends WhirlpoolWalletService {
       WalletAggregateService walletAggregateService,
       JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
-      CliTorClientService cliTorClientService) {
+      CliTorClientService cliTorClientService,
+      CliUpgradeService cliUpgradeService) {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
@@ -71,6 +74,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.httpClientService = httpClientService;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
+    this.cliUpgradeService = cliUpgradeService;
   }
 
   public CliWallet openWallet(String passphrase) throws Exception {
@@ -143,7 +147,28 @@ public class CliWalletService extends WhirlpoolWalletService {
             walletAggregateService,
             cliTorClientService,
             httpClientService);
-    return (CliWallet) openWallet(cliWallet);
+    cliWallet = (CliWallet) openWallet(cliWallet);
+
+    // check upgrade
+    boolean shouldRestart = cliUpgradeService.upgradeAuthenticated(cliWallet);
+    if (shouldRestart) {
+      // upgrade success => restart CLI
+      log.warn(CliUtils.LOG_SEPARATOR);
+      log.warn("⣿ UPGRADE SUCCESS");
+      log.warn("⣿ Restarting CLI...");
+      log.warn(CliUtils.LOG_SEPARATOR);
+      throw new CliRestartException("Upgrade success, restarting CLI...");
+    }
+
+    // resync?
+    if (cliConfig.isResync()) {
+      try {
+        cliWallet.resync();
+      } catch (Exception e) {
+        log.error("", e);
+      }
+    }
+    return cliWallet;
   }
 
   private BackendApi computeBackendApiService(String passphrase) throws Exception {

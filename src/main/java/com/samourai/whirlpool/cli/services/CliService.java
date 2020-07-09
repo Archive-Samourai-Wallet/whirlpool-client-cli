@@ -6,7 +6,7 @@ import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
-import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
+import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
@@ -36,6 +36,7 @@ public class CliService {
   private CliConfigService cliConfigService;
   private CliWalletService cliWalletService;
   private WalletAggregateService walletAggregateService;
+  private CliUpgradeService cliUpgradeService;
   private CliTorClientService cliTorClientService;
   private CliStatusOrchestrator cliStatusOrchestrator;
 
@@ -45,12 +46,14 @@ public class CliService {
       CliConfigService cliConfigService,
       CliWalletService cliWalletService,
       WalletAggregateService walletAggregateService,
+      CliUpgradeService cliUpgradeService,
       CliTorClientService cliTorClientService) {
     this.appArgs = appArgs;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.cliWalletService = cliWalletService;
     this.walletAggregateService = walletAggregateService;
+    this.cliUpgradeService = cliUpgradeService;
     this.cliTorClientService = cliTorClientService;
     this.cliStatusOrchestrator = null;
     init();
@@ -144,8 +147,8 @@ public class CliService {
         return CliResult.KEEP_RUNNING;
       }
 
-      // check upgrade
-      boolean shouldRestart = cliConfigService.checkUpgrade();
+      // check upgrade (before authentication)
+      boolean shouldRestart = cliUpgradeService.upgradeUnauthenticated();
       if (shouldRestart) {
         log.warn(CliUtils.LOG_SEPARATOR);
         log.warn("⣿ UPGRADE SUCCESS");
@@ -168,6 +171,7 @@ public class CliService {
         return CliResult.KEEP_RUNNING;
       }
 
+      // authenticate
       CliWallet cliWallet = null;
       while (cliWallet == null) {
         // authenticate to open wallet when passphrase providen through arguments
@@ -178,15 +182,18 @@ public class CliService {
               cliWalletService.hasSessionWallet()
                   ? cliWalletService.getSessionWallet()
                   : cliWalletService.openWallet(seedPassphrase);
+
+          log.info(CliUtils.LOG_SEPARATOR);
+          log.info("⣿ AUTHENTICATION SUCCESS");
+          log.info("⣿ Whirlpool is starting...");
+          log.info(CliUtils.LOG_SEPARATOR);
         } catch (AuthenticationException e) {
           log.error(e.getMessage());
-          // will retry
+        } catch (CliRestartException e) {
+          log.error(e.getMessage());
+          return CliResult.RESTART;
         }
       }
-      log.info(CliUtils.LOG_SEPARATOR);
-      log.info("⣿ AUTHENTICATION SUCCESS");
-      log.info("⣿ Whirlpool is starting...");
-      log.info(CliUtils.LOG_SEPARATOR);
 
       if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
         // execute specific command
@@ -228,17 +235,8 @@ public class CliService {
       log.debug("shutdown");
     }
 
-    // stop cliWallet
-    try {
-      CliWallet cliWallet =
-          cliWalletService != null && cliWalletService.hasSessionWallet()
-              ? cliWalletService.getSessionWallet()
-              : null;
-      if (cliWallet != null && cliWallet.getMixingState().isStarted()) {
-        cliWallet.stop();
-      }
-    } catch (NoSessionWalletException e) {
-    }
+    // close cliWallet
+    cliWalletService.closeWallet();
 
     // disconnect Tor
     if (cliTorClientService != null) {

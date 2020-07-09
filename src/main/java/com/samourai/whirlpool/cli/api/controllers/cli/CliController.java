@@ -10,7 +10,9 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.services.CliConfigService;
+import com.samourai.whirlpool.cli.services.CliUpgradeService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
@@ -32,6 +34,7 @@ public class CliController extends AbstractRestController {
 
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
+  @Autowired private CliUpgradeService cliUpgradeService;
   @Autowired private CliConfig cliConfig;
   @Autowired private TaskExecutor taskExecutor;
 
@@ -85,7 +88,12 @@ public class CliController extends AbstractRestController {
       throws Exception {
     checkHeaders(headers);
 
-    cliWalletService.openWallet(payload.seedPassphrase).start();
+    try {
+      cliWalletService.openWallet(payload.seedPassphrase).start();
+    } catch (CliRestartException e) {
+      // CLI upgrade success => restart
+      Application.restart();
+    }
 
     // success
     return state(headers);

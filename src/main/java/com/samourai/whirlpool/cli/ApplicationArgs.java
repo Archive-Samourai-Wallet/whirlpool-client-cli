@@ -34,6 +34,7 @@ public class ApplicationArgs {
   private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String ARG_MIXS_TARGET = "mixs-target";
   private static final String ARG_DUMP_PAYLOAD = "dump-payload";
+  private static final String ARG_RESYNC = "resync";
 
   private ApplicationArguments args;
 
@@ -95,6 +96,11 @@ public class ApplicationArgs {
     if (valueInt != null) {
       cliConfig.getMix().setMixsTarget(valueInt);
     }
+
+    valueBool = optionalBoolean(ARG_RESYNC);
+    if (valueBool != null) {
+      cliConfig.setResync(valueBool);
+    }
   }
 
   public boolean isListPools() {
@@ -107,6 +113,10 @@ public class ApplicationArgs {
 
   public boolean isDumpPayload() {
     return args.containsOption(ARG_DUMP_PAYLOAD);
+  }
+
+  public boolean isResync() {
+    return args.containsOption(ARG_RESYNC);
   }
 
   public String getAggregatePostmix() {
