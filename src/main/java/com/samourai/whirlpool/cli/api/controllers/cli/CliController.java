@@ -15,6 +15,7 @@ import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliUpgradeService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import java.lang.invoke.MethodHandles;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -117,5 +118,14 @@ public class CliController extends AbstractRestController {
 
     // success
     return state(headers);
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_RESYNC, method = RequestMethod.POST)
+  public void resync(@RequestHeader HttpHeaders headers) throws Exception {
+    checkHeaders(headers);
+
+    // resync mix counters
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    whirlpoolWallet.resync();
   }
 }

@@ -262,4 +262,5 @@ Payload:
 
 ### reset config: ```DELETE /rest/cli/config```
 
+### resync mix counters: ```POST /rest/cli/resync```
 
