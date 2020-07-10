@@ -529,6 +529,7 @@ public abstract class CliConfigFile {
     config.setMixsTarget(mix.getMixsTarget());
     config.setOverspend(mix.getOverspend());
 
+    config.setResyncOnFirstRun(true);
     return config;
   }
 
