@@ -26,7 +26,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.WhirlpoolDataService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
@@ -135,10 +134,9 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
     String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();
-    WhirlpoolDataService dataService = new WhirlpoolDataService(config);
 
     WhirlpoolWallet whirlpoolWallet =
-        computeWhirlpoolWallet(dataService, bip84w, walletStateFileName, utxoConfigFileName);
+        computeWhirlpoolWallet(config, bip84w, walletStateFileName, utxoConfigFileName);
     CliWallet cliWallet =
         new CliWallet(
             whirlpoolWallet,

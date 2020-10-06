@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.MinerFeeTarget;
-import com.samourai.wallet.api.backend.beans.UnspentResponse;
+import com.samourai.wallet.api.backend.beans.UnspentOutput;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
@@ -15,6 +15,7 @@ import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
+import java8.util.Lists;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
@@ -72,7 +73,8 @@ public class WalletAggregateService {
       int feeSatPerByte,
       BackendApi backendApi)
       throws Exception {
-    List<UnspentResponse.UnspentOutput> utxos = backendApi.fetchUtxos(sourceWallet.getZpub());
+    List<UnspentOutput> utxos =
+        Lists.of(backendApi.fetchWallet(sourceWallet.getZpub()).unspent_outputs);
     if (utxos.isEmpty()) {
       // maybe you need to declare zpub as bip84 with /multiaddr?bip84=
       log.info("AggregateWallet result: no utxo to aggregate");
@@ -87,7 +89,7 @@ public class WalletAggregateService {
     int round = 0;
     int offset = 0;
     while (offset < utxos.size()) {
-      List<UnspentResponse.UnspentOutput> subsetUtxos = new ArrayList<>();
+      List<UnspentOutput> subsetUtxos = new ArrayList<>();
       offset = AGGREGATED_UTXOS_PER_TX * round;
       for (int i = offset; i < (offset + AGGREGATED_UTXOS_PER_TX) && i < utxos.size(); i++) {
         subsetUtxos.add(utxos.get(i));
@@ -109,7 +111,7 @@ public class WalletAggregateService {
 
   private void txAggregate(
       Bip84Wallet sourceWallet,
-      List<UnspentResponse.UnspentOutput> postmixUtxos,
+      List<UnspentOutput> postmixUtxos,
       String toAddress,
       int feeSatPerByte,
       BackendApi backendApi)
@@ -118,7 +120,7 @@ public class WalletAggregateService {
     List<HD_Address> spendFromAddresses = new ArrayList<>();
 
     // spend
-    for (UnspentResponse.UnspentOutput utxo : postmixUtxos) {
+    for (UnspentOutput utxo : postmixUtxos) {
       spendFromOutPoints.add(utxo.computeOutpoint(params));
       spendFromAddresses.add(sourceWallet.getAddressAt(utxo));
     }
