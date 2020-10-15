@@ -193,8 +193,9 @@ public abstract class CliConfigFile {
   }
 
   public static class MixConfig {
-    /*@NotEmpty TODO constraint temporary disabled*/ private int clients;
+    @NotEmpty private int clients;
     @NotEmpty private int clientsPerPool;
+    @NotEmpty private boolean liquidityClient;
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
@@ -207,6 +208,7 @@ public abstract class CliConfigFile {
     public MixConfig(MixConfig copy) {
       this.clients = copy.clients;
       this.clientsPerPool = copy.clientsPerPool;
+      this.liquidityClient = copy.liquidityClient;
       this.clientDelay = copy.clientDelay;
       this.tx0Delay = copy.tx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
@@ -230,6 +232,14 @@ public abstract class CliConfigFile {
 
     public void setClientsPerPool(int clientsPerPool) {
       this.clientsPerPool = clientsPerPool;
+    }
+
+    public boolean isLiquidityClient() {
+      return liquidityClient;
+    }
+
+    public void setLiquidityClient(boolean liquidityClient) {
+      this.liquidityClient = liquidityClient;
     }
 
     public int getClientDelay() {
@@ -284,6 +294,7 @@ public abstract class CliConfigFile {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/mix/clients", Integer.toString(clients));
       configInfo.put("cli/mix/clientsPerPool", Integer.toString(clientsPerPool));
+      configInfo.put("cli/mix/liquidityClient", Boolean.toString(liquidityClient));
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/tx0Delay", Integer.toString(tx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
@@ -522,6 +533,7 @@ public abstract class CliConfigFile {
 
     config.setMaxClients(mix.getClients());
     config.setMaxClientsPerPool(mix.getClientsPerPool());
+    config.setLiquidityClient(mix.isLiquidityClient());
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
