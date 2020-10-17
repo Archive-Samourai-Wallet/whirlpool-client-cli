@@ -225,8 +225,8 @@ public class CliUtils {
   }
 
   public static void setLogLevel(boolean isDebug, boolean isDebugClient) {
-    Level whirlpoolLevel = isDebug ? Level.DEBUG : Level.INFO;
-    Level whirlpoolClientLevel = isDebugClient ? Level.DEBUG : Level.INFO;
+    Level whirlpoolLevel = isDebug ? (isDebugClient ? Level.TRACE : Level.DEBUG) : Level.INFO;
+    Level whirlpoolClientLevel = isDebugClient ? Level.TRACE : Level.INFO;
     ClientUtils.setLogLevel(whirlpoolLevel, whirlpoolClientLevel);
 
     LogbackUtils.setLogLevel(
