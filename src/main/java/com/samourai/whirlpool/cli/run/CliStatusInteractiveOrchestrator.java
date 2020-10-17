@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.wallet.api.backend.beans.UnspentOutput;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -7,9 +8,7 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.MixingState;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.beans.*;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -69,11 +68,54 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
       MixingState mixingState = whirlpoolWallet.getMixingState();
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ MIXING THREADS:");
+
+      String lineFormat = "| %8s | %25s | %8s | %10s | %10s | %8s | %68s | %14s | %8s | %8s |\n";
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          String.format(
+              lineFormat,
+              "THREAD",
+              "STATUS",
+              "SINCE",
+              "ACCOUNT",
+              "BALANCE",
+              "CONFIRMS",
+              "UTXO",
+              "PATH",
+              "POOL",
+              "MIXS"));
+
       int i = 0;
+      long now = System.currentTimeMillis();
       for (WhirlpoolUtxo whirlpoolUtxo : mixingState.getUtxosMixing()) {
-        log.info("⣿ Thread #" + (i + 1) + ": MIXING " + whirlpoolUtxo.toString());
+        MixProgress mixProgress = whirlpoolUtxo.getUtxoState().getMixProgress();
+        String progress = mixProgress != null ? mixProgress.toString() : "";
+        String since = mixProgress != null ? ((now - mixProgress.getSince()) / 1000) + "s" : "";
+        UnspentOutput o = whirlpoolUtxo.getUtxo();
+        String utxo = o.tx_hash + ":" + o.tx_output_n;
+        int mixsTargetMin = cliConfig.getMix().getMixsTarget();
+        int mixsTargetOrDefault = whirlpoolUtxo.getMixsTargetOrDefault(mixsTargetMin);
+        sb.append(
+            String.format(
+                lineFormat,
+                "#" + (i + 1),
+                progress,
+                since,
+                whirlpoolUtxo.getAccount().name(),
+                ClientUtils.satToBtc(o.value),
+                o.confirmations,
+                utxo,
+                o.getPath(),
+                whirlpoolUtxo.getPoolId() != null ? whirlpoolUtxo.getPoolId() : "-",
+                whirlpoolUtxo.getMixsDone()
+                    + "/"
+                    + (mixsTargetOrDefault == WhirlpoolUtxoConfig.MIXS_TARGET_UNLIMITED
+                        ? "∞"
+                        : mixsTargetOrDefault)));
+
         i++;
       }
+      log.info("\n" + sb.toString());
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {

@@ -86,7 +86,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueuedLiquidity()
               + "), total "
               + balanceTotal
-              + "btc. Commands: [T]hreads, [D]eposit("
+              + "btc. Commands: [T]hreads("
+              + mixingState.getNbMixing()
+              + "), [D]eposit("
               + nbDeposit
               + "), [P]remix("
               + nbPremix
