@@ -16,7 +16,7 @@ Default configuration is [../src/main/resources/application.properties].
 | cli.tor | false | Enable Tor |
 | cli.dojo.enabled | false | Enable Dojo as wallet backend |
 | cli.scode | - | SCODE for discount Whirlpool fees |
-| cli.mix.mixsTarget | - | Mixs limit per UTXO (0 for unlimited) |
+| cli.mix.mixsTarget | 5 | Mixs limit per UTXO (0 for unlimited) |
 | cli.mix.autoMix | true | Automatically (re)mix premix & postmix. When disabled, each utxo must be mixed manually. |
 
 
