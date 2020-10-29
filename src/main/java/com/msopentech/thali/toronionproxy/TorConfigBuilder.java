@@ -218,7 +218,8 @@ public final class TorConfigBuilder {
     return this;
   }
 
-  public TorConfigBuilder httpTunnelPort(int port, String isolationFlags) {
+  // disable HTTPTunnelPort for Tor 0.2.9 compatibility
+  /*public TorConfigBuilder httpTunnelPort(int port, String isolationFlags) {
     buffer.append("HTTPTunnelPort ").append(port);
     if (!isNullOrEmpty(isolationFlags)) {
       buffer.append(" ").append(isolationFlags);
@@ -232,7 +233,7 @@ public final class TorConfigBuilder {
     return httpTunnelPort(
         settings.getHttpTunnelPort(),
         settings.hasIsolationAddressFlagForTunnel() ? "IsolateDestAddr" : null);
-  }
+  }*/
 
   public TorConfigBuilder line(String value) {
     if (!isNullOrEmpty(value)) buffer.append(value).append("\n");
@@ -360,7 +361,8 @@ public final class TorConfigBuilder {
         : this;
   }
 
-  public TorConfigBuilder reducedConnectionPadding() {
+  // disable ReducedConnectionPadding for Tor 0.2.9 compatibility
+  /*public TorConfigBuilder reducedConnectionPadding() {
     buffer.append("ReducedConnectionPadding 1").append('\n');
     return this;
   }
@@ -368,7 +370,7 @@ public final class TorConfigBuilder {
   @SettingsConfig
   public TorConfigBuilder reducedConnectionPaddingFromSettings() {
     return settings.hasReducedConnectionPadding() ? reducedConnectionPadding() : this;
-  }
+  }*/
 
   public void reset() {
     buffer = new StringBuffer();
