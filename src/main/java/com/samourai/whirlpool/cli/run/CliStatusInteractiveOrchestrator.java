@@ -69,7 +69,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ MIXING THREADS:");
 
-      String lineFormat = "| %8s | %25s | %8s | %10s | %10s | %8s | %68s | %14s | %8s | %8s |\n";
+      String lineFormat = "| %8s | %25s | %8s | %10s | %10s | %8s | %68s | %14s | %8s | %6s |\n";
       StringBuilder sb = new StringBuilder();
       sb.append(
           String.format(
@@ -93,8 +93,6 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
         String since = mixProgress != null ? ((now - mixProgress.getSince()) / 1000) + "s" : "";
         UnspentOutput o = whirlpoolUtxo.getUtxo();
         String utxo = o.tx_hash + ":" + o.tx_output_n;
-        int mixsTargetMin = cliConfig.getMix().getMixsTarget();
-        int mixsTargetOrDefault = whirlpoolUtxo.getMixsTargetOrDefault(mixsTargetMin);
         sb.append(
             String.format(
                 lineFormat,
@@ -107,11 +105,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
                 utxo,
                 o.getPath(),
                 whirlpoolUtxo.getPoolId() != null ? whirlpoolUtxo.getPoolId() : "-",
-                whirlpoolUtxo.getMixsDone()
-                    + "/"
-                    + (mixsTargetOrDefault == WhirlpoolUtxoConfig.MIXS_TARGET_UNLIMITED
-                        ? "∞"
-                        : mixsTargetOrDefault)));
+                whirlpoolUtxo.getMixsDone()));
 
         i++;
       }
@@ -158,7 +152,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
     try {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ " + account.name() + " UTXOS:");
-      ClientUtils.logWhirlpoolUtxos(utxos, cliConfig.getMix().getMixsTarget());
+      ClientUtils.logWhirlpoolUtxos(utxos);
 
     } catch (Exception e) {
       log.error("", e);

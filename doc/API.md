@@ -75,8 +75,6 @@ Response:
         "progressLabel":"CONNECTING",
         "poolId":"0.01btc",
         "priority":5,
-        "mixsTarget":null,
-        "mixsTargetOrDefault":1,
         "mixsDone":0,
         "message":" - [MIX 1/1] ▮▮▮▮▮▯▯▯▯▯ (5/10) CONFIRMED_INPUT : joined a mix!",
         "error":null,
@@ -124,11 +122,9 @@ Parameters:
 
 Payload:
 * poolId: id of pool to join
-* mixsTarget: mixs limit (0 for unlimited)
 ```
 {
-    poolId: "0.01btc",
-    mixsTarget: 0
+    poolId: "0.01btc"
 }
 ```
 
@@ -139,15 +135,16 @@ Response:
 }
 ```
 
-### Tx0 preview ```POST /rest/utxos/{hash}:{index}/tx0Preview```
-Parameters:
-* hash, index: utxo to spend for tx0
-
+### Tx0 preview ```POST /rest/tx0/preview```
 Payload:
+* inputs {hash, index} (mandatory): utxos to spend for tx0
 * feeTarget (mandatory): fee target for tx0
 * poolId (optional): override utxo's poolId
 ```
 {
+    inputs: [
+        {hash:"c7f456d5ff002faa89dadec01cc5eb98bb00fdefb92031890324ec127f9d1541", index:5}
+    ],
     feeTarget: "BLOCKS_4",
     poolId: "0.01btc"
 }
@@ -157,23 +154,22 @@ Payload:
 Response:
 ```
 {
-    "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
+    
 }
 ```
 
-### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
-Parameters:
-* hash, index: utxo to spend for tx0
-
+### Tx0 ```POST /rest/tx0```
 Payload:
+* inputs {hash, index} (mandatory): utxos to spend for tx0
 * feeTarget (mandatory): fee target for tx0
 * poolId (optional): override utxo's poolId
-* mixsTarget (optional): override utxo's mixsTarget
 ```
 {
+    inputs: [
+        {hash:"c7f456d5ff002faa89dadec01cc5eb98bb00fdefb92031890324ec127f9d1541", index:5}
+    ],
     feeTarget: "BLOCKS_4",
-    poolId: "0.01btc",
-    mixsTarget: 3
+    poolId: "0.01btc"
 }
 ```
 

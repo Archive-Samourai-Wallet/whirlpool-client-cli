@@ -52,8 +52,7 @@ public class ApiWalletUtxosResponse {
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
     String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account).getZpub();
-    int mixsTargetMin = whirlpoolWallet.getConfig().getMixsTarget();
-    return new ApiWallet(utxos, zpub, comparator, mixsTargetMin);
+    return new ApiWallet(utxos, zpub, comparator);
   }
 
   public ApiWallet getDeposit() {

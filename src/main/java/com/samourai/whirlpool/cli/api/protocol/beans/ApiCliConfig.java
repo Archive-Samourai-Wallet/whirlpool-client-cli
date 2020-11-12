@@ -30,7 +30,6 @@ public class ApiCliConfig {
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
-  private static final String KEY_MIX_MIXS_TARGET = "cli.mix.mixsTarget";
   public static final String KEY_API_HTTP_ENABLE = "cli.api.http-enable";
 
   public ApiCliConfig() {}
@@ -128,7 +127,6 @@ public class ApiCliConfig {
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
     private Boolean autoMix;
-    private Integer mixsTarget;
 
     public ApiMixConfig() {}
 
@@ -137,7 +135,6 @@ public class ApiCliConfig {
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
       this.autoMix = mixConfig.isAutoMix();
-      this.mixsTarget = mixConfig.getMixsTarget();
     }
 
     public void toProperties(Properties props) throws NotifiableException {
@@ -161,12 +158,6 @@ public class ApiCliConfig {
       }
       if (autoMix != null) {
         props.put(KEY_MIX_AUTO_MIX, Boolean.toString(autoMix));
-      }
-      if (mixsTarget != null) {
-        if (mixsTarget < 1) {
-          throw new NotifiableException("mix.mixTargets should be > 0");
-        }
-        props.put(KEY_MIX_MIXS_TARGET, Integer.toString(mixsTarget));
       }
     }
 
@@ -200,14 +191,6 @@ public class ApiCliConfig {
 
     public void setAutoMix(Boolean autoMix) {
       this.autoMix = autoMix;
-    }
-
-    public Integer getMixsTarget() {
-      return mixsTarget;
-    }
-
-    public void setMixsTarget(Integer mixsTarget) {
-      this.mixsTarget = mixsTarget;
     }
   }
 }

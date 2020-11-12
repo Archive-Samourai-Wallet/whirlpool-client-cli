@@ -18,14 +18,12 @@ public class ApiUtxo {
   private MixableStatus mixableStatus;
   private Integer progressPercent;
   private String poolId;
-  private Integer mixsTarget;
-  private Integer mixsTargetOrDefault;
   private int mixsDone;
   private String message;
   private String error;
   private Long lastActivityElapsed;
 
-  public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo, int mixsTargetMin) {
+  public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo) {
     UnspentOutput utxo = whirlpoolUtxo.getUtxo();
     this.hash = utxo.tx_hash;
     this.index = utxo.tx_output_n;
@@ -43,8 +41,6 @@ public class ApiUtxo {
     this.progressPercent =
         utxoState.getMixProgress() != null ? utxoState.getMixProgress().getProgressPercent() : null;
     this.poolId = whirlpoolUtxo.getPoolId();
-    this.mixsTarget = whirlpoolUtxo.getMixsTarget();
-    this.mixsTargetOrDefault = whirlpoolUtxo.getMixsTargetOrDefault(mixsTargetMin);
     this.mixsDone = whirlpoolUtxo.getMixsDone();
     this.message = utxoState.getMessage();
     this.error = utxoState.getError();
@@ -100,14 +96,6 @@ public class ApiUtxo {
 
   public String getPoolId() {
     return poolId;
-  }
-
-  public Integer getMixsTarget() {
-    return mixsTarget;
-  }
-
-  public Integer getMixsTargetOrDefault() {
-    return mixsTargetOrDefault;
   }
 
   public int getMixsDone() {
