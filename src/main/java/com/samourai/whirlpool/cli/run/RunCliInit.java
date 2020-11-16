@@ -1,9 +1,7 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.services.CliConfigService;
-import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -12,17 +10,10 @@ import org.slf4j.LoggerFactory;
 public class RunCliInit {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ApplicationArgs appArgs;
   private CliConfigService cliConfigService;
-  private CliWalletService cliWalletService;
 
-  public RunCliInit(
-      ApplicationArgs appArgs,
-      CliConfigService cliConfigService,
-      CliWalletService cliWalletService) {
-    this.appArgs = appArgs;
+  public RunCliInit(CliConfigService cliConfigService) {
     this.cliConfigService = cliConfigService;
-    this.cliWalletService = cliWalletService;
   }
 
   public void run() throws Exception {
@@ -48,10 +39,7 @@ public class RunCliInit {
     } else {
       // samourai backend => Tor optional
       log.info("⣿ • Enable Tor? (you can change this later)");
-      String torStr =
-          CliUtils.readUserInputRequired(
-              "Enable Tor? (y/n)", false, new String[] {"y", "n", "Y", "N"});
-      tor = torStr.toLowerCase().equals("y");
+      tor = CliUtils.readUserInputRequiredBoolean("Enable Tor? (y/n)");
       log.info("⣿ ");
     }
 

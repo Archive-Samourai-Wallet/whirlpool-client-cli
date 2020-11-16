@@ -27,7 +27,7 @@ public abstract class AbstractRestController {
     if (!Strings.isEmpty(cliConfig.getApiKey())) {
       String requestApiKey = httpHeaders.getFirst(CliApi.HEADER_API_KEY);
       if (!cliConfig.getApiKey().equals(requestApiKey)) {
-        throw new NotifiableException("API key rejected");
+        throw new NotifiableException("API key rejected: " + requestApiKey);
       }
     }
   }

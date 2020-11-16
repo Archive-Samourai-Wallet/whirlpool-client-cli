@@ -10,6 +10,7 @@ import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
+import com.samourai.whirlpool.cli.run.RunSetExternalXpub;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -126,7 +127,7 @@ public class CliService {
 
       // check init
       if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && !listen)) {
-        new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
+        new RunCliInit(cliConfigService).run();
         return CliResult.RESTART;
       }
 
@@ -157,9 +158,11 @@ public class CliService {
         return CliResult.RESTART;
       }
       cliConfigService.setCliStatus(CliStatus.READY);
-      if (!appArgs.isAuthenticate()
-          && listen
-          && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
+
+      boolean isXpub = appArgs.isSetExternalXpub();
+      String commandToRun = RunCliCommand.getCommandToRun(appArgs);
+      boolean hasCommandToRun = (commandToRun != null);
+      if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
         // no passphrase but listening => keep listening
         log.info(CliUtils.LOG_SEPARATOR);
         log.info("⣿ AUTHENTICATION REQUIRED");
@@ -175,7 +178,13 @@ public class CliService {
       CliWallet cliWallet = null;
       while (cliWallet == null) {
         // authenticate to open wallet when passphrase providen through arguments
-        String seedPassphrase = authenticate();
+        String reason = null;
+        if (isXpub) {
+          reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
+        } else if (commandToRun != null) {
+          reason = "to run --" + commandToRun;
+        }
+        String seedPassphrase = authenticate(reason);
         try {
           // we may have authenticated from API in the meantime...
           cliWallet =
@@ -183,9 +192,14 @@ public class CliService {
                   ? cliWalletService.getSessionWallet()
                   : cliWalletService.openWallet(seedPassphrase);
 
+          // set-destination
+          if (appArgs.isSetExternalXpub()) {
+            new RunSetExternalXpub(cliConfigService).run(params, seedPassphrase);
+            return CliResult.RESTART;
+          }
+
           log.info(CliUtils.LOG_SEPARATOR);
           log.info("⣿ AUTHENTICATION SUCCESS");
-          log.info("⣿ Whirlpool is starting...");
           log.info(CliUtils.LOG_SEPARATOR);
         } catch (AuthenticationException e) {
           log.error(e.getMessage());
@@ -194,13 +208,13 @@ public class CliService {
           return CliResult.RESTART;
         }
       }
-
-      if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
+      if (hasCommandToRun) {
         // execute specific command
         new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
         return CliResult.EXIT_SUCCESS;
       } else {
         // start wallet
+        log.info("⣿ Whirlpool is starting...");
         cliWallet.start();
         keepRunning();
         return CliResult.KEEP_RUNNING;
@@ -221,11 +235,14 @@ public class CliService {
     }
   }
 
-  private String authenticate() {
+  private String authenticate(String reason) {
+    if (reason == null) {
+      reason = "to authenticate and start mixing.";
+    }
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ AUTHENTICATION REQUIRED");
     log.info("⣿ Whirlpool wallet is CLOSED.");
-    log.info("⣿ • Type your passphrase to authenticate and start mixing.");
+    log.info("⣿ • Type your passphrase " + reason);
     return CliUtils.readUserInputRequired("Passphrase?", true);
   }
 

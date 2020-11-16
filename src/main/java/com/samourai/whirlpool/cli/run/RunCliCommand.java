@@ -2,7 +2,6 @@ package com.samourai.whirlpool.cli.run;
 
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.whirlpool.cli.ApplicationArgs;
-import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -54,7 +53,16 @@ public class RunCliCommand {
     }
   }
 
-  public static boolean hasCommandToRun(ApplicationArgs appArgs, CliConfig cliConfig) {
-    return appArgs.isDumpPayload() || appArgs.isAggregatePostmix() || appArgs.isListPools();
+  public static String getCommandToRun(ApplicationArgs appArgs) {
+    if (appArgs.isDumpPayload()) {
+      return ApplicationArgs.ARG_DUMP_PAYLOAD;
+    }
+    if (appArgs.isAggregatePostmix()) {
+      return ApplicationArgs.ARG_AGGREGATE_POSTMIX;
+    }
+    if (appArgs.isListPools()) {
+      return appArgs.ARG_LIST_POOLS;
+    }
+    return null;
   }
 }

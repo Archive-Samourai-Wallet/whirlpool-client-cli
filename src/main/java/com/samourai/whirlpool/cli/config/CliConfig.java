@@ -6,6 +6,7 @@ import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import java.util.Collection;
@@ -29,7 +30,9 @@ public class CliConfig extends CliConfigFile {
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
-      BackendApi backendApi) {
+      BackendApi backendApi,
+      String passphrase)
+      throws NotifiableException {
 
     // check valid
     if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
@@ -37,7 +40,8 @@ public class CliConfig extends CliConfigFile {
     }
 
     WhirlpoolWalletConfig config =
-        super.computeWhirlpoolWalletConfig(httpClientService, stompClientService, backendApi);
+        super.computeWhirlpoolWalletConfig(
+            httpClientService, stompClientService, backendApi, passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }

@@ -3,11 +3,15 @@ package com.samourai.whirlpool.cli.config;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.api.backend.BackendApi;
+import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
+import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import com.samourai.whirlpool.client.whirlpool.ServerApi;
 import java.util.HashMap;
@@ -15,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.bitcoinj.core.NetworkParameters;
 import org.hibernate.validator.constraints.Range;
@@ -44,11 +49,9 @@ public abstract class CliConfigFile {
   private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
   @NotEmpty private ApiConfig api;
+  @NotEmpty private ExternalDestinationConfig externalDestination;
 
   @Autowired BuildProperties buildProperties;
-
-  private static final String PUSHTX_AUTO = "auto";
-  private static final String PUSHTX_INTERACTIVE = "interactive";
 
   public CliConfigFile() {
     // warning: properties are NOT loaded yet
@@ -69,6 +72,7 @@ public abstract class CliConfigFile {
     this.proxy = copy.proxy;
     this.requestTimeout = copy.requestTimeout;
     this.api = new ApiConfig(copy.api);
+    this.externalDestination = new ExternalDestinationConfig(copy.externalDestination);
     this.mix = new MixConfig(copy.mix);
     this.buildProperties = copy.buildProperties;
   }
@@ -127,6 +131,14 @@ public abstract class CliConfigFile {
 
   public void setApiKey(String apiKey) {
     this.apiKey = apiKey;
+  }
+
+  public ExternalDestinationConfig getExternalDestination() {
+    return externalDestination;
+  }
+
+  public void setExternalDestination(ExternalDestinationConfig externalDestination) {
+    this.externalDestination = externalDestination;
   }
 
   public String getSeed() {
@@ -343,6 +355,83 @@ public abstract class CliConfigFile {
     }
   }
 
+  public static class ExternalDestinationConfig {
+    @NotEmpty private String xpub;
+    @NotEmpty private int chain;
+    @NotEmpty private int startIndex;
+    @NotEmpty private int mixs;
+    @NotEmpty private int mixsRandomFactor;
+
+    public ExternalDestinationConfig() {}
+
+    public ExternalDestinationConfig(ExternalDestinationConfig copy) {
+      this.xpub = copy.xpub;
+      this.chain = copy.chain;
+      this.startIndex = copy.startIndex;
+      this.mixs = copy.mixs;
+      this.mixsRandomFactor = copy.mixsRandomFactor;
+    }
+
+    public String getXpub() {
+      return xpub;
+    }
+
+    public void setXpub(String xpub) {
+      this.xpub = xpub;
+    }
+
+    public int getChain() {
+      return chain;
+    }
+
+    public void setChain(int chain) {
+      this.chain = chain;
+    }
+
+    public int getStartIndex() {
+      return startIndex;
+    }
+
+    public void setStartIndex(int startIndex) {
+      this.startIndex = startIndex;
+    }
+
+    public int getMixs() {
+      return mixs;
+    }
+
+    public void setMixs(int mixs) {
+      this.mixs = mixs;
+    }
+
+    public int getMixsRandomFactor() {
+      return mixsRandomFactor;
+    }
+
+    public void setMixsRandomFactor(int mixsRandomFactor) {
+      this.mixsRandomFactor = mixsRandomFactor;
+    }
+
+    public Map<String, String> getConfigInfo() {
+      Map<String, String> configInfo = new HashMap<>();
+      String externalDestination =
+          "xpub="
+              + (!StringUtils.isEmpty(xpub)
+                  ? xpub
+                      + ", chain="
+                      + chain
+                      + ", startIndex="
+                      + startIndex
+                      + ", mixs="
+                      + mixs
+                      + ", mixsRandomFactor="
+                      + mixsRandomFactor
+                  : "null");
+      configInfo.put("cli/externalDestination", externalDestination);
+      return configInfo;
+    }
+  }
+
   public static class TorConfig {
     @NotEmpty private String executable;
     private CliTorExecutableMode executableMode;
@@ -508,7 +597,9 @@ public abstract class CliConfigFile {
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
-      BackendApi backendApi) {
+      BackendApi backendApi,
+      String passphrase)
+      throws NotifiableException {
     String serverUrl = computeServerUrl();
     NetworkParameters params = server.getParams();
     ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
@@ -529,8 +620,34 @@ public abstract class CliConfigFile {
     config.setAutoMix(mix.isAutoMix());
     config.setOverspend(mix.getOverspend());
 
+    ExternalDestination ed = computeExternalDestination(passphrase);
+    config.setExternalDestination(ed);
+
     config.setResyncOnFirstRun(true);
     return config;
+  }
+
+  private ExternalDestination computeExternalDestination(String passphrase)
+      throws NotifiableException {
+    if (!Strings.isEmpty(this.externalDestination.xpub)
+        && this.externalDestination.chain >= 0
+        && this.externalDestination.mixs > 0
+        && this.externalDestination.mixsRandomFactor >= 0) {
+      try {
+        // decrypt externalDestination
+        String xpubDecrypted =
+            AESUtil.decrypt(this.externalDestination.xpub, new CharSequenceX(passphrase));
+        return new ExternalDestination(
+            xpubDecrypted,
+            this.externalDestination.chain,
+            this.externalDestination.startIndex,
+            this.externalDestination.mixs,
+            this.externalDestination.mixsRandomFactor);
+      } catch (Exception e) {
+        throw new NotifiableException("Invalid config value for: externalDestination.xpub");
+      }
+    }
+    return null;
   }
 
   public Map<String, String> getConfigInfo() {
@@ -550,6 +667,7 @@ public abstract class CliConfigFile {
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
     configInfo.putAll(api.getConfigInfo());
+    configInfo.putAll(externalDestination.getConfigInfo());
     configInfo.put("cli/buildVersion", getBuildVersion() != null ? getBuildVersion() : "null");
     return configInfo;
   }

@@ -2,13 +2,16 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CallbackWithArg;
+import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.utils.SortedProperties;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
@@ -41,6 +44,11 @@ public class CliConfigService {
   public static final String KEY_DOJO_ENABLED = "cli.dojo.enabled";
   private static final String KEY_VERSION = "cli.version";
   public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
+  private static final String KEY_EXTERNAL_DESTINATION_XPUB = "cli.externalDestination.xpub";
+  private static final String KEY_EXTERNAL_DESTINATION_CHAIN = "cli.externalDestination.chain";
+  private static final String KEY_EXTERNAL_DESTINATION_START_INDEX =
+      "cli.externalDestination.startIndex";
+  private static final String KEY_EXTERNAL_DESTINATION_MIXS = "cli.externalDestination.mixs";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -209,6 +217,62 @@ public class CliConfigService {
     Application.restart();
   }
 
+  public synchronized void setExternalDestination(
+      String xpub, int chain, int startIndex, int mixs, String passphrase) throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug(" • setExternalDestination");
+    }
+    if (StringUtils.isEmpty(xpub)) {
+      throw new NotifiableException("Invalid externalDestination.xpub");
+    }
+    // encrypt xpub
+    String xpubEncrypted = AESUtil.encrypt(xpub, new CharSequenceX(passphrase));
+    if (StringUtils.isEmpty(xpubEncrypted)) {
+      throw new NotifiableException("Invalid externalDestination.xpub");
+    }
+    if (chain < 0) {
+      throw new NotifiableException("Invalid externalDestination.chain");
+    }
+    if (startIndex < 0) {
+      throw new NotifiableException("Invalid externalDestination.startIndex");
+    }
+    if (mixs < 1) {
+      throw new NotifiableException("Invalid externalDestination.mixs");
+    }
+
+    // set
+    Properties props = loadProperties();
+    props.put(KEY_EXTERNAL_DESTINATION_XPUB, xpubEncrypted);
+    props.put(KEY_EXTERNAL_DESTINATION_CHAIN, Integer.toString(chain));
+    props.put(KEY_EXTERNAL_DESTINATION_START_INDEX, Integer.toString(startIndex));
+    props.put(KEY_EXTERNAL_DESTINATION_MIXS, Integer.toString(mixs));
+
+    // save
+    saveProperties(props);
+
+    // restart
+    Application.restart();
+  }
+
+  public synchronized void clearExternalDestination() throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug(" • clearExternalDestination");
+    }
+
+    // unset
+    Properties props = loadProperties();
+    props.remove(KEY_EXTERNAL_DESTINATION_XPUB);
+    props.remove(KEY_EXTERNAL_DESTINATION_CHAIN);
+    props.remove(KEY_EXTERNAL_DESTINATION_START_INDEX);
+    props.remove(KEY_EXTERNAL_DESTINATION_MIXS);
+
+    // save
+    saveProperties(props);
+
+    // restart
+    Application.restart();
+  }
+
   public synchronized void setVersion(int version) throws Exception {
     if (log.isDebugEnabled()) {
       log.debug("setVersion: " + version);
@@ -242,10 +306,13 @@ public class CliConfigService {
     log.warn("status -> " + error);
   }
 
-  protected synchronized void save(Properties props) throws Exception {
-    if (props.isEmpty()) {
+  protected synchronized void save(Properties unsortedProps) throws Exception {
+    if (unsortedProps.isEmpty()) {
       throw new IllegalArgumentException("Configuration to save is empty");
     }
+
+    // sort
+    final Properties props = new SortedProperties(unsortedProps);
 
     // log
     if (log.isDebugEnabled()) {

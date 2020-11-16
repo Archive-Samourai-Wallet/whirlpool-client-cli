@@ -9,6 +9,7 @@ import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import javax.annotation.PreDestroy;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,8 +168,12 @@ public class Application implements ApplicationRunner {
   }
 
   private static String[] computeRestartArgs() {
+    String[] ignoreArgs =
+        new String[] {
+          "--" + ApplicationArgs.ARG_INIT, "--" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB
+        };
     return Arrays.stream(applicationArguments.getSourceArgs())
-        .filter(a -> !a.toLowerCase().equals("--" + ApplicationArgs.ARG_INIT))
+        .filter(a -> !ArrayUtils.contains(ignoreArgs, a.toLowerCase()))
         .toArray(i -> new String[i]);
   }
 }

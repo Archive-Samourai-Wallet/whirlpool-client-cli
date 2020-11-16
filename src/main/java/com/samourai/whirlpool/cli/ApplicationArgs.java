@@ -18,21 +18,22 @@ public class ApplicationArgs {
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_DEBUG_CLIENT = "debug-client";
-  private static final String ARG_LIST_POOLS = "list-pools";
+  public static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_SCODE = "scode";
   private static final String ARG_CLIENTS = "clients";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_TX0_DELAY = "tx0-delay";
   private static final String ARG_TX0_MAX_OUTPUTS = "tx0-max-outputs";
-  private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
+  public static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_AUTO_TX0 = "auto-tx0";
   private static final String ARG_AUTO_MIX = "auto-mix";
   private static final String ARG_LISTEN = "listen";
   private static final String ARG_API_KEY = "api-key";
   public static final String ARG_INIT = "init";
+  public static final String ARG_SET_EXTERNAL_XPUB = "set-external-xpub";
   private static final String ARG_AUTHENTICATE = "authenticate";
-  private static final String ARG_DUMP_PAYLOAD = "dump-payload";
+  public static final String ARG_DUMP_PAYLOAD = "dump-payload";
   private static final String ARG_RESYNC = "resync";
 
   private ApplicationArguments args;
@@ -123,6 +124,10 @@ public class ApplicationArgs {
 
   public boolean isInit() {
     return args.containsOption(ARG_INIT);
+  }
+
+  public boolean isSetExternalXpub() {
+    return args.containsOption(ARG_SET_EXTERNAL_XPUB);
   }
 
   public boolean isAuthenticate() {

@@ -33,10 +33,9 @@ import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java8.util.Optional;
-import javax.crypto.AEADBadTagException;
+import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -90,9 +89,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     try {
       seedWords = decryptSeedWords(cliConfig.getSeed(), passphrase);
     } catch (Exception e) {
-      if (log.isDebugEnabled()
-          && !(e instanceof AEADBadTagException)
-          && !(e instanceof InvalidCipherTextException)) {
+      if (log.isDebugEnabled()) {
         log.debug("", e);
       }
       throw new AuthenticationException("Authentication failed: invalid passphrase?");
@@ -109,7 +106,10 @@ public class CliWalletService extends WhirlpoolWalletService {
       // identifier
       walletIdentifier = computeWalletIdentifier(seed, passphrase, params);
     } catch (MnemonicException e) {
-      throw new NotifiableException("Mnemonic failed: invalid passphrase?");
+      if (log.isDebugEnabled()) {
+        log.debug("", e);
+      }
+      throw new AuthenticationException("Authentication failed: invalid passphrase?");
     }
 
     // debug cliConfig
@@ -130,7 +130,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, backendApiService);
+            httpClientService, stompClientService, backendApiService, passphrase);
 
     String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
     String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();
@@ -185,7 +185,11 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
       throws Exception {
-    return AESUtil.decrypt(seedWordsEncrypted, new CharSequenceX(seedPassphrase));
+    String decrypted = AESUtil.decrypt(seedWordsEncrypted, new CharSequenceX(seedPassphrase));
+    if (StringUtils.isEmpty(decrypted)) {
+      throw new Exception("Invalid passphrase");
+    }
+    return decrypted;
   }
 
   protected String decryptApiKey(String apiKey, String seedPassphrase) throws Exception {

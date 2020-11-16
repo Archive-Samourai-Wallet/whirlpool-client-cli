@@ -46,21 +46,49 @@ public class CliUtils {
     message = "⣿ INPUT REQUIRED ⣿ " + message;
     String input;
     do {
-      input = readUserInput(message, secret, true);
+      input = readUserInput(message, secret);
     } while (input == null || !ArrayUtils.contains(allowedValues, input));
     return input;
+  }
+
+  public static boolean readUserInputRequiredBoolean(String message) {
+    String input =
+        CliUtils.readUserInputRequired(message, false, new String[] {"y", "n", "Y", "N"});
+    return input.toLowerCase().equals("y");
+  }
+
+  public static int readUserInputRequiredInt(String message, int minValue) {
+    return readUserInputRequiredInt(message, minValue, null);
+  }
+
+  public static int readUserInputRequiredInt(String message, int minValue, Integer defaultValue) {
+    while (true) {
+      String input = CliUtils.readUserInput(message, false);
+      // default value
+      if (defaultValue != null && StringUtils.isEmpty(input)) {
+        return defaultValue;
+      }
+      // numeric constraints
+      try {
+        int inputNumeric = Integer.parseInt(input);
+        if (inputNumeric >= minValue) {
+          return inputNumeric;
+        }
+      } catch (Exception e) {
+      }
+    }
   }
 
   public static String readUserInputRequired(String message, boolean secret) {
     message = "⣿ INPUT REQUIRED ⣿ " + message;
     String input;
     do {
-      input = readUserInput(message, secret, true);
+      input = readUserInput(message, secret);
     } while (input == null);
     return input;
   }
 
-  public static String readUserInput(String message, boolean secret, boolean scannerFallback) {
+  public static String readUserInput(String message, boolean secret) {
     Console console = System.console();
     String inviteMessage = message + ">";
 
@@ -69,7 +97,7 @@ public class CliUtils {
     if (console != null) {
       console.printf(inviteMessage);
       line = secret ? new String(console.readPassword()) : console.readLine();
-    } else if (scannerFallback) {
+    } else {
       // allow console redirection
       Scanner input = new Scanner(System.in);
       System.out.print(inviteMessage);
