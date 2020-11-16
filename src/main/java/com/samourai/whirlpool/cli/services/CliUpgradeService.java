@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class CliUpgradeService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final CliVersion CURRENT_VERSION = CliVersion.VERSION_5;
+  public static final CliVersion CURRENT_VERSION = CliVersion.VERSION_6;
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
@@ -56,6 +56,24 @@ public class CliUpgradeService {
               cliWallet.resync();
             } catch (Exception e) {
               log.error("", e);
+            }
+            return false;
+          }
+        });
+
+    // V6
+    this.upgrades.put(
+        CliVersion.VERSION_6.getVersion(),
+        new CliUpgradeAuth() {
+          @Override
+          public boolean run(CliWallet cliWallet) throws Exception {
+            // remove cli.mix.mixsTarget when present
+            Properties props = cliConfigService.loadProperties();
+            final String KEY_MIX_MIXSTARGET = "cli.mix.mixsTarget";
+            if (props.containsKey(KEY_MIX_MIXSTARGET)) {
+              props.remove(KEY_MIX_MIXSTARGET);
+              cliConfigService.saveProperties(props);
+              return true; // restart
             }
             return false;
           }
