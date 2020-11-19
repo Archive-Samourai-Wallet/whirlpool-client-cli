@@ -48,9 +48,7 @@ You can customize it for your needs:
 | cli.torConfig.backend.enabled | true | Enable Tor for wallet backend (when cli.tor=true) |
 | cli.torConfig.coordinator.onion | true | Use Tor hidden services (instead of clearnet over Tor) for whirlpool server |
 | cli.torConfig.backend.onion | true | Use Tor hidden services (instead of clearnet over Tor) for wallet backend |
-| cli.torConfig.executable | auto | `auto` : use embedded tor or detect a local Tor install when your system is not supported. |
-|  |  | `local` : detect a local tor install|
-|  |  | `/path/to/bin/tor` : use your own tor binary|
+| cli.torConfig.executable | auto | - `auto` : use embedded tor or detect a local Tor install when your system is not supported.<br/>- `local` : detect a local tor install<br/>- `/path/to/bin/tor` : use your own tor binary|
 | cli.torConfig.customTorrc |  | `/path/to/torrc` : custom tor configuration to append to Torrc|
 | cli.torConfig.fileCreationTimeout | 20 | Tor startup timeout (in seconds)|
 
@@ -85,9 +83,10 @@ You can configure your own cert:
 | cli.proxy | - | Custom proxy to connect through. |
 | cli.requestTimeout | 30000 | HTTP requests timeout |
 | cli.tx0MinConfirmations | 0 | Confirmations required for TX0 |
+| cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for max) |
 | cli.mix.clients | 5 | Max simultaneous mixing clients |
 | cli.mix.clientsPerPool | 1 | Max simultaneous mixing clients per pool |
-| cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for max = 70) |
+| cli.mix.liquidityClient | true | Enable 1 additional thread for remixing POSTMIXS simultaneously while mixing threads are busy with PREMIXS.<br/>When enabled, cli.mix.clientsPerPool may be excessed by 1. |
 | cli.mix.clientDelay | 15 | Connecting delay (seconds) between each mixing client |
 | cli.mix.tx0Delay | 30 | Delay (seconds) between each tx0 (when --auto-tx0) |
 | cli.seedAppendPassphrase | *generated on --init* | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
