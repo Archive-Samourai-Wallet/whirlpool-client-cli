@@ -5,7 +5,7 @@ import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import javax.validation.constraints.NotNull;
 
 public class ApiTx0PreviewRequest {
-  @NotNull public ApiUtxoRef[] inputs;
+  /*@NotNull TODO next release*/ public ApiUtxoRef[] inputs;
   @NotNull public Tx0FeeTarget feeTarget;
   @NotNull public String poolId;
 

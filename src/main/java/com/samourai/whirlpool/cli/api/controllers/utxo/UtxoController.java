@@ -89,6 +89,21 @@ public class UtxoController extends AbstractRestController {
     return new ApiTx0PreviewResponse(tx0Preview);
   }
 
+  @Deprecated // TODO remove on next release
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0_SINGLE_PREVIEW, method = RequestMethod.POST)
+  public ApiTx0PreviewResponse tx0PreviewSingle(
+      @RequestHeader HttpHeaders headers,
+      @PathVariable("hash") String utxoHash,
+      @PathVariable("index") int utxoIndex,
+      @Valid @RequestBody ApiTx0PreviewRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // forward to new API
+    payload.inputs = new ApiUtxoRef[] {new ApiUtxoRef(utxoHash, utxoIndex)};
+    return tx0Preview(headers, payload);
+  }
+
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0, method = RequestMethod.POST)
   public ApiTx0Response tx0(
       @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiTx0Request payload)
@@ -108,6 +123,21 @@ public class UtxoController extends AbstractRestController {
     Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
     Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxos, pool, payload.feeTarget, tx0Config);
     return new ApiTx0Response(tx0);
+  }
+
+  @Deprecated // TODO remove on next release
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0_SINGLE, method = RequestMethod.POST)
+  public ApiTx0Response tx0Single(
+      @RequestHeader HttpHeaders headers,
+      @PathVariable("hash") String utxoHash,
+      @PathVariable("index") int utxoIndex,
+      @Valid @RequestBody ApiTx0Request payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // forward to new API
+    payload.inputs = new ApiUtxoRef[] {new ApiUtxoRef(utxoHash, utxoIndex)};
+    return tx0(headers, payload);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_STARTMIX, method = RequestMethod.POST)

@@ -59,9 +59,9 @@ public class RunSetExternalXpub {
       log.info("⣿ WARNING!");
       log.info(CliUtils.LOG_SEPARATOR);
       log.info(
-          "⣿ Your funds will be automatically sent to external XPub after being mixed *at least* "
+          "⣿ Your funds will be automatically sent to external XPub after *at least* "
               + mixs
-              + " times. This number may randomly slightly increase to improve your privacy.");
+              + " (re)mixs. This threshold may randomly slightly increase to improve your privacy.");
       log.info("⣿ XPub: " + xpub);
       log.info("⣿ Derivation path: m/84'/" + chain + "'/" + startIndex + "+'");
       log.info("⣿ Sample destination addresses:");
