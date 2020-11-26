@@ -1,19 +1,10 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
+import javax.validation.constraints.NotEmpty;
+
 public class ApiUtxoRef {
-  private String hash;
-  private int index;
+  @NotEmpty public String hash;
+  @NotEmpty public int index;
 
-  public ApiUtxoRef(String hash, int index) {
-    this.hash = hash;
-    this.index = index;
-  }
-
-  public String getHash() {
-    return hash;
-  }
-
-  public int getIndex() {
-    return index;
-  }
+  public ApiUtxoRef() {}
 }

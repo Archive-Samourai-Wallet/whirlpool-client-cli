@@ -21,13 +21,10 @@ public class CliApiEndpoint {
 
   public static final String REST_UTXOS = REST_PREFIX + "utxos";
   public static final String REST_UTXO_CONFIGURE = REST_PREFIX + "utxos/{hash}:{index}";
-  public static final String REST_UTXO_TX0 = REST_PREFIX + "tx0";
-  public static final String REST_UTXO_TX0_PREVIEW = REST_PREFIX + "tx0/preview";
-  public static final String REST_UTXO_TX0_SINGLE = REST_PREFIX + "utxos/{hash}:{index}/tx0";
-  public static final String REST_UTXO_TX0_SINGLE_PREVIEW =
-      REST_PREFIX + "utxos/{hash}:{index}/tx0Preview";
   public static final String REST_UTXO_STARTMIX = REST_PREFIX + "utxos/{hash}:{index}/startMix";
   public static final String REST_UTXO_STOPMIX = REST_PREFIX + "utxos/{hash}:{index}/stopMix";
+  public static final String REST_TX0 = REST_PREFIX + "tx0";
+  public static final String REST_TX0_PREVIEW = REST_PREFIX + "tx0/preview";
 
   public static final String[] REST_ENDPOINTS =
       new String[] {
@@ -45,11 +42,9 @@ public class CliApiEndpoint {
         REST_MIX_STOP,
         REST_UTXOS,
         REST_UTXO_CONFIGURE,
-        REST_UTXO_TX0_PREVIEW,
-        REST_UTXO_TX0,
-        REST_UTXO_TX0_SINGLE_PREVIEW,
-        REST_UTXO_TX0_SINGLE,
         REST_UTXO_STARTMIX,
-        REST_UTXO_STOPMIX
+        REST_UTXO_STOPMIX,
+        REST_TX0_PREVIEW,
+        REST_TX0
       };
 }
