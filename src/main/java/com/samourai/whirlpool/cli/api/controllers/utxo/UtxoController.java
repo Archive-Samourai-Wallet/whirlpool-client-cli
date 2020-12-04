@@ -85,7 +85,8 @@ public class UtxoController extends AbstractRestController {
     // tx0 preview
     Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
     Tx0Preview tx0Preview =
-        whirlpoolWallet.tx0Preview(whirlpoolUtxos, pool, tx0Config, payload.feeTarget);
+        whirlpoolWallet.tx0Preview(
+            whirlpoolUtxos, pool, tx0Config, payload.tx0FeeTarget, payload.mixFeeTarget);
     return new ApiTx0PreviewResponse(tx0Preview);
   }
 
@@ -106,7 +107,9 @@ public class UtxoController extends AbstractRestController {
 
     // tx0
     Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxos, pool, payload.feeTarget, tx0Config);
+    Tx0 tx0 =
+        whirlpoolWallet.tx0(
+            whirlpoolUtxos, pool, payload.tx0FeeTarget, payload.mixFeeTarget, tx0Config);
     return new ApiTx0Response(tx0);
   }
 

@@ -11,17 +11,24 @@ public class ApiPoolsResponse {
   private Collection<ApiPool> pools;
 
   public ApiPoolsResponse(
-      Collection<Pool> pools, Tx0FeeTarget feeTarget, WhirlpoolWallet whirlpoolWallet) {
+      Collection<Pool> pools,
+      Tx0FeeTarget tx0FeeTarget,
+      Tx0FeeTarget mixFeeTarget,
+      WhirlpoolWallet whirlpoolWallet) {
     this.pools =
         pools
             .stream()
-            .map(pool -> computeApiPool(pool, feeTarget, whirlpoolWallet))
+            .map(pool -> computeApiPool(pool, tx0FeeTarget, mixFeeTarget, whirlpoolWallet))
             .collect(Collectors.toList());
   }
 
   private ApiPool computeApiPool(
-      Pool pool, Tx0FeeTarget feeTarget, WhirlpoolWallet whirlpoolWallet) {
-    long tx0BalanceMin = whirlpoolWallet.computeTx0SpendFromBalanceMin(pool, feeTarget);
+      Pool pool,
+      Tx0FeeTarget tx0FeeTarget,
+      Tx0FeeTarget mixFeeTarget,
+      WhirlpoolWallet whirlpoolWallet) {
+    long tx0BalanceMin =
+        whirlpoolWallet.computeTx0SpendFromBalanceMin(pool, tx0FeeTarget, mixFeeTarget);
     return new ApiPool(pool, tx0BalanceMin);
   }
 

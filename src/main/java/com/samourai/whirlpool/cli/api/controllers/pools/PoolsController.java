@@ -22,11 +22,13 @@ public class PoolsController extends AbstractRestController {
   public ApiPoolsResponse pools(
       @RequestParam(value = "tx0FeeTarget", defaultValue = "BLOCKS_24")
           Tx0FeeTarget tx0FeeTarget, // Tx0FeeTarget.MIN
+      @RequestParam(value = "mixFeeTarget", defaultValue = "BLOCKS_24")
+          Tx0FeeTarget mixFeeTarget, // Tx0FeeTarget.MIN
       @RequestHeader HttpHeaders headers)
       throws Exception {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     Collection<Pool> pools = whirlpoolWallet.getPoolSupplier().getPools();
-    return new ApiPoolsResponse(pools, tx0FeeTarget, whirlpoolWallet);
+    return new ApiPoolsResponse(pools, tx0FeeTarget, mixFeeTarget, whirlpoolWallet);
   }
 }

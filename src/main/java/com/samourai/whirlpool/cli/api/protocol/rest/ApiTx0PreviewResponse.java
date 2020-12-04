@@ -3,7 +3,9 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 import com.samourai.whirlpool.client.tx0.Tx0Preview;
 
 public class ApiTx0PreviewResponse {
-  private long minerFee;
+  private long tx0MinerFee;
+  private long mixMinerFee;
+  private long premixMinerFee;
   private long feeValue;
   private long feeChange;
   private long premixValue;
@@ -12,7 +14,9 @@ public class ApiTx0PreviewResponse {
   private int feeDiscountPercent;
 
   public ApiTx0PreviewResponse(Tx0Preview tx0Preview) {
-    this.minerFee = tx0Preview.getMinerFee();
+    this.tx0MinerFee = tx0Preview.getTx0MinerFee();
+    this.mixMinerFee = tx0Preview.getMixMinerFee();
+    this.premixMinerFee = tx0Preview.getPremixMinerFee();
     this.feeValue = tx0Preview.getFeeValue();
     this.feeChange = tx0Preview.getFeeChange();
     this.premixValue = tx0Preview.getPremixValue();
@@ -21,8 +25,16 @@ public class ApiTx0PreviewResponse {
     this.feeDiscountPercent = tx0Preview.getFeeDiscountPercent();
   }
 
-  public long getMinerFee() {
-    return minerFee;
+  public long getTx0MinerFee() {
+    return tx0MinerFee;
+  }
+
+  public long getMixMinerFee() {
+    return mixMinerFee;
+  }
+
+  public long getPremixMinerFee() {
+    return premixMinerFee;
   }
 
   public long getFeeValue() {

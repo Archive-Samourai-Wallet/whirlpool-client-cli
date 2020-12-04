@@ -7,7 +7,8 @@ import javax.validation.constraints.NotNull;
 
 public class ApiTx0PreviewRequest {
   @NotEmpty public ApiUtxoRef[] inputs;
-  @NotNull public Tx0FeeTarget feeTarget;
+  @NotNull public Tx0FeeTarget tx0FeeTarget;
+  @NotNull public Tx0FeeTarget mixFeeTarget;
   @NotEmpty public String poolId;
 
   public ApiTx0PreviewRequest() {}

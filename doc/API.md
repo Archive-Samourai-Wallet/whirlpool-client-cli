@@ -13,9 +13,10 @@ It can be used by whirlpool-gui or any REST client.
 
 ## Pools
 
-### List pools: ```GET /rest/pools[?tx0FeeTarget=BLOCKS_24]```
+### List pools: ```GET /rest/pools[?tx0FeeTarget=BLOCKS_24&?mixFeeTarget=BLOCKS_24]```
 Parameters:
 * (optional) tx0FeeTarget: tx0 fee target for tx0BalanceMin computation
+* (optional) mixFeeTarget: mix fee target for tx0BalanceMin computation
 
 Response:
 ```
@@ -138,14 +139,16 @@ Response:
 ### Tx0 preview ```POST /rest/tx0/preview```
 Payload:
 * inputs {hash, index} (mandatory): utxos to spend for tx0
-* feeTarget (mandatory): fee target for tx0
+* tx0FeeTarget (mandatory): fee target for tx0
+* mixFeeTarget (mandatory): fee target for mix
 * poolId (optional): override utxo's poolId
 ```
 {
     inputs: [
         {hash:"c7f456d5ff002faa89dadec01cc5eb98bb00fdefb92031890324ec127f9d1541", index:5}
     ],
-    feeTarget: "BLOCKS_4",
+    tx0FeeTarget: "BLOCKS_4",
+    mixFeeTarget: "BLOCKS_6",
     poolId: "0.01btc"
 }
 ```
@@ -161,14 +164,16 @@ Response:
 ### Tx0 ```POST /rest/tx0```
 Payload:
 * inputs {hash, index} (mandatory): utxos to spend for tx0
-* feeTarget (mandatory): fee target for tx0
+* tx0FeeTarget (mandatory): fee target for tx0
+* mixFeeTarget (mandatory): fee target for mix
 * poolId (optional): override utxo's poolId
 ```
 {
     inputs: [
         {hash:"c7f456d5ff002faa89dadec01cc5eb98bb00fdefb92031890324ec127f9d1541", index:5}
     ],
-    feeTarget: "BLOCKS_4",
+    tx0FeeTarget: "BLOCKS_4",
+    mixFeeTarget: "BLOCKS_6",
     poolId: "0.01btc"
 }
 ```
