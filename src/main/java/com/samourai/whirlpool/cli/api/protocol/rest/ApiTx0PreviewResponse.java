@@ -9,6 +9,7 @@ public class ApiTx0PreviewResponse {
   private long premixValue;
   private long changeValue;
   private int nbPremix;
+  private int feeDiscountPercent;
 
   public ApiTx0PreviewResponse(Tx0Preview tx0Preview) {
     this.minerFee = tx0Preview.getMinerFee();
@@ -17,6 +18,7 @@ public class ApiTx0PreviewResponse {
     this.premixValue = tx0Preview.getPremixValue();
     this.changeValue = tx0Preview.getChangeValue();
     this.nbPremix = tx0Preview.getNbPremix();
+    this.feeDiscountPercent = tx0Preview.getFeeDiscountPercent();
   }
 
   public long getMinerFee() {
@@ -41,5 +43,9 @@ public class ApiTx0PreviewResponse {
 
   public int getNbPremix() {
     return nbPremix;
+  }
+
+  public int getFeeDiscountPercent() {
+    return feeDiscountPercent;
   }
 }
