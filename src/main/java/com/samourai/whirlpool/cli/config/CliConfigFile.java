@@ -211,6 +211,8 @@ public abstract class CliConfigFile {
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
+    @NotEmpty private int tx0FakeOutputRandomFactor;
+    @NotEmpty private int tx0FakeOutputMinValue;
     @NotEmpty private boolean autoMix;
     private Map<String, Long> overspend;
 
@@ -223,6 +225,8 @@ public abstract class CliConfigFile {
       this.clientDelay = copy.clientDelay;
       this.tx0Delay = copy.tx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
+      this.tx0FakeOutputRandomFactor = copy.tx0FakeOutputRandomFactor;
+      this.tx0FakeOutputMinValue = copy.tx0FakeOutputMinValue;
       this.autoMix = copy.autoMix;
       this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
     }
@@ -276,6 +280,22 @@ public abstract class CliConfigFile {
       this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
+    public int getTx0FakeOutputRandomFactor() {
+      return tx0FakeOutputRandomFactor;
+    }
+
+    public void setTx0FakeOutputRandomFactor(int tx0FakeOutputRandomFactor) {
+      this.tx0FakeOutputRandomFactor = tx0FakeOutputRandomFactor;
+    }
+
+    public int getTx0FakeOutputMinValue() {
+      return tx0FakeOutputMinValue;
+    }
+
+    public void setTx0FakeOutputMinValue(int tx0FakeOutputMinValue) {
+      this.tx0FakeOutputMinValue = tx0FakeOutputMinValue;
+    }
+
     public boolean isAutoMix() {
       return autoMix;
     }
@@ -300,6 +320,9 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/tx0Delay", Integer.toString(tx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
+      configInfo.put(
+          "cli/mix/tx0FakeOutputRandomFactor", Integer.toString(tx0FakeOutputRandomFactor));
+      configInfo.put("cli/mix/tx0FakeOutputMinValue", Integer.toString(tx0FakeOutputMinValue));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
       return configInfo;
@@ -617,6 +640,8 @@ public abstract class CliConfigFile {
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
+    config.setTx0FakeOutputRandomFactor(mix.getTx0FakeOutputRandomFactor());
+    config.setTx0FakeOutputMinValue(mix.getTx0FakeOutputMinValue());
     config.setAutoMix(mix.isAutoMix());
     config.setOverspend(mix.getOverspend());
 

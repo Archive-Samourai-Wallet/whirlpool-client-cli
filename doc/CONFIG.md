@@ -84,6 +84,8 @@ You can configure your own cert:
 | cli.requestTimeout | 30000 | HTTP requests timeout |
 | cli.tx0MinConfirmations | 0 | Confirmations required for TX0 |
 | cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for max) |
+| cli.mix.tx0FakeOutputRandomFactor | 4 | Random factor for generating a second change output to simulate a multi-user TX0 (0=disable, 1=always, 2=1/2 probability, 3=1/3 probability...) |
+| cli.mix.tx0FakeOutputMinValue | 10000 | Minimum value per change output when using TX0 fake output |
 | cli.mix.clients | 5 | Max simultaneous mixing clients.<br/>(Increasing this value won't make you mix faster.) |
 | cli.mix.clientsPerPool | 1 | Max simultaneous mixing clients per pool.<br/>(Increasing this value won't make you mix faster.) |
 | cli.mix.liquidityClient | true | Enable 1 additional thread for remixing POSTMIXS simultaneously while mixing threads are busy with PREMIXS.<br/>When enabled, cli.mix.clientsPerPool may be excessed by 1. |

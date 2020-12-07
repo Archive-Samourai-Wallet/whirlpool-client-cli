@@ -29,6 +29,9 @@ public class ApiCliConfig {
   private static final String KEY_MIX_CLIENTS_PER_POOL = "cli.mix.clientsPerPool";
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
+  private static final String KEY_MIX_TX0_FAKE_OUTPUT_RANDOM_FACTOR =
+      "cli.mix.tx0FakeOutputRandomFactor";
+  private static final String KEY_MIX_TX0_FAKE_OUTPUT_MIN_VALUE = "cli.mix.tx0FakeOutputMinValue";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
   public static final String KEY_API_HTTP_ENABLE = "cli.api.http-enable";
 
@@ -126,6 +129,8 @@ public class ApiCliConfig {
     private Integer clientsPerPool;
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
+    private Integer tx0FakeOutputRandomFactor;
+    private Integer tx0FakeOutputMinValue;
     private Boolean autoMix;
 
     public ApiMixConfig() {}
@@ -134,6 +139,8 @@ public class ApiCliConfig {
       this.clientsPerPool = mixConfig.getClientsPerPool();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
+      this.tx0FakeOutputRandomFactor = mixConfig.getTx0FakeOutputRandomFactor();
+      this.tx0FakeOutputMinValue = mixConfig.getTx0FakeOutputMinValue();
       this.autoMix = mixConfig.isAutoMix();
     }
 
@@ -155,6 +162,13 @@ public class ApiCliConfig {
           throw new NotifiableException("mix.tx0MaxOutputs should be >= 0");
         }
         props.put(KEY_MIX_TX0_MAX_OUTPUTS, Integer.toString(tx0MaxOutputs));
+      }
+      if (tx0FakeOutputRandomFactor != null) {
+        props.put(
+            KEY_MIX_TX0_FAKE_OUTPUT_RANDOM_FACTOR, Integer.toString(tx0FakeOutputRandomFactor));
+      }
+      if (tx0FakeOutputMinValue != null) {
+        props.put(KEY_MIX_TX0_FAKE_OUTPUT_MIN_VALUE, Integer.toString(tx0FakeOutputMinValue));
       }
       if (autoMix != null) {
         props.put(KEY_MIX_AUTO_MIX, Boolean.toString(autoMix));
@@ -183,6 +197,22 @@ public class ApiCliConfig {
 
     public void setTx0MaxOutputs(Integer tx0MaxOutputs) {
       this.tx0MaxOutputs = tx0MaxOutputs;
+    }
+
+    public Integer getTx0FakeOutputRandomFactor() {
+      return tx0FakeOutputRandomFactor;
+    }
+
+    public void setTx0FakeOutputRandomFactor(Integer tx0FakeOutputRandomFactor) {
+      this.tx0FakeOutputRandomFactor = tx0FakeOutputRandomFactor;
+    }
+
+    public Integer getTx0FakeOutputMinValue() {
+      return tx0FakeOutputMinValue;
+    }
+
+    public void setTx0FakeOutputMinValue(Integer tx0FakeOutputMinValue) {
+      this.tx0FakeOutputMinValue = tx0FakeOutputMinValue;
     }
 
     public Boolean getAutoMix() {
