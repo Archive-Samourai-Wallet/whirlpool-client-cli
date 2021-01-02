@@ -117,25 +117,6 @@ Response:
 }
 ```
 
-### Configure utxo: ```POST /rest/utxos/{hash}:{index}```
-Parameters:
-* hash, index: utxo to configure
-
-Payload:
-* poolId: id of pool to join
-```
-{
-    poolId: "0.01btc"
-}
-```
-
-Response:
-```
-{
-    (utxo detail)
-}
-```
-
 ### Tx0 preview ```POST /rest/tx0/preview```
 Payload:
 * inputs {hash, index} (mandatory): utxos to spend for tx0

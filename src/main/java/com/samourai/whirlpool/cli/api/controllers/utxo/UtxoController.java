@@ -2,7 +2,6 @@ package com.samourai.whirlpool.cli.api.controllers.utxo;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxo;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoRef;
 import com.samourai.whirlpool.cli.api.protocol.rest.*;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -45,26 +44,6 @@ public class UtxoController extends AbstractRestController {
       whirlpoolUtos.add(whirlpoolUtxo);
     }
     return whirlpoolUtos;
-  }
-
-  @RequestMapping(value = CliApiEndpoint.REST_UTXO_CONFIGURE, method = RequestMethod.POST)
-  public ApiUtxo configureUtxo(
-      @RequestHeader HttpHeaders headers,
-      @PathVariable("hash") String utxoHash,
-      @PathVariable("index") int utxoIndex,
-      @Valid @RequestBody ApiUtxoConfigureRequest payload)
-      throws Exception {
-    checkHeaders(headers);
-
-    // find utxo
-    WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-
-    // configure pool
-    whirlpoolWallet.setPool(whirlpoolUtxo, payload.poolId);
-
-    ApiUtxo apiUtxo = new ApiUtxo(whirlpoolUtxo);
-    return apiUtxo;
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_TX0_PREVIEW, method = RequestMethod.POST)

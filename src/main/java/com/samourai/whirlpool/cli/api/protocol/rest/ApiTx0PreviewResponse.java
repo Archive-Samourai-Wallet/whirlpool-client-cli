@@ -6,6 +6,8 @@ public class ApiTx0PreviewResponse {
   private long tx0MinerFee;
   private long mixMinerFee;
   private long premixMinerFee;
+  private int tx0MinerFeePrice;
+  private int mixMinerFeePrice;
   private long feeValue;
   private long feeChange;
   private long premixValue;
@@ -17,6 +19,8 @@ public class ApiTx0PreviewResponse {
     this.tx0MinerFee = tx0Preview.getTx0MinerFee();
     this.mixMinerFee = tx0Preview.getMixMinerFee();
     this.premixMinerFee = tx0Preview.getPremixMinerFee();
+    this.tx0MinerFeePrice = tx0Preview.getTx0MinerFeePrice();
+    this.mixMinerFeePrice = tx0Preview.getMixMinerFeePrice();
     this.feeValue = tx0Preview.getFeeValue();
     this.feeChange = tx0Preview.getFeeChange();
     this.premixValue = tx0Preview.getPremixValue();
@@ -35,6 +39,14 @@ public class ApiTx0PreviewResponse {
 
   public long getPremixMinerFee() {
     return premixMinerFee;
+  }
+
+  public int getTx0MinerFeePrice() {
+    return tx0MinerFeePrice;
+  }
+
+  public int getMixMinerFeePrice() {
+    return mixMinerFeePrice;
   }
 
   public long getFeeValue() {
