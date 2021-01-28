@@ -29,6 +29,7 @@ Response:
             "mustMixBalanceMin":10000102,
             "mustMixBalanceMax":10010000,
             "minAnonymitySet":5,
+            "tx0MaxOutputs":70,
             "nbRegistered":0,
             "mixAnonymitySet":5,
             "mixStatus":"CONFIRM_INPUT",

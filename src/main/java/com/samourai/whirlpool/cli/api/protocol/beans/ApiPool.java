@@ -11,6 +11,7 @@ public class ApiPool {
   private long mustMixBalanceCap;
   private long mustMixBalanceMax;
   private int minAnonymitySet;
+  private int tx0MaxOutputs;
   private int nbRegistered;
   private int mixAnonymitySet;
   private MixStatus mixStatus;
@@ -28,6 +29,7 @@ public class ApiPool {
     this.mustMixBalanceCap = pool.getMustMixBalanceCap();
     this.mustMixBalanceMax = pool.getMustMixBalanceMax();
     this.minAnonymitySet = pool.getMinAnonymitySet();
+    this.tx0MaxOutputs = pool.getTx0MaxOutputs();
     this.nbRegistered = pool.getNbRegistered();
     this.mixAnonymitySet = pool.getMixAnonymitySet();
     this.mixStatus = pool.getMixStatus();
@@ -62,6 +64,10 @@ public class ApiPool {
 
   public int getMinAnonymitySet() {
     return minAnonymitySet;
+  }
+
+  public int getTx0MaxOutputs() {
+    return tx0MaxOutputs;
   }
 
   public int getNbRegistered() {
