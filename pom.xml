@@ -85,7 +85,7 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>jtorctl</artifactId>
-            <version>0.2-samourai</version>
+            <version>0.2.1-samourai</version>
         </dependency>
         <!-- test -->
         <dependency>

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import net.freehaven.tor.control.NullEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
@@ -37,6 +38,9 @@ public class TorOnionProxyInstance {
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
     }
+
+    // hardlink to JTorCtl just to make sure it was successfully compiled
+    new NullEventHandler();
 
     JavaOnionProxyContext context = new JavaOnionProxyContext(torConfig, torInstaller, torSettings);
     onionProxyManager = new OnionProxyManager(context);
