@@ -46,7 +46,7 @@ public class BackendApiTest extends AbstractTest {
   public void fetchAddress() throws Exception {
     String zpub = VPUB_1;
     MultiAddrResponse.Address address = backendApi.fetchAddress(zpub);
-    assertAddressEquals(address, zpub, 63, 7, 1000000);
+    assertAddressEquals(address, zpub, 63, 7, 0);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class BackendApiTest extends AbstractTest {
     for (String zpub : zpubs) {
       Assertions.assertTrue(addresses.containsKey(zpub));
     }
-    assertAddressEquals(addresses.get(VPUB_1), VPUB_1, 63, 7, 1000000);
+    assertAddressEquals(addresses.get(VPUB_1), VPUB_1, 63, 7, 0);
     assertAddressEquals(addresses.get(VPUB_2), VPUB_2, 0, 0, 0);
   }
 
@@ -65,14 +65,14 @@ public class BackendApiTest extends AbstractTest {
   public void fetchUtxos() throws Exception {
     String zpub = VPUB_1;
     List<UnspentOutput> unspentOutputs = Lists.of(backendApi.fetchWallet(zpub).unspent_outputs);
-    Assertions.assertEquals(1, unspentOutputs.size());
+    Assertions.assertEquals(0, unspentOutputs.size());
   }
 
   @Test
   public void fetchUtxosMulti() throws Exception {
     String[] zpubs = new String[] {VPUB_1, VPUB_2};
     List<UnspentOutput> unspentOutputs = Lists.of(backendApi.fetchWallet(zpubs).unspent_outputs);
-    Assertions.assertEquals(1, unspentOutputs.size());
+    Assertions.assertEquals(0, unspentOutputs.size());
   }
 
   @Test
@@ -80,10 +80,10 @@ public class BackendApiTest extends AbstractTest {
     String[] zpubs = new String[] {VPUB_1, VPUB_2};
     WalletResponse walletResponse = backendApi.fetchWallet(zpubs);
 
-    Assertions.assertTrue(walletResponse.unspent_outputs.length > 0);
+    Assertions.assertEquals(0, walletResponse.unspent_outputs.length);
 
     Map<String, WalletResponse.Address> addressesMap = walletResponse.getAddressesMap();
-    assertAddressEquals(addressesMap.get(VPUB_1), VPUB_1, 63, 7, 1000000);
+    assertAddressEquals(addressesMap.get(VPUB_1), VPUB_1, 63, 7, 0);
     assertAddressEquals(addressesMap.get(VPUB_2), VPUB_2, 0, 0, 0);
 
     Assertions.assertTrue(walletResponse.txs.length > 0);
