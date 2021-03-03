@@ -6,8 +6,12 @@ import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
+import java.nio.ByteBuffer;
 import org.apache.commons.lang3.StringUtils;
+import org.bitcoinj.core.AddressFormatException;
+import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.NetworkParameters;
+import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +38,7 @@ public class RunSetExternalXpub {
 
     // xpub
     log.info("⣿ • Paste external BIP84 XPub here (or <enter> to unset current destination):");
-    String xpub = readXpub();
+    String xpub = readXpub(params);
     if (xpub != null) {
       // chain
       log.info("⣿ • Chain for XPub derivation path m/84'/<chain>' (use 0 for standard):");
@@ -98,16 +102,18 @@ public class RunSetExternalXpub {
     log.info(CliUtils.LOG_SEPARATOR);
   }
 
-  private String readXpub() {
+  private String readXpub(NetworkParameters params) {
     while (true) {
-      String input = CliUtils.readUserInput("XPub or <enter> to unset?", false);
+      String zpubOrVpub = formatUtil.isTestNet(params) ? "VPub" : "ZPub";
+      String input = CliUtils.readUserInput(zpubOrVpub + " or <enter> to unset?", false);
       if (StringUtils.isEmpty(input)) {
         // clear current xpub
         return null;
       } else {
         try {
-          if (!formatUtil.isValidXpub(input)) {
-            throw new NotifiableException("Invalid BIP84 XPub");
+          // if (!formatUtil.isValidXpub(input)) {
+          if (!isValidXpubBip84(input, params)) {
+            throw new NotifiableException("Invalid " + zpubOrVpub);
           }
           return input;
         } catch (Exception e) {
@@ -115,6 +121,54 @@ public class RunSetExternalXpub {
         }
         log.info("⣿ ");
       }
+    }
+  }
+
+  // TODO use extlibj
+  private static final int MAGIC_ZPUB = 0x04B24746;
+  private static final int MAGIC_VPUB = 0x045F1CF6;
+
+  public boolean isValidXpubBip84(String xpub, NetworkParameters params) {
+    int magic = formatUtil.isTestNet(params) ? MAGIC_VPUB : MAGIC_ZPUB;
+    return isValidXpub(xpub, magic);
+  }
+
+  private boolean isValidXpub(String xpub, int... versions) {
+
+    try {
+      byte[] xpubBytes = Base58.decodeChecked(xpub);
+
+      if (xpubBytes.length != 78) {
+        return false;
+      }
+
+      ByteBuffer byteBuffer = ByteBuffer.wrap(xpubBytes);
+      int version = byteBuffer.getInt();
+      if (!Arrays.contains(versions, version)) {
+        throw new AddressFormatException("invalid version: " + xpub);
+      } else {
+
+        byte[] chain = new byte[32];
+        byte[] pub = new byte[33];
+        // depth:
+        byteBuffer.get();
+        // parent fingerprint:
+        byteBuffer.getInt();
+        // child no.
+        byteBuffer.getInt();
+        byteBuffer.get(chain);
+        byteBuffer.get(pub);
+
+        ByteBuffer pubBytes = ByteBuffer.wrap(pub);
+        int firstByte = pubBytes.get();
+        if (firstByte == 0x02 || firstByte == 0x03) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } catch (Exception e) {
+      return false;
     }
   }
 }
