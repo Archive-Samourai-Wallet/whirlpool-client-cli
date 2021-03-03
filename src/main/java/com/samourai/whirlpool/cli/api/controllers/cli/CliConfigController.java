@@ -38,6 +38,9 @@ public class CliConfigController extends AbstractRestController {
 
     ApiCliConfig apiCliConfig = payload.getConfig();
     cliConfigService.setApiConfig(apiCliConfig);
+
+    // restart
+    Application.restart();
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_CONFIG, method = RequestMethod.DELETE)

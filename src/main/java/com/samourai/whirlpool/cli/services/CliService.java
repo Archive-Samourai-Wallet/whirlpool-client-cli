@@ -92,6 +92,12 @@ public class CliService {
     return dirFileLock;
   }
 
+  private void unlockDirectory(FileLock dirFileLock) throws Exception {
+    ClientUtils.unlockFile(dirFileLock);
+    File dirLockFile = computeDirLockFile();
+    dirLockFile.delete();
+  }
+
   public CliResult run(boolean listen) throws Exception {
     String[] args = appArgs.getApplicationArguments().getSourceArgs();
 
@@ -220,8 +226,7 @@ public class CliService {
         return CliResult.KEEP_RUNNING;
       }
     } finally {
-      ClientUtils.unlockFile(dirFileLock);
-      computeDirLockFile().delete();
+      unlockDirectory(dirFileLock);
     }
   }
 

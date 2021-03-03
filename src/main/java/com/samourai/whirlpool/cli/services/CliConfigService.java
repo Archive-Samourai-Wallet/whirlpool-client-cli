@@ -5,7 +5,6 @@ import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CallbackWithArg;
 import com.samourai.wallet.util.CharSequenceX;
-import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
@@ -213,8 +212,8 @@ public class CliConfigService {
     // save
     saveProperties(props);
 
-    // restart
-    Application.restart();
+    // restart needed
+    this.setCliStatusNotReady("ApiConfig updated. Restarting CLI...");
   }
 
   public synchronized void setExternalDestination(
@@ -250,8 +249,8 @@ public class CliConfigService {
     // save
     saveProperties(props);
 
-    // restart
-    Application.restart();
+    // restart needed
+    this.setCliStatusNotReady("ExternalDestination updated. Restarting CLI...");
   }
 
   public synchronized void clearExternalDestination() throws Exception {
@@ -269,8 +268,8 @@ public class CliConfigService {
     // save
     saveProperties(props);
 
-    // restart
-    Application.restart();
+    // restart needed
+    this.setCliStatusNotReady("ExternalDestination updated. Restarting CLI...");
   }
 
   public synchronized void setVersion(int version) throws Exception {
