@@ -41,21 +41,21 @@ public class RunSetExternalXpub {
     String xpub = readXpub(params);
     if (xpub != null) {
       // chain
-      log.info("⣿ • Chain for XPub derivation path m/84'/<chain>' (use 0 for standard):");
+      log.info("⣿ • Chain for derivation path m/84'/<chain>' (use 0 for standard):");
       int chain = CliUtils.readUserInputRequiredInt("Chain?(0)", 0, 0);
       log.info("⣿ ");
 
       // startIndex
       log.info(
-          "⣿ • Starting index for XPub derivation path m/84'/"
+          "⣿ • Starting index for derivation path m/84'/"
               + chain
               + "'/<starting index>' (use 0 for standard):");
       int startIndex = CliUtils.readUserInputRequiredInt("Starting index?(0)", 0, 0);
       log.info("⣿ ");
 
       // mixs
-      log.info("⣿ • Number of mixs to achieve before sending funds to XPub (>0):");
-      int mixs = CliUtils.readUserInputRequiredInt("Mixs?", 1);
+      log.info("⣿ • Number of mixs to achieve before sending funds:");
+      int mixs = CliUtils.readUserInputRequiredInt("Mixs?(>0)", 1);
       log.info("⣿ ");
 
       // print addresses
@@ -104,16 +104,15 @@ public class RunSetExternalXpub {
 
   private String readXpub(NetworkParameters params) {
     while (true) {
-      String zpubOrVpub = formatUtil.isTestNet(params) ? "VPub" : "ZPub";
-      String input = CliUtils.readUserInput(zpubOrVpub + " or <enter> to unset?", false);
+      String input = CliUtils.readUserInput("External BIP84 XPub/ZPub or <enter> to unset?", false);
       if (StringUtils.isEmpty(input)) {
         // clear current xpub
         return null;
       } else {
         try {
           // if (!formatUtil.isValidXpub(input)) {
-          if (!isValidXpubBip84(input, params)) {
-            throw new NotifiableException("Invalid " + zpubOrVpub);
+          if (!isValidXpubOrZpub(input, params)) {
+            throw new NotifiableException("Invalid BIP84 XPub/ZPub");
           }
           return input;
         } catch (Exception e) {
@@ -127,9 +126,14 @@ public class RunSetExternalXpub {
   // TODO use extlibj
   private static final int MAGIC_ZPUB = 0x04B24746;
   private static final int MAGIC_VPUB = 0x045F1CF6;
+  public static final int MAGIC_TPUB = 0x043587CF;
+  public static final int MAGIC_XPUB = 0x0488B21E;
 
-  public boolean isValidXpubBip84(String xpub, NetworkParameters params) {
-    int magic = formatUtil.isTestNet(params) ? MAGIC_VPUB : MAGIC_ZPUB;
+  public boolean isValidXpubOrZpub(String xpub, NetworkParameters params) {
+    int[] magic =
+        formatUtil.isTestNet(params)
+            ? new int[] {MAGIC_VPUB, MAGIC_TPUB}
+            : new int[] {MAGIC_ZPUB, MAGIC_XPUB};
     return isValidXpub(xpub, magic);
   }
 
