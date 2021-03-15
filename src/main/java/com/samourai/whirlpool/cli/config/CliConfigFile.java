@@ -438,20 +438,20 @@ public abstract class CliConfigFile {
 
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
-      String externalDestination =
-          "xpub="
-              + (!StringUtils.isEmpty(xpub)
-                  ? xpub
-                      + ", chain="
-                      + chain
-                      + ", startIndex="
-                      + startIndex
-                      + ", mixs="
-                      + mixs
-                      + ", mixsRandomFactor="
-                      + mixsRandomFactor
-                  : "null");
-      configInfo.put("cli/externalDestination", externalDestination);
+      String str =
+          (!StringUtils.isEmpty(xpub)
+              ? "xpub="
+                  + xpub
+                  + ", chain="
+                  + chain
+                  + ", startIndex="
+                  + startIndex
+                  + ", mixs="
+                  + mixs
+                  + ", mixsRandomFactor="
+                  + mixsRandomFactor
+              : "null");
+      configInfo.put("cli/externalDestination", str);
       return configInfo;
     }
   }

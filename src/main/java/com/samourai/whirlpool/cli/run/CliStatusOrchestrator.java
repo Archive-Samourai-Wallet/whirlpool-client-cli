@@ -72,6 +72,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
               + (cliConfig.getTor() ? " +Tor" : "")
               + (cliConfig.isDojoEnabled() ? " +Dojo" : "")
+              + (walletConfig.getExternalDestination() != null ? " +XPub" : "")
               + ", "
               + mixingState.getNbMixing()
               + " mixing ("
