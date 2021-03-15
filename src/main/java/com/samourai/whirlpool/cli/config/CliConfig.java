@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.config;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -30,6 +31,7 @@ public class CliConfig extends CliConfigFile {
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
+      TorClientService torClientService,
       BackendApi backendApi,
       String passphrase)
       throws NotifiableException {
@@ -41,7 +43,7 @@ public class CliConfig extends CliConfigFile {
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, backendApi, passphrase);
+            httpClientService, stompClientService, torClientService, backendApi, passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }

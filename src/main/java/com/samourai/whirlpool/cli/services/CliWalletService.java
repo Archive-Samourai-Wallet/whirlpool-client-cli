@@ -130,7 +130,11 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, backendApiService, passphrase);
+            httpClientService,
+            stompClientService,
+            cliTorClientService,
+            backendApiService,
+            passphrase);
 
     String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
     String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();

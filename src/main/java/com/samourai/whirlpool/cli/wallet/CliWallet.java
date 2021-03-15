@@ -67,9 +67,8 @@ public class CliWallet extends WhirlpoolWallet {
   public void onMixSuccess(WhirlpoolUtxo whirlpoolUtxo, MixSuccess mixSuccess) {
     super.onMixSuccess(whirlpoolUtxo, mixSuccess);
 
-    // change Tor identity
+    // change http Tor identity
     if (cliConfig.getTor()) {
-      cliTorClientService.changeIdentity();
       httpClientService.changeIdentityRest();
     }
   }

@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CharSequenceX;
@@ -620,6 +621,7 @@ public abstract class CliConfigFile {
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
+      TorClientService torClientService,
       BackendApi backendApi,
       String passphrase)
       throws NotifiableException {
@@ -628,7 +630,13 @@ public abstract class CliConfigFile {
     ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClientService, stompClientService, serverApi, params, false, backendApi);
+            httpClientService,
+            stompClientService,
+            torClientService,
+            serverApi,
+            params,
+            false,
+            backendApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

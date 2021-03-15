@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.JavaTorClient;
+import com.samourai.tor.client.TorClientService;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -12,9 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-// JavaTorClient wrapper for watching for cliConfig changes
 @Service
-public class CliTorClientService {
+public class CliTorClientService extends TorClientService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private Optional<JavaTorClient> torClient;
@@ -22,6 +22,7 @@ public class CliTorClientService {
   private Collection<HttpUsage> torHttpUsages;
 
   public CliTorClientService(CliConfig cliConfig) {
+    super();
     this.torClient = Optional.empty();
     this.cliConfig = cliConfig;
     this.torHttpUsages = cliConfig.computeTorHttpUsages();
@@ -34,8 +35,7 @@ public class CliTorClientService {
           log.debug("Enabling Tor for: " + torHttpUsages);
         }
         // instanciate & initialize
-        JavaTorClient tc = new JavaTorClient(cliConfig, torHttpUsages);
-        tc.setup(); // throws
+        JavaTorClient tc = new JavaTorClient(cliConfig, torHttpUsages); // throws
         torClient = Optional.of(tc);
         if (log.isDebugEnabled()) {
           log.debug("Tor is enabled.");
@@ -66,6 +66,7 @@ public class CliTorClientService {
     }
   }
 
+  @Override
   public void changeIdentity() {
     if (torClient.isPresent()) {
       torClient.get().changeIdentity();

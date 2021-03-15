@@ -24,16 +24,13 @@ public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliConfig cliConfig;
-  private Collection<HttpUsage> torHttpUsages;
   private TorOnionProxyInstance torInstance;
   private boolean started = false;
 
-  public JavaTorClient(CliConfig cliConfig, Collection<HttpUsage> torHttpUsages) {
+  public JavaTorClient(CliConfig cliConfig, Collection<HttpUsage> torHttpUsages) throws Exception {
     this.cliConfig = cliConfig;
-    this.torHttpUsages = torHttpUsages;
-  }
 
-  public void setup() throws Exception {
+    // setup
     TorSettings torSettings = computeTorSettings();
     WhirlpoolTorInstaller torInstaller = computeTorInstaller();
     this.torInstance = new TorOnionProxyInstance(torInstaller, torSettings, torHttpUsages);
