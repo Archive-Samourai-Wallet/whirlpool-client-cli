@@ -82,17 +82,17 @@ public class CliService {
     return CliUtils.computeFile(path);
   }
 
-  private FileLock lockDirectory() throws Exception {
+  public FileLock lockDirectory() throws Exception {
     File dirLockFile = computeDirLockFile();
     dirLockFile.deleteOnExit();
     String lockErrorMsg =
-        "Another Whirlpool instance seems already running in current directory. Otherwise, you may manually delete "
+        "Another Whirlpool instance seems already running in same directory. If not, please delete "
             + dirLockFile.getAbsolutePath();
     FileLock dirFileLock = ClientUtils.lockFile(dirLockFile, lockErrorMsg);
     return dirFileLock;
   }
 
-  private void unlockDirectory(FileLock dirFileLock) throws Exception {
+  public void unlockDirectory(FileLock dirFileLock) throws Exception {
     ClientUtils.unlockFile(dirFileLock);
     File dirLockFile = computeDirLockFile();
     dirLockFile.delete();
@@ -107,126 +107,120 @@ public class CliService {
         System.getProperty("java.version"),
         Arrays.toString(args));
 
-    // get dir lock
-    FileLock dirFileLock = lockDirectory();
-    try {
-      // log config
+    // log config
+    if (log.isDebugEnabled()) {
+      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
+        log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
+      }
+    }
+    if (listen) {
+      String info = "API is listening on https://127.0.0.1:" + cliConfig.getApi().getPort();
+      if (cliConfig.getApi().isHttpEnable()) {
+        info += " and http://127.0.0.1:" + cliConfig.getApi().getHttpPort();
+      }
+      log.info(info);
+    }
+
+    // connect Tor
+    cliTorClientService.connect();
+
+    // initialize bitcoinj context
+    NetworkParameters params = cliConfig.getServer().getParams();
+    new Context(params);
+
+    // check init
+    if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && !listen)) {
+      new RunCliInit(cliConfigService).run();
+      return CliResult.RESTART;
+    }
+
+    // check cli initialized
+    if (cliConfigService.isCliStatusNotInitialized()) {
+      // not initialized
       if (log.isDebugEnabled()) {
-        for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-          log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
-        }
-      }
-      if (listen) {
-        String info = "API is listening on https://127.0.0.1:" + cliConfig.getApi().getPort();
-        if (cliConfig.getApi().isHttpEnable()) {
-          info += " and http://127.0.0.1:" + cliConfig.getApi().getHttpPort();
-        }
-        log.info(info);
+        log.debug("CliStatus=" + cliConfigService.getCliStatus());
       }
 
-      // connect Tor
-      cliTorClientService.connect();
+      // keep cli running for remote initialization
+      log.warn(CliUtils.LOG_SEPARATOR);
+      log.warn("⣿ INITIALIZATION REQUIRED");
+      log.warn("⣿ Please start GUI to initialize CLI.");
+      log.warn("⣿ Or initialize with --init");
+      log.warn(CliUtils.LOG_SEPARATOR);
+      keepRunning();
+      return CliResult.KEEP_RUNNING;
+    }
 
-      // initialize bitcoinj context
-      NetworkParameters params = cliConfig.getServer().getParams();
-      new Context(params);
+    // check upgrade (before authentication)
+    boolean shouldRestart = cliUpgradeService.upgradeUnauthenticated();
+    if (shouldRestart) {
+      log.warn(CliUtils.LOG_SEPARATOR);
+      log.warn("⣿ UPGRADE SUCCESS");
+      log.warn("⣿ Restarting CLI...");
+      log.warn(CliUtils.LOG_SEPARATOR);
+      return CliResult.RESTART;
+    }
+    cliConfigService.setCliStatus(CliStatus.READY);
 
-      // check init
-      if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && !listen)) {
-        new RunCliInit(cliConfigService).run();
-        return CliResult.RESTART;
+    boolean isXpub = appArgs.isSetExternalXpub();
+    String commandToRun = RunCliCommand.getCommandToRun(appArgs);
+    boolean hasCommandToRun = (commandToRun != null);
+    if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
+      // no passphrase but listening => keep listening
+      log.info(CliUtils.LOG_SEPARATOR);
+      log.info("⣿ AUTHENTICATION REQUIRED");
+      log.info("⣿ Whirlpool wallet is CLOSED.");
+      log.info("⣿ Please start GUI to authenticate and start mixing.");
+      log.info("⣿ Or authenticate with --authenticate");
+      log.info(CliUtils.LOG_SEPARATOR);
+      keepRunning();
+      return CliResult.KEEP_RUNNING;
+    }
+
+    // authenticate
+    CliWallet cliWallet = null;
+    while (cliWallet == null) {
+      // authenticate to open wallet when passphrase providen through arguments
+      String reason = null;
+      if (isXpub) {
+        reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
+      } else if (commandToRun != null) {
+        reason = "to run --" + commandToRun;
       }
+      String seedPassphrase = authenticate(reason);
+      try {
+        // we may have authenticated from API in the meantime...
+        cliWallet =
+            cliWalletService.hasSessionWallet()
+                ? cliWalletService.getSessionWallet()
+                : cliWalletService.openWallet(seedPassphrase);
 
-      // check cli initialized
-      if (cliConfigService.isCliStatusNotInitialized()) {
-        // not initialized
-        if (log.isDebugEnabled()) {
-          log.debug("CliStatus=" + cliConfigService.getCliStatus());
-        }
-
-        // keep cli running for remote initialization
-        log.warn(CliUtils.LOG_SEPARATOR);
-        log.warn("⣿ INITIALIZATION REQUIRED");
-        log.warn("⣿ Please start GUI to initialize CLI.");
-        log.warn("⣿ Or initialize with --init");
-        log.warn(CliUtils.LOG_SEPARATOR);
-        keepRunning();
-        return CliResult.KEEP_RUNNING;
-      }
-
-      // check upgrade (before authentication)
-      boolean shouldRestart = cliUpgradeService.upgradeUnauthenticated();
-      if (shouldRestart) {
-        log.warn(CliUtils.LOG_SEPARATOR);
-        log.warn("⣿ UPGRADE SUCCESS");
-        log.warn("⣿ Restarting CLI...");
-        log.warn(CliUtils.LOG_SEPARATOR);
-        return CliResult.RESTART;
-      }
-      cliConfigService.setCliStatus(CliStatus.READY);
-
-      boolean isXpub = appArgs.isSetExternalXpub();
-      String commandToRun = RunCliCommand.getCommandToRun(appArgs);
-      boolean hasCommandToRun = (commandToRun != null);
-      if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
-        // no passphrase but listening => keep listening
-        log.info(CliUtils.LOG_SEPARATOR);
-        log.info("⣿ AUTHENTICATION REQUIRED");
-        log.info("⣿ Whirlpool wallet is CLOSED.");
-        log.info("⣿ Please start GUI to authenticate and start mixing.");
-        log.info("⣿ Or authenticate with --authenticate");
-        log.info(CliUtils.LOG_SEPARATOR);
-        keepRunning();
-        return CliResult.KEEP_RUNNING;
-      }
-
-      // authenticate
-      CliWallet cliWallet = null;
-      while (cliWallet == null) {
-        // authenticate to open wallet when passphrase providen through arguments
-        String reason = null;
-        if (isXpub) {
-          reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
-        } else if (commandToRun != null) {
-          reason = "to run --" + commandToRun;
-        }
-        String seedPassphrase = authenticate(reason);
-        try {
-          // we may have authenticated from API in the meantime...
-          cliWallet =
-              cliWalletService.hasSessionWallet()
-                  ? cliWalletService.getSessionWallet()
-                  : cliWalletService.openWallet(seedPassphrase);
-
-          // set-destination
-          if (appArgs.isSetExternalXpub()) {
-            new RunSetExternalXpub(cliConfigService).run(params, seedPassphrase);
-            return CliResult.RESTART;
-          }
-
-          log.info(CliUtils.LOG_SEPARATOR);
-          log.info("⣿ AUTHENTICATION SUCCESS");
-          log.info(CliUtils.LOG_SEPARATOR);
-        } catch (AuthenticationException e) {
-          log.error(e.getMessage());
-        } catch (CliRestartException e) {
-          log.error(e.getMessage());
+        // set-destination
+        if (appArgs.isSetExternalXpub()) {
+          new RunSetExternalXpub(cliConfigService).run(params, seedPassphrase);
           return CliResult.RESTART;
         }
+
+        log.info(CliUtils.LOG_SEPARATOR);
+        log.info("⣿ AUTHENTICATION SUCCESS");
+        log.info(CliUtils.LOG_SEPARATOR);
+      } catch (AuthenticationException e) {
+        log.error(e.getMessage());
+      } catch (CliRestartException e) {
+        log.error(e.getMessage());
+        return CliResult.RESTART;
       }
-      if (hasCommandToRun) {
-        // execute specific command
-        new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
-        return CliResult.EXIT_SUCCESS;
-      } else {
-        // start wallet
-        log.info("⣿ Whirlpool is starting...");
-        cliWallet.start();
-        keepRunning();
-        return CliResult.KEEP_RUNNING;
-      }
-    } finally {
-      unlockDirectory(dirFileLock);
+    }
+    if (hasCommandToRun) {
+      // execute specific command
+      new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
+      return CliResult.EXIT_SUCCESS;
+    } else {
+      // start wallet
+      log.info("⣿ Whirlpool is starting...");
+      cliWallet.start();
+      keepRunning();
+      return CliResult.KEEP_RUNNING;
     }
   }
 

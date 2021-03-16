@@ -85,7 +85,7 @@ public class TorOnionProxyInstance {
                 waitReady();
               } catch (Exception e) {
                 log.error("Tor failed to start", e);
-                Application.exitError(1);
+                Application.exit(1);
               }
             },
             "TorOnionProxyInstance-start");
@@ -141,7 +141,7 @@ public class TorOnionProxyInstance {
       onionProxyManager.stop();
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
-        log.error("", e);
+        log.warn("", e);
       }
     }
 

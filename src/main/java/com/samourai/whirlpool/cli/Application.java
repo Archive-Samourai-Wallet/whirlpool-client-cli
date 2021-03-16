@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
+import java.nio.channels.FileLock;
 import java.util.Arrays;
 import javax.annotation.PreDestroy;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,6 +37,7 @@ public class Application implements ApplicationRunner {
   private static ApplicationArguments applicationArguments;
   private static boolean restart;
   private static Integer exitCode;
+  private static FileLock fileLock;
 
   @Autowired Environment env;
   @Autowired CliService cliService;
@@ -63,10 +65,9 @@ public class Application implements ApplicationRunner {
       // restart
       restart();
     } else {
-      // exit
       if (exitCode != null) {
-        // error
-        exitError(exitCode);
+        // exit
+        exit(exitCode);
       } else {
         // success
         if (log.isDebugEnabled()) {
@@ -78,6 +79,16 @@ public class Application implements ApplicationRunner {
 
   @PreDestroy
   public void preDestroy() {
+    // unlock directory
+    if (fileLock != null) {
+      try {
+        cliService.unlockDirectory(fileLock);
+      } catch (Exception e) {
+        log.error("", e);
+      }
+    }
+
+    // shutdown
     cliService.shutdown();
   }
 
@@ -105,6 +116,8 @@ public class Application implements ApplicationRunner {
         log.info("Running unit test...");
         return;
       }
+
+      fileLock = cliService.lockDirectory();
 
       CliResult cliResult = cliService.run(listen);
       switch (cliResult) {
@@ -157,9 +170,9 @@ public class Application implements ApplicationRunner {
     thread.start();
   }
 
-  public static void exitError(int exitCode) {
+  public static void exit(int exitCode) {
     if (log.isDebugEnabled()) {
-      log.debug("Exit with error: " + exitCode);
+      log.debug("Exit: " + exitCode);
     }
     if (applicationContext != null) {
       SpringApplication.exit(applicationContext, () -> exitCode);
