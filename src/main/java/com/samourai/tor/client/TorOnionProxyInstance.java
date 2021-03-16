@@ -140,9 +140,6 @@ public class TorOnionProxyInstance {
     try {
       onionProxyManager.stop();
     } catch (Exception e) {
-      if (log.isDebugEnabled()) {
-        log.warn("", e);
-      }
     }
 
     torSocksReady = false;
