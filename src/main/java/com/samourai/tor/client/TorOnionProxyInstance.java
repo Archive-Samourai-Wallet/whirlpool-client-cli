@@ -68,9 +68,12 @@ public class TorOnionProxyInstance {
       return;
     }
 
-    if (log.isDebugEnabled()) {
-      log.debug("Starting Tor connexion...");
-    }
+    // log
+    TorConfig torConfig = onionProxyManager.getContext().getConfig();
+    String torExecutable = torConfig.getTorExecutableFile().getAbsolutePath();
+    String torRc = torConfig.getTorrcFile().getAbsolutePath();
+    log.info("Running Tor: " + torExecutable + " -f " + torRc);
+
     progress = PROGRESS_CONNECTING;
 
     startThread =

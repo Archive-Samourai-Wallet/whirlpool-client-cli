@@ -39,7 +39,7 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
     if (torExecutable.isPresent()) {
       if (LOG.isDebugEnabled()) {
         LOG.debug(
-            "configuring tor for external executable: " + torExecutable.get().getAbsolutePath());
+            "configuring Tor for external executable: " + torExecutable.get().getAbsolutePath());
       }
       // use existing local Tor instead of embedded one
       torConfigBuilder.torExecutable(torExecutable.get());
@@ -67,8 +67,8 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
   }
 
   public void setup() throws IOException {
-    LOG.info("Setting up tor");
-    LOG.info("Installing resources: geoip=" + this.config.getGeoIpFile().getAbsolutePath());
+    LOG.debug("Setting up tor");
+    LOG.debug("Installing resources: geoip=" + this.config.getGeoIpFile().getAbsolutePath());
     FileUtilities.cleanInstallOneFile(
         this.getAssetOrResourceByName("geoip"), this.config.getGeoIpFile());
     FileUtilities.cleanInstallOneFile(
@@ -78,12 +78,12 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
       setupTorExecutable();
     } else {
       LOG.info(
-          "Using existing tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
+          "Using existing Tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
     }
   }
 
   protected void setupTorExecutable() throws IOException {
-    LOG.info("Installing tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
+    LOG.info("Installing Tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
     File torParent = this.config.getTorExecutableFile().getParentFile();
     File destination = torParent.exists() ? torParent : this.config.getTorExecutableFile();
     try {
@@ -92,7 +92,7 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
           destination, this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
       FileUtilities.setPerms(this.config.getTorExecutableFile());
 
-      // detect runtime errors on tor executable (ie "error while loading shared libraries...")
+      // detect runtime errors on Tor executable (ie "error while loading shared libraries...")
       CliUtils.exec(this.config.getTorExecutableFile().getAbsolutePath() + " --help");
     } catch (Exception e) {
       throw new IOException(
@@ -109,7 +109,7 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
     PrintWriter printWriter = null;
 
     try {
-      LOG.info("Updating torrc file; torrc =" + this.config.getTorrcFile().getAbsolutePath());
+      LOG.debug("Updating torrc file; torrc =" + this.config.getTorrcFile().getAbsolutePath());
       printWriter =
           new PrintWriter(new BufferedWriter(new FileWriter(this.config.getTorrcFile(), true)));
       printWriter.println(
