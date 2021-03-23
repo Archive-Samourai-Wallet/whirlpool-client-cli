@@ -85,16 +85,23 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
   protected void setupTorExecutable() throws IOException {
     LOG.info("Installing tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
     File torParent = this.config.getTorExecutableFile().getParentFile();
-    FileUtilities.extractContentFromZip(
-        torParent.exists() ? torParent : this.config.getTorExecutableFile(),
-        this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
-    FileUtilities.setPerms(this.config.getTorExecutableFile());
-
-    // detect runtime errors on tor executable (ie "error while loading shared libraries...")
+    File destination = torParent.exists() ? torParent : this.config.getTorExecutableFile();
     try {
+      // detect runtime errors on extract (ie no permission)
+      FileUtilities.extractContentFromZip(
+          destination, this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
+      FileUtilities.setPerms(this.config.getTorExecutableFile());
+
+      // detect runtime errors on tor executable (ie "error while loading shared libraries...")
       CliUtils.exec(this.config.getTorExecutableFile().getAbsolutePath() + " --help");
     } catch (Exception e) {
-      throw new IOException("Tor executable error: " + e.getMessage());
+      throw new IOException(
+          "setupTorExecutable failed: "
+              + e.getMessage()
+              + ", destination="
+              + destination.getAbsolutePath()
+              + ", executable="
+              + this.config.getTorExecutableFile().getAbsolutePath());
     }
   }
 
