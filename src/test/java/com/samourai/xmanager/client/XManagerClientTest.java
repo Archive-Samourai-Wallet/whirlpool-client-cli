@@ -10,8 +10,10 @@ import java.util.Optional;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class XManagerClientTest extends AbstractTest {
   private static final boolean testnet = true;
   private static final long requestTimeout = 5000;

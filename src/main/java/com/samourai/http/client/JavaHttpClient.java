@@ -55,8 +55,7 @@ public class JavaHttpClient extends JacksonHttpClient {
   }
 
   @Override
-  protected String requestJsonGet(String urlStr, Map<String, String> headers, boolean async)
-      throws Exception {
+  protected String requestJsonGet(String urlStr, Map<String, String> headers) throws Exception {
     Request req = computeHttpRequest(urlStr, HttpMethod.GET, headers);
     return requestJson(req);
   }

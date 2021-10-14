@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.google.common.primitives.Bytes;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.wallet.api.backend.BackendApi;
@@ -7,6 +8,7 @@ import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.api.pairing.PairingVersion;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -27,6 +29,7 @@ import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java8.util.Optional;
@@ -92,12 +95,16 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new AuthenticationException("Authentication failed: invalid passphrase?");
     }
 
-    byte[] seed;
-    String walletPassphrase;
+    String walletIdentifier;
+    HD_Wallet bip84w;
     try {
       // init wallet from seed
-      seed = hdWalletFactory.computeSeedFromWords(seedWords);
-      walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : null;
+      byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
+      String walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : "";
+      bip84w = hdWalletFactory.getBIP84(seed, walletPassphrase, params);
+
+      // identifier
+      walletIdentifier = computeWalletIdentifier(seed, passphrase, params);
     } catch (MnemonicException e) {
       if (log.isDebugEnabled()) {
         log.debug("", e);
@@ -129,7 +136,11 @@ public class CliWalletService extends WhirlpoolWalletService {
             backendApiService,
             passphrase);
 
-    WhirlpoolWallet whirlpoolWallet = computeWhirlpoolWallet(config, seed, walletPassphrase);
+    String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
+    String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();
+
+    WhirlpoolWallet whirlpoolWallet =
+        computeWhirlpoolWallet(config, bip84w, walletStateFileName, utxoConfigFileName);
     CliWallet cliWallet =
         new CliWallet(
             whirlpoolWallet,
@@ -199,6 +210,22 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public boolean hasSessionWallet() {
     return getWhirlpoolWallet().isPresent();
+  }
+
+  private String computeWalletIdentifier(
+      byte[] seed, String seedPassphrase, NetworkParameters params) {
+    return ClientUtils.sha256Hash(
+        Bytes.concat(seed, seedPassphrase.getBytes(), params.getId().getBytes()));
+  }
+
+  private File computeIndexFile(String walletIdentifier) throws NotifiableException {
+    String path = "whirlpool-cli-state-" + walletIdentifier + ".json";
+    return CliUtils.computeFile(path);
+  }
+
+  private File computeUtxosFile(String walletIdentifier) throws NotifiableException {
+    String path = "whirlpool-cli-utxos-" + walletIdentifier + ".json";
+    return CliUtils.computeFile(path);
   }
 
   public CliState getCliState() {

@@ -79,7 +79,7 @@ public class CliService {
 
   private File computeDirLockFile() throws NotifiableException {
     String path = "whirlpool-cli.lock";
-    return ClientUtils.createFile(path);
+    return CliUtils.computeFile(path);
   }
 
   public FileLock lockDirectory() throws Exception {

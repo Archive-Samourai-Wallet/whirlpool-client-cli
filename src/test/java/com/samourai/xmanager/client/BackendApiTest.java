@@ -16,8 +16,10 @@ import java.util.Optional;
 import java8.util.Lists;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class BackendApiTest extends AbstractTest {
   private static final long requestTimeout = 5000;
 
