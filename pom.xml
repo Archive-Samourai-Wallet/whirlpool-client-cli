@@ -61,31 +61,19 @@
             <version>9.4.19.v20190610</version>
         </dependency>
         <dependency>
-            <groupId>com.msopentech.thali</groupId>
-            <artifactId>java</artifactId>
-            <version>0.0.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.freehaven.tor.control</groupId>
-                    <artifactId>jtorctl</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
+            <artifactId>universal</artifactId>
+            <version>0.0.3-samourai</version>
         </dependency>
         <dependency>
-            <groupId>com.msopentech.thali</groupId>
-            <artifactId>universal</artifactId>
-            <version>0.0.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.freehaven.tor.control</groupId>
-                    <artifactId>jtorctl</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
+            <artifactId>java</artifactId>
+            <version>0.0.3-samourai</version>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>jtorctl</artifactId>
-            <version>0.2.1-samourai</version>
+            <version>0.2.3-samourai</version>
         </dependency>
         <!-- test -->
         <dependency>
