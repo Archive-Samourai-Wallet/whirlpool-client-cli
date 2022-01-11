@@ -20,7 +20,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.JettyXhrTransport;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
@@ -50,6 +49,7 @@ public class JavaStompClient implements IStompClient {
     StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
     try {
       this.stompClient = computeStompClient();
+      this.stompClient.start();
       this.stompSession =
           stompClient
               .connect(
@@ -158,15 +158,13 @@ public class JavaStompClient implements IStompClient {
     if (log.isDebugEnabled()) {
       log.debug("Using websocket transports: Websocket, XHR");
     }
-    JettyWebSocketClient jettyWebSocketClient =
-        new JettyWebSocketClient(new WebSocketClient(jettyHttpClient));
+    WebSocketClient webSocketClient = new WebSocketClient(jettyHttpClient);
+    webSocketClient.setStopAtShutdown(false); // fix memoryleak
+    JettyWebSocketClient jettyWebSocketClient = new JettyWebSocketClient(webSocketClient);
     List<Transport> webSocketTransports =
         Arrays.asList(
-            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(jettyHttpClient));
-
-    SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
-    jettyWebSocketClient.start();
-    return sockJsClient;
+            new WebSocketTransport(jettyWebSocketClient), new JavaXhrTransport(jettyHttpClient));
+    return new SockJsClient(webSocketTransports);
   }
 
   private WebSocketHttpHeaders computeHttpHeaders() {
