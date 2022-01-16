@@ -5,11 +5,11 @@ import com.msopentech.thali.toronionproxy.OnionProxyManager;
 import com.msopentech.thali.toronionproxy.TorConfig;
 import com.msopentech.thali.toronionproxy.TorConfigBuilder;
 import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.http.client.HttpProxy;
+import com.samourai.http.client.HttpProxyProtocol;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
 import com.samourai.whirlpool.cli.Application;
-import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -28,7 +28,7 @@ public class TorOnionProxyInstance {
   private OnionProxyManager onionProxyManager;
   private Thread startThread;
   private boolean torSocksReady = false;
-  private Map<HttpUsage, CliProxy> torProxies = null;
+  private Map<HttpUsage, HttpProxy> torProxies = null;
   private int progress;
 
   public TorOnionProxyInstance(
@@ -51,7 +51,7 @@ public class TorOnionProxyInstance {
     for (HttpUsage httpUsage : httpUsages) {
       int socksPort = SocketUtils.findAvailableTcpPort();
       builder.socksPort(Integer.toString(socksPort), null);
-      CliProxy torProxy = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
+      HttpProxy torProxy = new HttpProxy(HttpProxyProtocol.SOCKS, "127.0.0.1", socksPort);
       torProxies.put(httpUsage, torProxy);
     }
 
@@ -196,9 +196,9 @@ public class TorOnionProxyInstance {
     return progress;
   }
 
-  public Optional<CliProxy> getTorProxy(HttpUsage httpUsage) {
+  public Optional<HttpProxy> getTorProxy(HttpUsage httpUsage) {
     waitTorSocks();
-    CliProxy torProxy = torProxies.get(httpUsage);
+    HttpProxy torProxy = torProxies.get(httpUsage);
     if (torProxy == null) {
       return Optional.empty();
     }

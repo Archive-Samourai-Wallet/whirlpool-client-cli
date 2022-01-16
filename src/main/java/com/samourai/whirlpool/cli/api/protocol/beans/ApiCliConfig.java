@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
-import com.samourai.whirlpool.cli.beans.CliProxy;
+import com.samourai.http.client.HttpProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.services.CliConfigService;
@@ -66,7 +66,7 @@ public class ApiCliConfig {
     }
 
     if (proxy != null) {
-      if (!StringUtils.isEmpty(proxy) && !CliProxy.validate(proxy)) {
+      if (!StringUtils.isEmpty(proxy) && !HttpProxy.validate(proxy)) {
         throw new NotifiableException("Invalid value for: proxy");
       }
       props.put(KEY_PROXY, proxy.trim());
@@ -139,8 +139,8 @@ public class ApiCliConfig {
       this.clientsPerPool = mixConfig.getClientsPerPool();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
-      this.tx0FakeOutputRandomFactor = mixConfig.getTx0FakeOutputRandomFactor();
-      this.tx0FakeOutputMinValue = mixConfig.getTx0FakeOutputMinValue();
+      this.tx0FakeOutputRandomFactor = 0; // disabled
+      this.tx0FakeOutputMinValue = 10000; // disabled
       this.autoMix = mixConfig.isAutoMix();
     }
 

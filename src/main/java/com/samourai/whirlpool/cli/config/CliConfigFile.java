@@ -1,12 +1,11 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
-import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CharSequenceX;
-import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -14,16 +13,17 @@ import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
+import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
 import com.samourai.whirlpool.client.whirlpool.ServerApi;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.bitcoinj.core.NetworkParameters;
-import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
@@ -35,6 +35,7 @@ public abstract class CliConfigFile {
   private int version; // 0 for versions < 1
   private WhirlpoolServer server;
   private String scode;
+  private String partner;
   @NotEmpty private boolean tor;
   @NotEmpty private TorConfig torConfig;
   @NotEmpty private DojoConfig dojo;
@@ -44,10 +45,10 @@ public abstract class CliConfigFile {
   @NotEmpty private int tx0MinConfirmations;
   @NotEmpty private String proxy;
 
-  @Range(min = 1000)
+  @Min(value = 1000)
   private long requestTimeout;
 
-  private Optional<CliProxy> _cliProxy;
+  private Optional<HttpProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
   @NotEmpty private ApiConfig api;
   @NotEmpty private ExternalDestinationConfig externalDestination;
@@ -63,6 +64,7 @@ public abstract class CliConfigFile {
     this.version = copy.version;
     this.server = copy.server;
     this.scode = copy.scode;
+    this.partner = copy.partner;
     this.tor = copy.tor;
     this.torConfig = new TorConfig(copy.torConfig);
     this.dojo = new DojoConfig(copy.dojo);
@@ -100,6 +102,14 @@ public abstract class CliConfigFile {
 
   public void setScode(String scode) {
     this.scode = scode;
+  }
+
+  public String getPartner() {
+    return partner;
+  }
+
+  public void setPartner(String partner) {
+    this.partner = partner;
   }
 
   public boolean getTor() {
@@ -170,7 +180,7 @@ public abstract class CliConfigFile {
     return proxy;
   }
 
-  public Optional<CliProxy> getCliProxy() {
+  public Optional<HttpProxy> getCliProxy() {
     if (_cliProxy == null) {
       _cliProxy = CliUtils.computeProxy(proxy);
     }
@@ -210,10 +220,10 @@ public abstract class CliConfigFile {
     @NotEmpty private int clientsPerPool;
     @NotEmpty private boolean liquidityClient;
     @NotEmpty private int clientDelay;
-    @NotEmpty private int tx0Delay;
+    @NotEmpty private int autoTx0Delay;
     @NotEmpty private int tx0MaxOutputs;
-    @NotEmpty private int tx0FakeOutputRandomFactor;
-    @NotEmpty private int tx0FakeOutputMinValue;
+    @NotEmpty private int tx0MaxRetry;
+    @NotEmpty private boolean tx0StrictMode;
     @NotEmpty private boolean autoMix;
     private Map<String, Long> overspend;
 
@@ -224,10 +234,10 @@ public abstract class CliConfigFile {
       this.clientsPerPool = copy.clientsPerPool;
       this.liquidityClient = copy.liquidityClient;
       this.clientDelay = copy.clientDelay;
-      this.tx0Delay = copy.tx0Delay;
+      this.autoTx0Delay = copy.autoTx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
-      this.tx0FakeOutputRandomFactor = copy.tx0FakeOutputRandomFactor;
-      this.tx0FakeOutputMinValue = copy.tx0FakeOutputMinValue;
+      this.tx0MaxRetry = copy.tx0MaxRetry;
+      this.tx0StrictMode = copy.tx0StrictMode;
       this.autoMix = copy.autoMix;
       this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
     }
@@ -265,12 +275,12 @@ public abstract class CliConfigFile {
       this.clientDelay = clientDelay;
     }
 
-    public int getTx0Delay() {
-      return tx0Delay;
+    public int getAutoTx0Delay() {
+      return autoTx0Delay;
     }
 
-    public void setTx0Delay(int tx0Delay) {
-      this.tx0Delay = tx0Delay;
+    public void setAutoTx0Delay(int autoTx0Delay) {
+      this.autoTx0Delay = autoTx0Delay;
     }
 
     public int getTx0MaxOutputs() {
@@ -281,20 +291,20 @@ public abstract class CliConfigFile {
       this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
-    public int getTx0FakeOutputRandomFactor() {
-      return tx0FakeOutputRandomFactor;
+    public int getTx0MaxRetry() {
+      return tx0MaxRetry;
     }
 
-    public void setTx0FakeOutputRandomFactor(int tx0FakeOutputRandomFactor) {
-      this.tx0FakeOutputRandomFactor = tx0FakeOutputRandomFactor;
+    public void setTx0MaxRetry(int tx0MaxRetry) {
+      this.tx0MaxRetry = tx0MaxRetry;
     }
 
-    public int getTx0FakeOutputMinValue() {
-      return tx0FakeOutputMinValue;
+    public boolean isTx0StrictMode() {
+      return tx0StrictMode;
     }
 
-    public void setTx0FakeOutputMinValue(int tx0FakeOutputMinValue) {
-      this.tx0FakeOutputMinValue = tx0FakeOutputMinValue;
+    public void setTx0StrictMode(boolean tx0StrictMode) {
+      this.tx0StrictMode = tx0StrictMode;
     }
 
     public boolean isAutoMix() {
@@ -319,11 +329,10 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/clientsPerPool", Integer.toString(clientsPerPool));
       configInfo.put("cli/mix/liquidityClient", Boolean.toString(liquidityClient));
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
-      configInfo.put("cli/mix/tx0Delay", Integer.toString(tx0Delay));
+      configInfo.put("cli/mix/autoTx0Delay", Integer.toString(autoTx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
-      configInfo.put(
-          "cli/mix/tx0FakeOutputRandomFactor", Integer.toString(tx0FakeOutputRandomFactor));
-      configInfo.put("cli/mix/tx0FakeOutputMinValue", Integer.toString(tx0FakeOutputMinValue));
+      configInfo.put("cli/mix/tx0MaxRetry", Integer.toString(tx0MaxRetry));
+      configInfo.put("cli/mix/tx0StrictMode", Boolean.toString(tx0StrictMode));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
       return configInfo;
@@ -619,10 +628,10 @@ public abstract class CliConfigFile {
   }
 
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
+      DataSourceFactory dataSourceFactory,
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
-      BackendApi backendApi,
       String passphrase)
       throws NotifiableException {
     String serverUrl = computeServerUrl();
@@ -630,15 +639,18 @@ public abstract class CliConfigFile {
     ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
+            dataSourceFactory,
             httpClientService,
             stompClientService,
             torClientService,
             serverApi,
             params,
-            false,
-            backendApi);
+            false);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
+    }
+    if (!Strings.isEmpty(partner)) {
+      config.setPartner(partner);
     }
     config.setTx0MinConfirmations(tx0MinConfirmations);
 
@@ -646,10 +658,10 @@ public abstract class CliConfigFile {
     config.setMaxClientsPerPool(mix.getClientsPerPool());
     config.setLiquidityClient(mix.isLiquidityClient());
     config.setClientDelay(mix.getClientDelay());
-    config.setTx0Delay(mix.getTx0Delay());
+    config.setAutoTx0Delay(mix.getAutoTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
-    config.setTx0FakeOutputRandomFactor(mix.getTx0FakeOutputRandomFactor());
-    config.setTx0FakeOutputMinValue(mix.getTx0FakeOutputMinValue());
+    config.setTx0MaxRetry(mix.getTx0MaxRetry());
+    config.setTx0StrictMode(mix.isTx0StrictMode());
     config.setAutoMix(mix.isAutoMix());
     config.setOverspend(mix.getOverspend());
 
@@ -687,6 +699,7 @@ public abstract class CliConfigFile {
     Map<String, String> configInfo = new LinkedHashMap<>();
     configInfo.put("cli/server", server.name());
     configInfo.put("cli/scode", scode);
+    configInfo.put("cli/partner", partner != null ? partner : "null");
     configInfo.put("cli/tor", Boolean.toString(tor));
     configInfo.putAll(torConfig.getConfigInfo());
     if (dojo != null) {

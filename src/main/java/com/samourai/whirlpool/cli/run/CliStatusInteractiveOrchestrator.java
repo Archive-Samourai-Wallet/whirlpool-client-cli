@@ -1,23 +1,21 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.wallet.api.backend.beans.UnspentOutput;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.utils.DebugUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.*;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
-  private static final Logger log = LoggerFactory.getLogger(CliStatusInteractiveOrchestrator.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliWalletService cliWalletService;
   private CliConfig cliConfig;
@@ -48,8 +46,12 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
             printUtxos(WhirlpoolAccount.PREMIX);
           } else if (car.equals('O')) {
             printUtxos(WhirlpoolAccount.POSTMIX);
-          } else if (car.equals('S')) {
-            printSystem();
+          } else if (car.equals('W')) {
+            printWallet();
+          } else if (car.equals('B')) {
+            printDebug();
+          } else if (car.equals('L')) {
+            printPools();
           }
         } else {
           if (log.isDebugEnabled()) {
@@ -65,97 +67,34 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
   private void printThreads() {
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-      MixingState mixingState = whirlpoolWallet.getMixingState();
-      log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-      log.info("⣿ MIXING THREADS:");
-
-      String lineFormat = "| %8s | %25s | %8s | %10s | %10s | %8s | %68s | %14s | %8s | %6s |\n";
-      StringBuilder sb = new StringBuilder();
-      sb.append(
-          String.format(
-              lineFormat,
-              "THREAD",
-              "STATUS",
-              "SINCE",
-              "ACCOUNT",
-              "BALANCE",
-              "CONFIRMS",
-              "UTXO",
-              "PATH",
-              "POOL",
-              "MIXS"));
-
-      int i = 0;
-      long now = System.currentTimeMillis();
-      for (WhirlpoolUtxo whirlpoolUtxo : mixingState.getUtxosMixing()) {
-        MixProgress mixProgress = whirlpoolUtxo.getUtxoState().getMixProgress();
-        String progress = mixProgress != null ? mixProgress.toString() : "";
-        String since = mixProgress != null ? ((now - mixProgress.getSince()) / 1000) + "s" : "";
-        UnspentOutput o = whirlpoolUtxo.getUtxo();
-        String utxo = o.tx_hash + ":" + o.tx_output_n;
-        sb.append(
-            String.format(
-                lineFormat,
-                "#" + (i + 1),
-                progress,
-                since,
-                whirlpoolUtxo.getAccount().name(),
-                ClientUtils.satToBtc(o.value),
-                o.confirmations,
-                utxo,
-                o.getPath(),
-                whirlpoolUtxo.getPoolId() != null ? whirlpoolUtxo.getPoolId() : "-",
-                whirlpoolUtxo.getMixsDone()));
-
-        i++;
-      }
-      log.info("\n" + sb.toString());
+      log.info(DebugUtils.getDebugMixingThreads(whirlpoolWallet));
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
-    } catch (Exception e) {
-      log.error("", e);
     }
-  }
-
-  private void printSystem() {
-    ThreadGroup tg = Thread.currentThread().getThreadGroup();
-    Collection<Thread> threadSet =
-        Thread.getAllStackTraces()
-            .keySet()
-            .stream()
-            .filter(t -> t.getThreadGroup() == tg)
-            .sorted(Comparator.comparing(o -> o.getName().toLowerCase()))
-            .collect(Collectors.toList());
-    log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-    log.info("⣿ SYSTEM THREADS:");
-    int i = 0;
-    for (Thread t : threadSet) {
-      log.info("#" + i + " " + t + ":" + "" + t.getState());
-      // show trace for BLOCKED
-      if (Thread.State.BLOCKED.equals(t.getState())) {
-        log.info(StringUtils.join(t.getStackTrace(), "\n"));
-      }
-      i++;
-    }
-
-    // memory
-    Runtime rt = Runtime.getRuntime();
-    long total = rt.totalMemory();
-    long free = rt.freeMemory();
-    long used = total - free;
-    log.info("⣿ MEM USE: " + CliUtils.bytesToMB(used) + "M/" + CliUtils.bytesToMB(total) + "M");
   }
 
   private void printUtxos(WhirlpoolAccount account) throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    try {
-      log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-      log.info("⣿ " + account.name() + " UTXOS:");
-      ClientUtils.logWhirlpoolUtxos(utxos);
+    int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
 
-    } catch (Exception e) {
-      log.error("", e);
-    }
+    log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
+    log.info("⣿ " + account.name() + " UTXOS:");
+    log.info(DebugUtils.getDebugUtxos(utxos, latestBlockHeight));
+  }
+
+  private void printWallet() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebugWallet(whirlpoolWallet));
+  }
+
+  private void printDebug() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebug(whirlpoolWallet));
+  }
+
+  private void printPools() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebugPools(whirlpoolWallet.getPoolSupplier()));
   }
 }

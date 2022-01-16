@@ -12,6 +12,7 @@ import com.msopentech.thali.toronionproxy.TorConfig;
 import com.msopentech.thali.toronionproxy.TorInstaller;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import java.io.*;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -19,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class WhirlpoolTorInstaller extends TorInstaller {
-  private static final Logger LOG = LoggerFactory.getLogger(WhirlpoolTorInstaller.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final TorConfig config;
   private boolean useExecutableFromZip;
 

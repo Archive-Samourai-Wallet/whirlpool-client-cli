@@ -3,8 +3,8 @@ package com.samourai.whirlpool.cli.utils;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import java.lang.invoke.MethodHandles;
 import org.bouncycastle.util.encoders.Base64;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class EncryptUtilsTest {
 
     String decrypted = EncryptUtils.decrypt(KEY, encrypted);
 
-    Assert.assertEquals(PLAIN, decrypted);
+    Assertions.assertEquals(PLAIN, decrypted);
   }
 
   @Test
@@ -39,7 +39,7 @@ public class EncryptUtilsTest {
     Encrypted encrypted = new Encrypted(iv, salt, ct);
     String decryptedSeedWords = EncryptUtils.decrypt(KEY, encrypted);
 
-    Assert.assertEquals(PLAIN, decryptedSeedWords);
+    Assertions.assertEquals(PLAIN, decryptedSeedWords);
   }
 
   @Test
@@ -51,12 +51,12 @@ public class EncryptUtilsTest {
 
     String serializeEncrypted = EncryptUtils.serializeEncrypted(encrypted);
 
-    Assert.assertEquals(SERIALIZED, serializeEncrypted);
+    Assertions.assertEquals(SERIALIZED, serializeEncrypted);
 
     Encrypted encryptedBis = EncryptUtils.unserializeEncrypted(serializeEncrypted);
-    Assert.assertArrayEquals(encrypted.getIv(), encryptedBis.getIv());
-    Assert.assertArrayEquals(encrypted.getSalt(), encryptedBis.getSalt());
-    Assert.assertArrayEquals(encrypted.getCt(), encryptedBis.getCt());
+    Assertions.assertArrayEquals(encrypted.getIv(), encryptedBis.getIv());
+    Assertions.assertArrayEquals(encrypted.getSalt(), encryptedBis.getSalt());
+    Assertions.assertArrayEquals(encrypted.getCt(), encryptedBis.getCt());
   }
 
   @Test
@@ -68,11 +68,11 @@ public class EncryptUtilsTest {
     byte[] salt = Base64.decode(SALT);
     byte[] ct = Base64.decode(CT);
 
-    Assert.assertArrayEquals(iv, encrypted.getIv());
-    Assert.assertArrayEquals(salt, encrypted.getSalt());
-    Assert.assertArrayEquals(ct, encrypted.getCt());
+    Assertions.assertArrayEquals(iv, encrypted.getIv());
+    Assertions.assertArrayEquals(salt, encrypted.getSalt());
+    Assertions.assertArrayEquals(ct, encrypted.getCt());
 
     String serializedBis = EncryptUtils.serializeEncrypted(encrypted);
-    Assert.assertEquals(SERIALIZED, serializedBis);
+    Assertions.assertEquals(SERIALIZED, serializedBis);
   }
 }

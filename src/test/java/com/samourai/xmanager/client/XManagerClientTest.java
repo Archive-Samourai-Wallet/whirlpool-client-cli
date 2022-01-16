@@ -2,18 +2,15 @@ package com.samourai.xmanager.client;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
-import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.xmanager.protocol.XManagerService;
 import com.samourai.xmanager.protocol.rest.AddressIndexResponse;
-import java.util.Optional;
-import org.eclipse.jetty.client.HttpClient;
-import org.junit.Assert;
+import io.reactivex.Observable;
+import java.util.Map;
+import java8.util.Optional;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class XManagerClientTest extends AbstractTest {
   private static final boolean testnet = true;
   private static final long requestTimeout = 5000;
@@ -22,13 +19,18 @@ public class XManagerClientTest extends AbstractTest {
   private XManagerClient xManagerClientFailing;
 
   public XManagerClientTest() throws Exception {
-    HttpClient jettyHttpClient = CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
-    JavaHttpClient httpClient =
-        new JavaHttpClient(HttpUsage.BACKEND, jettyHttpClient, requestTimeout);
-    xManagerClient = new XManagerClient(testnet, false, httpClient);
+    JavaHttpClient httpClient = new JavaHttpClient(requestTimeout, null, HttpUsage.BACKEND);
+    xManagerClient = new XManagerClient(httpClient, testnet, false);
 
-    JavaHttpClient httpClientFailing = new JavaHttpClient(HttpUsage.BACKEND, null, requestTimeout);
-    xManagerClientFailing = new XManagerClient(testnet, false, httpClientFailing);
+    JavaHttpClient httpClientFailing =
+        new JavaHttpClient(requestTimeout, null, HttpUsage.BACKEND) {
+          @Override
+          public <T> Observable<Optional<T>> postJson(
+              String urlStr, Class<T> responseType, Map<String, String> headers, Object bodyObj) {
+            throw new RuntimeException("Failure");
+          }
+        };
+    xManagerClientFailing = new XManagerClient(httpClientFailing, testnet, false);
   }
 
   @Test
@@ -41,6 +43,9 @@ public class XManagerClientTest extends AbstractTest {
   @Test
   public void getAddressOrDefault_failure() throws Exception {
     String address = xManagerClientFailing.getAddressOrDefault(XManagerService.WHIRLPOOL);
+
+    // silently fail and return default address
+    Assertions.assertNotNull(address);
     Assertions.assertEquals(XManagerService.WHIRLPOOL.getDefaultAddress(testnet), address);
   }
 
@@ -64,28 +69,28 @@ public class XManagerClientTest extends AbstractTest {
   }
 
   @Test
-  public void verifyAddressIndexResponseOrException() throws Exception {
+  public void verifyAddressIndexResponse() throws Exception {
     Assertions.assertTrue(
-        xManagerClient.verifyAddressIndexResponseOrException(
+        xManagerClient.verifyAddressIndexResponse(
             XManagerService.WHIRLPOOL, "tb1q6m3urxjc8j2l8fltqj93jarmzn0975nnxuymnx", 0));
     Assertions.assertFalse(
-        xManagerClient.verifyAddressIndexResponseOrException(
+        xManagerClient.verifyAddressIndexResponse(
             XManagerService.WHIRLPOOL, "tb1qz84ma37y3d759sdy7mvq3u4vsxlg2qahw3lm23", 0));
 
     Assertions.assertTrue(
-        xManagerClient.verifyAddressIndexResponseOrException(
+        xManagerClient.verifyAddressIndexResponse(
             XManagerService.WHIRLPOOL, "tb1qcaerxclcmu9llc7ugh65hemqg6raaz4sul535f", 1));
     Assertions.assertFalse(
-        xManagerClient.verifyAddressIndexResponseOrException(
+        xManagerClient.verifyAddressIndexResponse(
             XManagerService.WHIRLPOOL, "tb1qcfgn9nlgxu0ycj446prdkg0p36qy5a39pcf74v", 1));
   }
 
   @Test
-  public void verifyAddressIndexResponseOrException_failure() throws Exception {
+  public void verifyAddressIndexResponse_failure() throws Exception {
     try {
-      xManagerClientFailing.verifyAddressIndexResponseOrException(
+      xManagerClientFailing.verifyAddressIndexResponse(
           XManagerService.WHIRLPOOL, "tb1qcfgn9nlgxu0ycj446prdkg0p36qy5a39pcf74v", 0);
-      Assert.assertTrue(false); // exception expected
+      Assertions.assertTrue(false); // exception expected
     } catch (RuntimeException e) {
       // ok
     }

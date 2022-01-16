@@ -1,6 +1,6 @@
 package com.samourai.stomp.client;
 
-import com.samourai.whirlpool.client.utils.MessageErrorListener;
+import com.samourai.wallet.util.MessageErrorListener;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Type;

@@ -4,22 +4,29 @@ import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
-import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
+import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.websocket.client.IWebsocketClient;
+import com.samourai.websocket.client.JavaWebsocketClient;
+import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
+import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
+import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSourceFactory;
+import com.samourai.whirlpool.client.wallet.data.dataSource.SamouraiDataSourceFactory;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 @Service
 public class CliConfig extends CliConfigFile {
-  private boolean autoAggregatePostmix;
+  private boolean autoTx0Aggregate;
   private String autoTx0PoolId;
   private boolean resync;
 
@@ -27,33 +34,59 @@ public class CliConfig extends CliConfigFile {
     super();
   }
 
-  @Override
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
-      BackendApi backendApi,
       String passphrase)
-      throws NotifiableException {
+      throws Exception {
 
-    // check valid
-    if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
-      throw new RuntimeException("--auto-tx0 is required for --auto-aggregate-postmix");
-    }
+    DataSourceFactory dataSourceFactory = computeDataSourceFactory(httpClientService);
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, torClientService, backendApi, passphrase);
+            dataSourceFactory, httpClientService, stompClientService, torClientService, passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
+    config.setAutoTx0Aggregate(autoTx0Aggregate);
     return config;
   }
 
-  public boolean isAutoAggregatePostmix() {
-    return autoAggregatePostmix;
+  private DataSourceFactory computeDataSourceFactory(IHttpClientService httpClientService)
+      throws Exception {
+    IWebsocketClient wsClient = new JavaWebsocketClient((JavaHttpClientService) httpClientService);
+
+    // Dojo backend
+    if (isDojoEnabled()) {
+      String dojoUrl = getDojo().getUrl();
+      return new DojoDataSourceFactory(dojoUrl, null, wsClient) {
+        @Override
+        protected String computeDojoApiKey(WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w)
+            throws Exception {
+          return decryptDojoApiKey(getDojo().getApiKey(), bip44w.getPassphrase());
+        }
+      };
+    }
+
+    // Samourai backend
+    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
+    BackendServer backendServer = BackendServer.get(isTestnet);
+    boolean useOnion =
+        getTor()
+            && getTorConfig().getBackend().isEnabled()
+            && getTorConfig().getBackend().isOnion();
+    return new SamouraiDataSourceFactory(backendServer, useOnion, wsClient);
   }
 
-  public void setAutoAggregatePostmix(boolean autoAggregatePostmix) {
-    this.autoAggregatePostmix = autoAggregatePostmix;
+  protected static String decryptDojoApiKey(String apiKey, String seedPassphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
+  }
+
+  public boolean isAutoTx0Aggregate() {
+    return autoTx0Aggregate;
+  }
+
+  public void setAutoTx0Aggregate(boolean autoTx0Aggregate) {
+    this.autoTx0Aggregate = autoTx0Aggregate;
   }
 
   public String getAutoTx0PoolId() {
@@ -87,7 +120,7 @@ public class CliConfig extends CliConfigFile {
             : "null");
     configInfo.put(
         "cli/proxy", getCliProxy().isPresent() ? getCliProxy().get().toString() : "null");
-    configInfo.put("cli/autoAggregatePostmix", Boolean.toString(autoAggregatePostmix));
+    configInfo.put("cli/autoTx0Aggregate", Boolean.toString(autoTx0Aggregate));
     configInfo.put("cli/autoTx0PoolId", autoTx0PoolId != null ? autoTx0PoolId : "null");
     configInfo.put("cli/resync", Boolean.toString(resync));
     return configInfo;
@@ -95,37 +128,8 @@ public class CliConfig extends CliConfigFile {
 
   //
 
-  public String computeBackendUrl() {
-    if (getDojo().isEnabled()) {
-      // use dojo
-      return getDojo().getUrl();
-    }
-    // use Samourai backend
-    return computeBackendUrlSamourai();
-  }
-
   public boolean isDojoEnabled() {
     return getDojo() != null && getDojo().isEnabled();
-  }
-
-  public String computeBackendApiKey() {
-    if (isDojoEnabled()) {
-      // dojo: use apiKey
-      return getDojo().getApiKey();
-    }
-    // Samourai backend: no apiKey
-    return null;
-  }
-
-  private String computeBackendUrlSamourai() {
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
-    BackendServer backendServer = BackendServer.get(isTestnet);
-    boolean useOnion =
-        getTor()
-            && getTorConfig().getBackend().isEnabled()
-            && getTorConfig().getBackend().isOnion();
-    String backendUrl = backendServer.getBackendUrl(useOnion);
-    return backendUrl;
   }
 
   public Collection<HttpUsage> computeTorHttpUsages() {

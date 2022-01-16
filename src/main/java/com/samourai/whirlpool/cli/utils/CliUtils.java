@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.cli.utils;
 
 import ch.qos.logback.classic.Level;
-import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
+import com.samourai.http.client.HttpProxy;
+import com.samourai.http.client.HttpProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
@@ -13,11 +13,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.ProxyConfiguration;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +48,8 @@ public class CliUtils {
 
   public static boolean readUserInputRequiredBoolean(String message) {
     String input =
-        CliUtils.readUserInputRequired(message, false, new String[] {"y", "n", "Y", "N"});
+        CliUtils.readUserInputRequired(
+            message + " (y/n)", false, new String[] {"y", "n", "Y", "N"});
     return input.toLowerCase().equals("y");
   }
 
@@ -86,6 +82,34 @@ public class CliUtils {
       input = readUserInput(message, secret);
     } while (input == null);
     return input;
+  }
+
+  public static String readUserInputRequiredMinLength(
+      String message, boolean secret, int minLength) {
+    message = "⣿ INPUT REQUIRED ⣿ " + message;
+    String input;
+    do {
+      input = readUserInput(message, secret);
+      if (input != null && input.length() < minLength) {
+        System.out.println("Min length: " + minLength);
+        input = null;
+      }
+    } while (input == null);
+    return input;
+  }
+
+  public static File readFileName(String message) {
+    do {
+      String input = readUserInputRequired(message, false);
+      try {
+        File f = new File(input);
+        if (f.exists() && f.isFile()) {
+          return f;
+        }
+      } catch (Exception e) {
+      }
+      System.out.println("File not found: " + input);
+    } while (true);
   }
 
   public static String readUserInput(String message, boolean secret) {
@@ -132,7 +156,7 @@ public class CliUtils {
     log.error("⣿ ERROR ⣿ " + message);
   }
 
-  public static Optional<CliProxy> computeProxy(final String proxy) {
+  public static Optional<HttpProxy> computeProxy(final String proxy) {
     if (StringUtils.isEmpty(proxy)) {
       return Optional.empty();
     }
@@ -140,8 +164,8 @@ public class CliUtils {
     if (splitProtocol.length != 2) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
     }
-    CliProxyProtocol proxyProtocol =
-        CliProxyProtocol.find(splitProtocol[0].toUpperCase())
+    HttpProxyProtocol proxyProtocol =
+        HttpProxyProtocol.find(splitProtocol[0].toUpperCase())
             .orElseThrow(
                 () -> new IllegalArgumentException("Unsupported proxy protocol: " + proxy));
     String[] split = splitProtocol[1].split(":");
@@ -157,13 +181,13 @@ public class CliUtils {
       if (StringUtils.isEmpty(host)) {
         throw new IllegalArgumentException("Invalid proxy host: " + proxy);
       }
-      return Optional.of(new CliProxy(proxyProtocol, host, port));
+      return Optional.of(new HttpProxy(proxyProtocol, host, port));
     } catch (Exception e) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
     }
   }
 
-  public static void useProxy(CliProxy cliProxy) {
+  public static void useProxy(HttpProxy cliProxy) {
     String portStr = Integer.toString(cliProxy.getPort()); // important cast
     switch (cliProxy.getProtocol()) {
       case SOCKS:
@@ -177,35 +201,6 @@ public class CliUtils {
         System.setProperty("https.proxyPort", portStr);
         break;
     }
-  }
-
-  public static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional) {
-    return computeHttpClient(cliProxyOptional, ClientUtils.USER_AGENT);
-  }
-
-  public static HttpClient computeHttpClient(
-      Optional<CliProxy> cliProxyOptional, String userAgent) {
-    // we use jetty for proxy SOCKS support
-    HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
-    // jettyHttpClient.setSocketAddressResolver(new MySocketAddressResolver());
-
-    // prevent user-agent tracking
-    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, userAgent));
-
-    // proxy
-    if (cliProxyOptional != null && cliProxyOptional.isPresent()) {
-      CliProxy cliProxy = cliProxyOptional.get();
-      if (log.isDebugEnabled()) {
-        log.debug("+httpClient: proxy=" + cliProxy);
-      }
-      ProxyConfiguration.Proxy jettyProxy = cliProxy.computeJettyProxy();
-      jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
-    } else {
-      if (log.isDebugEnabled()) {
-        log.debug("+httpClient: no proxy");
-      }
-    }
-    return jettyHttpClient;
   }
 
   public static List<String> execOrEmpty(String cmd) throws Exception {
@@ -262,25 +257,8 @@ public class CliUtils {
     LogbackUtils.setLogLevel(
         "com.msopentech.thali.java.toronionproxy", org.slf4j.event.Level.WARN.toString());
     LogbackUtils.setLogLevel("org.springframework.web", org.slf4j.event.Level.INFO.toString());
+    LogbackUtils.setLogLevel("org.springframework.test", org.slf4j.event.Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", org.slf4j.event.Level.INFO.toString());
-  }
-
-  public static long bytesToMB(long bytes) {
-    return Math.round(bytes / (1024L * 1024L));
-  }
-
-  public static File computeFile(String path) throws NotifiableException {
-    File f = new File(path);
-    if (!f.exists()) {
-      if (log.isDebugEnabled()) {
-        log.debug("Creating file " + path);
-      }
-      try {
-        f.createNewFile();
-      } catch (Exception e) {
-        throw new NotifiableException("Unable to write file " + path);
-      }
-    }
-    return f;
+    LogbackUtils.setLogLevel("org.eclipse.jetty", org.slf4j.event.Level.WARN.toString());
   }
 }

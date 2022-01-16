@@ -4,9 +4,14 @@ import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.api.pairing.PairingType;
 import com.samourai.wallet.api.pairing.PairingVersion;
+import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.util.CharSequenceX;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,12 +23,35 @@ public class WhirlpoolPairingPayload extends PairingPayload {
   }
 
   public WhirlpoolPairingPayload(
-      PairingVersion version,
-      PairingNetwork network,
-      String mnemonic,
-      Boolean passphrase,
-      PairingDojo dojo) {
-    super(PairingType.WHIRLPOOL_GUI, version, network, mnemonic, passphrase, dojo);
+      PairingNetwork network, String mnemonicEncrypted, Boolean passphrase, PairingDojo dojo) {
+    super(
+        PairingType.WHIRLPOOL_GUI,
+        PairingVersion.V3_0_0,
+        network,
+        mnemonicEncrypted,
+        passphrase,
+        dojo);
+  }
+
+  public static WhirlpoolPairingPayload newInstance(HD_Wallet hdw, PairingDojo dojo)
+      throws Exception {
+    String mnemonic = hdw.getMnemonic();
+    String passphrase = hdw.getPassphrase();
+    String mnemonicEncrypted = encryptSeedWords(mnemonic, passphrase);
+
+    NetworkParameters params = hdw.getParams();
+    PairingNetwork network =
+        FormatsUtilGeneric.getInstance().isTestNet(params)
+            ? PairingNetwork.TESTNET
+            : PairingNetwork.MAINNET;
+
+    return new WhirlpoolPairingPayload(network, mnemonicEncrypted, true, dojo);
+  }
+
+  protected static String encryptSeedWords(String seedWords, String seedPassphrase)
+      throws Exception {
+    String encrypted = AESUtil.encrypt(seedWords, new CharSequenceX(seedPassphrase));
+    return encrypted;
   }
 
   public static WhirlpoolPairingPayload parse(String pairingPayloadStr) throws NotifiableException {

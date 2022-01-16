@@ -1,7 +1,7 @@
-package com.samourai.whirlpool.cli.api.controllers.cli;
+package com.samourai.whirlpool.cli.api.controllers.rest.cli;
 
 import com.samourai.whirlpool.cli.Application;
-import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
+import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
@@ -12,22 +12,16 @@ import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.services.CliConfigService;
-import com.samourai.whirlpool.cli.services.CliUpgradeService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import java.lang.invoke.MethodHandles;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class CliController extends AbstractRestController {
@@ -35,9 +29,7 @@ public class CliController extends AbstractRestController {
 
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
-  @Autowired private CliUpgradeService cliUpgradeService;
   @Autowired private CliConfig cliConfig;
-  @Autowired private TaskExecutor taskExecutor;
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
@@ -58,28 +50,18 @@ public class CliController extends AbstractRestController {
       throw new NotifiableException("CLI is already initialized.");
     }
 
-    // init
+    // pair
     String pairingPayload = payload.pairingPayload;
     boolean tor = payload.tor;
     boolean dojo = payload.dojo;
     WhirlpoolPairingPayload pairing = cliConfigService.parsePairingPayload(pairingPayload);
-    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
 
+    // init
+    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
 
-    // restart CLI *AFTER* response reply
-    taskExecutor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            try {
-              Thread.sleep(1000);
-            } catch (Exception e) {
-              log.error("", e);
-            }
-            Application.restart();
-          }
-        });
+    // restart CLI
+    restartAfterReply();
     return response;
   }
 
@@ -90,7 +72,7 @@ public class CliController extends AbstractRestController {
     checkHeaders(headers);
 
     try {
-      cliWalletService.openWallet(payload.seedPassphrase).start();
+      cliWalletService.openWallet(payload.seedPassphrase).startAsync().blockingAwait();
     } catch (CliRestartException e) {
       // CLI upgrade success => restart
       Application.restart();
@@ -125,7 +107,7 @@ public class CliController extends AbstractRestController {
     checkHeaders(headers);
 
     // resync mix counters
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-    whirlpoolWallet.resync();
+    CliWallet cliWallet = cliWalletService.getSessionWallet();
+    cliWallet.resyncMixsDone();
   }
 }

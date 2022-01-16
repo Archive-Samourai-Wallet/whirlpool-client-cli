@@ -53,7 +53,7 @@ public class CliUpgradeService {
           public boolean run(CliWallet cliWallet) throws Exception {
             // resync postmix counters
             try {
-              cliWallet.resync();
+              cliWallet.resyncMixsDone();
             } catch (Exception e) {
               log.error("", e);
             }

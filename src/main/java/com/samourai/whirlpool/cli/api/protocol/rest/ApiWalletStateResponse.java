@@ -17,9 +17,7 @@ public class ApiWalletStateResponse {
     this.nbMixing = mixingState.getNbMixing();
     this.nbQueued = mixingState.getNbQueued();
     this.threads =
-        mixingState
-            .getUtxosMixing()
-            .stream()
+        mixingState.getUtxosMixing().stream()
             .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
             .collect(Collectors.toList());
   }

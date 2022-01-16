@@ -11,11 +11,12 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliStatusOrchestrator extends AbstractOrchestrator {
-  private static final Logger log = LoggerFactory.getLogger(CliStatusOrchestrator.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliStatusInteractiveOrchestrator statusInteractiveOrchestrator;
   private CliWalletService cliWalletService;
@@ -95,7 +96,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + nbPremix
               + "), P[O]stmix("
               + nbPostmix
-              + "), [S]ystem\r");
+              + "), [W]allet, POO[L]S, DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {

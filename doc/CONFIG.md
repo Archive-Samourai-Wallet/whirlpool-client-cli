@@ -84,12 +84,13 @@ You can configure your own cert:
 | cli.requestTimeout | 30000 | HTTP requests timeout |
 | cli.tx0MinConfirmations | 0 | Confirmations required for TX0 |
 | cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for max) |
-| cli.mix.tx0FakeOutputRandomFactor | 0 | Experimental (testnet only): random factor for generating a second change output to simulate a multi-user TX0 (0=disable, 1=always, 2=1/2 probability, 3=1/3 probability...) |
-| cli.mix.tx0FakeOutputMinValue | 10000 | Minimum value per change output when using TX0 fake output |
+| cli.mix.tx0MaxRetry | 5 | Max retry on tx0 failure |
+| cli.mix.tx0StrictMode | true | Use tx0 strict mode to prevent address-reuse |
 | cli.mix.clients | 5 | Max simultaneous mixing clients.<br/>(Increasing this value won't make you mix faster.) |
 | cli.mix.clientsPerPool | 1 | Max simultaneous mixing clients per pool.<br/>(Increasing this value won't make you mix faster.) |
 | cli.mix.liquidityClient | true | Enable 1 additional thread for remixing POSTMIXS simultaneously while mixing threads are busy with PREMIXS.<br/>When enabled, cli.mix.clientsPerPool may be excessed by 1. |
 | cli.mix.clientDelay | 15 | Connecting delay (seconds) between each mixing client |
-| cli.mix.tx0Delay | 30 | Delay (seconds) between each tx0 (when --auto-tx0) |
+| cli.mix.autoTx0Delay | 60 | Delay (seconds) between each auto-tx0 (when --auto-tx0) |
 | cli.seedAppendPassphrase | *generated on --init* | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |
+| cli.partner | - | {SPARROW} |
 | cli.version | *generated* | Technical setting for tracking CLI upgrades |

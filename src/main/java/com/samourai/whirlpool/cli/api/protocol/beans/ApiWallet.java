@@ -13,8 +13,7 @@ public class ApiWallet {
   public ApiWallet(
       Collection<WhirlpoolUtxo> whirlpoolUtxos, String zpub, Comparator<WhirlpoolUtxo> comparator) {
     this.utxos =
-        whirlpoolUtxos
-            .stream()
+        whirlpoolUtxos.stream()
             .sorted(comparator)
             .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
             .collect(Collectors.toList());

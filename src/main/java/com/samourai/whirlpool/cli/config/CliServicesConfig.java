@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import java.lang.invoke.MethodHandles;
@@ -33,11 +32,6 @@ public class CliServicesConfig {
   }
 
   @Bean
-  HD_WalletFactoryJava hdWalletFactory() {
-    return HD_WalletFactoryJava.getInstance();
-  }
-
-  @Bean
   Bech32UtilGeneric bech32Util() {
     return Bech32UtilGeneric.getInstance();
   }
@@ -52,7 +46,7 @@ public class CliServicesConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.addAllowedOrigin("*");
+    config.addAllowedOriginPattern("*");
     config.addAllowedHeader("*");
     config.addAllowedMethod("OPTIONS");
     config.addAllowedMethod("HEAD");

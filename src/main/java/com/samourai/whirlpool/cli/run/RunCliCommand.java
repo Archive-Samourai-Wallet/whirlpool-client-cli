@@ -1,9 +1,7 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.services.CliWalletService;
-import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -14,32 +12,25 @@ public class RunCliCommand {
 
   private ApplicationArgs appArgs;
   private CliWalletService cliWalletService;
-  private WalletAggregateService walletAggregateService;
 
-  public RunCliCommand(
-      ApplicationArgs appArgs,
-      CliWalletService cliWalletService,
-      WalletAggregateService walletAggregateService) {
+  public RunCliCommand(ApplicationArgs appArgs, CliWalletService cliWalletService) {
     this.appArgs = appArgs;
     this.cliWalletService = cliWalletService;
-    this.walletAggregateService = walletAggregateService;
   }
 
   public void run() throws Exception {
     if (appArgs.isDumpPayload()) {
       new RunDumpPayload(cliWalletService).run();
-    } else if (appArgs.isAggregatePostmix()) {
+    } else if (appArgs.isAggregate()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
-      // go aggregate and consolidate
-      walletAggregateService.consolidateWallet(cliWallet);
-
-      // should we move to a specific address?
-      String toAddress = appArgs.getAggregatePostmix();
+      String toAddress = appArgs.getAggregate();
       if (toAddress != null && !"true".equals(toAddress)) {
-        Bip84Wallet depositWallet = cliWallet.getWalletDeposit();
-        log.info(" • Moving funds to: " + toAddress);
-        walletAggregateService.toAddress(depositWallet, toAddress, cliWallet);
+        // aggregate to a specific address
+        cliWallet.aggregateTo(toAddress);
+      } else {
+        // aggregate
+        cliWallet.aggregate();
       }
     } else if (appArgs.isListPools()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
@@ -57,8 +48,8 @@ public class RunCliCommand {
     if (appArgs.isDumpPayload()) {
       return ApplicationArgs.ARG_DUMP_PAYLOAD;
     }
-    if (appArgs.isAggregatePostmix()) {
-      return ApplicationArgs.ARG_AGGREGATE_POSTMIX;
+    if (appArgs.isAggregate()) {
+      return ApplicationArgs.ARG_AGGREGATE;
     }
     if (appArgs.isListPools()) {
       return appArgs.ARG_LIST_POOLS;

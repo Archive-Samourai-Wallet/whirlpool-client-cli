@@ -24,8 +24,8 @@ public class ApplicationArgs {
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_TX0_DELAY = "tx0-delay";
   private static final String ARG_TX0_MAX_OUTPUTS = "tx0-max-outputs";
-  public static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
-  private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
+  public static final String ARG_AGGREGATE = "aggregate";
+  private static final String ARG_AUTO_TX0_AGGREGATE = "auto-tx0-aggregate";
   private static final String ARG_AUTO_TX0 = "auto-tx0";
   private static final String ARG_AUTO_MIX = "auto-mix";
   private static final String ARG_LISTEN = "listen";
@@ -69,7 +69,7 @@ public class ApplicationArgs {
 
     valueInt = optionalInt(ARG_TX0_DELAY);
     if (valueInt != null) {
-      cliConfig.getMix().setTx0Delay(valueInt);
+      cliConfig.getMix().setAutoTx0Delay(valueInt);
     }
 
     valueInt = optionalInt(ARG_TX0_MAX_OUTPUTS);
@@ -77,9 +77,9 @@ public class ApplicationArgs {
       cliConfig.getMix().setTx0MaxOutputs(valueInt);
     }
 
-    valueBool = optionalBoolean(ARG_AUTO_AGGREGATE_POSTMIX);
+    valueBool = optionalBoolean(ARG_AUTO_TX0_AGGREGATE);
     if (valueBool != null) {
-      cliConfig.setAutoAggregatePostmix(valueBool);
+      cliConfig.setAutoTx0Aggregate(valueBool);
     }
 
     value = optionalOption(ARG_AUTO_TX0);
@@ -114,12 +114,12 @@ public class ApplicationArgs {
     return args.containsOption(ARG_RESYNC);
   }
 
-  public String getAggregatePostmix() {
-    return optionalOption(ARG_AGGREGATE_POSTMIX);
+  public String getAggregate() {
+    return optionalOption(ARG_AGGREGATE);
   }
 
-  public boolean isAggregatePostmix() {
-    return !StringUtils.isEmpty(getAggregatePostmix());
+  public boolean isAggregate() {
+    return !StringUtils.isEmpty(getAggregate());
   }
 
   public boolean isInit() {

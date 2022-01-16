@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.google.common.primitives.Ints;
+import com.samourai.wallet.hd.AddressType;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
@@ -39,19 +40,26 @@ public class ApiWalletUtxosResponse {
           // last confirmed
           return Ints.compare(o1.getUtxo().confirmations, o2.getUtxo().confirmations);
         };
-    this.deposit = computeApiWallet(WhirlpoolAccount.DEPOSIT, whirlpoolWallet, comparator);
-    this.premix = computeApiWallet(WhirlpoolAccount.PREMIX, whirlpoolWallet, comparator);
-    this.postmix = computeApiWallet(WhirlpoolAccount.POSTMIX, whirlpoolWallet, comparator);
+    this.deposit =
+        computeApiWallet(
+            WhirlpoolAccount.DEPOSIT, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
+    this.premix =
+        computeApiWallet(
+            WhirlpoolAccount.PREMIX, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
+    this.postmix =
+        computeApiWallet(
+            WhirlpoolAccount.POSTMIX, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
     this.balance = this.deposit.getBalance() + this.premix.getBalance() + this.postmix.getBalance();
     this.lastUpdate = whirlpoolWallet.getUtxoSupplier().getLastUpdate();
   }
 
   private ApiWallet computeApiWallet(
       WhirlpoolAccount account,
+      AddressType addressType,
       WhirlpoolWallet whirlpoolWallet,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account).getZpub();
+    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, addressType).getPub();
     return new ApiWallet(utxos, zpub, comparator);
   }
 

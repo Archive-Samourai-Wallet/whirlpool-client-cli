@@ -1,29 +1,22 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.cli.Application;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @Disabled
 public class ApplicationTest extends AbstractApplicationTest {
 
-  @Before
+  @BeforeEach
   @Override
   public void setup() throws Exception {
     super.setup();
   }
 
-  @After
+  @AfterEach
   @Override
   public void tearDown() throws Exception {
     super.tearDown();
@@ -36,8 +29,8 @@ public class ApplicationTest extends AbstractApplicationTest {
 
     new Application().run(appArgs);
 
-    Assert.assertTrue(getOut().contains(" • Fetching pools..."));
-    Assert.assertTrue(getErr().isEmpty());
+    Assertions.assertTrue(getOut().contains(" • Fetching pools..."));
+    Assertions.assertTrue(getErr().isEmpty());
   }
 
   @Test
@@ -80,7 +73,7 @@ public class ApplicationTest extends AbstractApplicationTest {
     new Application().run(appArgs); // TODO mock server
     resetSystem();
 
-    Assert.assertTrue(getOut().contains(" • connecting to "));
-    Assert.assertTrue(getErr().isEmpty());
+    Assertions.assertTrue(getOut().contains(" • connecting to "));
+    Assertions.assertTrue(getErr().isEmpty());
   }
 }

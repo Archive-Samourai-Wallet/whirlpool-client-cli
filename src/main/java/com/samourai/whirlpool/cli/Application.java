@@ -46,7 +46,7 @@ public class Application implements ApplicationRunner {
     // override configuration with local file
     System.setProperty(
         "spring.config.location",
-        "classpath:application.properties,./" + CliConfigService.CLI_CONFIG_FILENAME);
+        "classpath:application.properties,optional:./" + CliConfigService.CLI_CONFIG_FILENAME);
 
     // start REST api if --listen
     listen = ApplicationArgs.getMainListen(args);

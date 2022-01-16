@@ -90,8 +90,19 @@ public class CliConfigService {
     return WhirlpoolPairingPayload.parse(pairingWalletPayload);
   }
 
+  protected String encryptDojoApiKey(String dojoApiKey, String seedPassphrase) throws Exception {
+    String encrypted = AESUtil.encrypt(dojoApiKey, new CharSequenceX(seedPassphrase));
+    return encrypted;
+  }
+
+  public PairingPayload.PairingDojo computePairingDojo(String dojoUrl, String dojoApiKey)
+      throws Exception {
+    String dojoApiKeyEncrypted = encryptDojoApiKey(dojoUrl, dojoApiKey);
+    return new PairingPayload.PairingDojo(dojoUrl, dojoApiKeyEncrypted);
+  }
+
   public String initialize(WhirlpoolPairingPayload pairingWallet, boolean tor, Boolean dojo)
-      throws NotifiableException {
+      throws Exception {
     // parse payload
 
     // use dojo?
@@ -141,7 +152,7 @@ public class CliConfigService {
       String dojoUrl,
       String dojoApiKeyEncrypted,
       boolean dojoEnabled)
-      throws NotifiableException {
+      throws Exception {
     if (log.isDebugEnabled()) {
       log.debug(" • initialize");
     }

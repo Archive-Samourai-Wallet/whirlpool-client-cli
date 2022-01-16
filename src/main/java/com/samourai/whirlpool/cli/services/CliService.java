@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.http.client.HttpProxy;
 import com.samourai.whirlpool.cli.ApplicationArgs;
-import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -36,9 +36,9 @@ public class CliService {
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private CliWalletService cliWalletService;
-  private WalletAggregateService walletAggregateService;
   private CliUpgradeService cliUpgradeService;
   private CliTorClientService cliTorClientService;
+  private JavaHttpClientService httpClientService;
   private CliStatusOrchestrator cliStatusOrchestrator;
 
   public CliService(
@@ -46,16 +46,16 @@ public class CliService {
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       CliWalletService cliWalletService,
-      WalletAggregateService walletAggregateService,
       CliUpgradeService cliUpgradeService,
-      CliTorClientService cliTorClientService) {
+      CliTorClientService cliTorClientService,
+      JavaHttpClientService httpClientService) {
     this.appArgs = appArgs;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.cliWalletService = cliWalletService;
-    this.walletAggregateService = walletAggregateService;
     this.cliUpgradeService = cliUpgradeService;
     this.cliTorClientService = cliTorClientService;
+    this.httpClientService = httpClientService;
     this.cliStatusOrchestrator = null;
     init();
   }
@@ -65,9 +65,9 @@ public class CliService {
     appArgs.override(cliConfig);
 
     // setup proxy
-    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
+    Optional<HttpProxy> cliProxyOptional = cliConfig.getCliProxy();
     if (cliProxyOptional.isPresent()) {
-      CliProxy cliProxy = cliProxyOptional.get();
+      HttpProxy cliProxy = cliProxyOptional.get();
       CliUtils.useProxy(cliProxy);
     }
   }
@@ -79,7 +79,7 @@ public class CliService {
 
   private File computeDirLockFile() throws NotifiableException {
     String path = "whirlpool-cli.lock";
-    return CliUtils.computeFile(path);
+    return ClientUtils.createFile(path);
   }
 
   public FileLock lockDirectory() throws Exception {
@@ -129,9 +129,16 @@ public class CliService {
     new Context(params);
 
     // check init
-    if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && !listen)) {
-      new RunCliInit(cliConfigService).run();
+    if (appArgs.isInit()) {
+      new RunCliInit(cliConfigService, cliConfig).runPairExisting();
       return CliResult.RESTART;
+    }
+
+    // check CLI initialized
+    if (cliConfigService.isCliStatusNotInitialized() && !listen) {
+      log.info("⣿ CLI NOT INITIALIZED");
+      log.info("⣿ Use --init to pair with an existing wallet");
+      return CliResult.EXIT_SUCCESS;
     }
 
     // check cli initialized
@@ -213,12 +220,12 @@ public class CliService {
     }
     if (hasCommandToRun) {
       // execute specific command
-      new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
+      new RunCliCommand(appArgs, cliWalletService).run();
       return CliResult.EXIT_SUCCESS;
     } else {
       // start wallet
       log.info("⣿ Whirlpool is starting...");
-      cliWallet.start();
+      cliWallet.startAsync().blockingAwait();
       keepRunning();
       return CliResult.KEEP_RUNNING;
     }
@@ -258,6 +265,9 @@ public class CliService {
     if (cliTorClientService != null) {
       cliTorClientService.shutdown();
     }
+
+    // stop httpClient
+    httpClientService.stop();
 
     // stop cliStatusOrchestrator
     if (cliStatusOrchestrator != null) {

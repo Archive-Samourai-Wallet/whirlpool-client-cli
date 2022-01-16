@@ -1,40 +1,37 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.google.common.primitives.Bytes;
-import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.JavaHttpClient;
-import com.samourai.wallet.api.backend.BackendApi;
+import com.google.common.eventbus.Subscribe;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
-import com.samourai.wallet.api.pairing.PairingVersion;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.wallet.util.oauth.OAuthManager;
-import com.samourai.wallet.util.oauth.OAuthManagerJava;
+import com.samourai.whirlpool.cli.beans.BusyReason;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
+import com.samourai.whirlpool.cli.event.CliStateChangeEvent;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
+import com.samourai.whirlpool.client.event.UtxosRequestEvent;
+import com.samourai.whirlpool.client.event.UtxosResponseEvent;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.WhirlpoolEventService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
-import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java8.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,18 +45,16 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
-  private HD_WalletFactoryJava hdWalletFactory;
-  private WalletAggregateService walletAggregateService;
   private JavaHttpClientService httpClientService;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
   private CliUpgradeService cliUpgradeService;
 
+  private Set<BusyReason> busyReasons;
+
   public CliWalletService(
       CliConfig cliConfig,
       CliConfigService cliConfigService,
-      HD_WalletFactoryJava hdWalletFactory,
-      WalletAggregateService walletAggregateService,
       JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService,
@@ -67,12 +62,14 @@ public class CliWalletService extends WhirlpoolWalletService {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
-    this.hdWalletFactory = hdWalletFactory;
-    this.walletAggregateService = walletAggregateService;
     this.httpClientService = httpClientService;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
     this.cliUpgradeService = cliUpgradeService;
+
+    this.busyReasons = new LinkedHashSet<>();
+
+    WhirlpoolEventService.getInstance().register(this);
   }
 
   public CliWallet openWallet(String passphrase) throws Exception {
@@ -81,8 +78,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new NotifiableException(
           "Cannot start wallet: cliStatus=" + cliConfigService.getCliStatus());
     }
-
-    NetworkParameters params = cliConfig.getServer().getParams();
 
     // decrypt seed
     String seedWords;
@@ -95,16 +90,12 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new AuthenticationException("Authentication failed: invalid passphrase?");
     }
 
-    String walletIdentifier;
-    HD_Wallet bip84w;
+    byte[] seed;
+    String walletPassphrase;
     try {
       // init wallet from seed
-      byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-      String walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : "";
-      bip84w = hdWalletFactory.getBIP84(seed, walletPassphrase, params);
-
-      // identifier
-      walletIdentifier = computeWalletIdentifier(seed, passphrase, params);
+      seed = HD_WalletFactoryGeneric.getInstance().computeSeedFromWords(seedWords);
+      walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : null;
     } catch (MnemonicException e) {
       if (log.isDebugEnabled()) {
         log.debug("", e);
@@ -120,33 +111,18 @@ public class CliWalletService extends WhirlpoolWalletService {
       }
     }
 
-    // backend connexion
-    BackendApi backendApiService = computeBackendApiService(passphrase);
-    if (!backendApiService.testConnectivity()) {
-      throw new NotifiableException(
-          "Unable to connect to wallet backend: " + backendApiService.getUrlBackend());
-    }
-
     // open wallet
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService,
-            stompClientService,
-            cliTorClientService,
-            backendApiService,
-            passphrase);
+            httpClientService, stompClientService, cliTorClientService, passphrase);
 
-    String walletStateFileName = computeIndexFile(walletIdentifier).getAbsolutePath();
-    String utxoConfigFileName = computeUtxosFile(walletIdentifier).getAbsolutePath();
-
-    WhirlpoolWallet whirlpoolWallet =
-        computeWhirlpoolWallet(config, bip84w, walletStateFileName, utxoConfigFileName);
     CliWallet cliWallet =
         new CliWallet(
-            whirlpoolWallet,
+            config,
+            seed,
+            walletPassphrase,
             cliConfig,
             cliConfigService,
-            walletAggregateService,
             cliTorClientService,
             httpClientService);
     cliWallet = (CliWallet) openWallet(cliWallet);
@@ -165,26 +141,12 @@ public class CliWalletService extends WhirlpoolWalletService {
     // resync?
     if (cliConfig.isResync()) {
       try {
-        cliWallet.resync();
+        cliWallet.resyncMixsDone();
       } catch (Exception e) {
         log.error("", e);
       }
     }
     return cliWallet;
-  }
-
-  private BackendApi computeBackendApiService(String passphrase) throws Exception {
-    String backendUrl = cliConfig.computeBackendUrl();
-
-    // dojo OAuth
-    Optional<OAuthManager> oAuthManager = Optional.empty();
-    String dojoApiKeyEncrypted = cliConfig.computeBackendApiKey();
-    if (dojoApiKeyEncrypted != null) {
-      String dojoApiKey = decryptApiKey(dojoApiKeyEncrypted, passphrase);
-      oAuthManager = Optional.of(new OAuthManagerJava(dojoApiKey));
-    }
-    JavaHttpClient httpClient = httpClientService.getHttpClient(HttpUsage.BACKEND);
-    return new BackendApi(httpClient, backendUrl, oAuthManager);
   }
 
   protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
@@ -194,10 +156,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new Exception("Invalid passphrase");
     }
     return decrypted;
-  }
-
-  protected String decryptApiKey(String apiKey, String seedPassphrase) throws Exception {
-    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
   }
 
   public CliWallet getSessionWallet() throws NoSessionWalletException {
@@ -212,32 +170,16 @@ public class CliWalletService extends WhirlpoolWalletService {
     return getWhirlpoolWallet().isPresent();
   }
 
-  private String computeWalletIdentifier(
-      byte[] seed, String seedPassphrase, NetworkParameters params) {
-    return ClientUtils.sha256Hash(
-        Bytes.concat(seed, seedPassphrase.getBytes(), params.getId().getBytes()));
-  }
-
-  private File computeIndexFile(String walletIdentifier) throws NotifiableException {
-    String path = "whirlpool-cli-state-" + walletIdentifier + ".json";
-    return CliUtils.computeFile(path);
-  }
-
-  private File computeUtxosFile(String walletIdentifier) throws NotifiableException {
-    String path = "whirlpool-cli-utxos-" + walletIdentifier + ".json";
-    return CliUtils.computeFile(path);
-  }
-
   public CliState getCliState() {
     CliStatus cliStatus = cliConfigService.getCliStatus();
     String cliMessage = cliConfigService.getCliMessage();
     boolean loggedIn = hasSessionWallet();
 
     Integer torProgress = cliTorClientService.getProgress().orElse(null);
-    return new CliState(cliStatus, cliMessage, loggedIn, torProgress);
+    return new CliState(cliStatus, cliMessage, loggedIn, busyReasons, torProgress);
   }
 
-  public String computePairingPayload() {
+  public String computePairingPayload() throws Exception {
     PairingNetwork pairingNetwork =
         formatUtils.isTestNet(cliConfig.getServer().getParams())
             ? PairingNetwork.TESTNET
@@ -246,17 +188,36 @@ public class CliWalletService extends WhirlpoolWalletService {
     PairingPayload.PairingDojo dojo = null;
     CliConfigFile.DojoConfig dojoConfig = cliConfig.getDojo();
     if (dojoConfig.isEnabled()) {
-      dojo = new PairingPayload.PairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
+      dojo = cliConfigService.computePairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
     }
 
+    String seedEncrypted = cliConfig.getSeed();
     PairingPayload pairingPayload =
         new WhirlpoolPairingPayload(
-            PairingVersion.V3_0_0,
-            pairingNetwork,
-            cliConfig.getSeed(),
-            cliConfig.isSeedAppendPassphrase(),
-            dojo);
+            pairingNetwork, seedEncrypted, cliConfig.isSeedAppendPassphrase(), dojo);
     String json = ClientUtils.toJsonString(pairingPayload);
     return json;
+  }
+
+  @Subscribe
+  public void onUtxosRequest(UtxosRequestEvent e) {
+    this.busyAdd(BusyReason.FETCHING_WALLET);
+    WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
+  }
+
+  @Subscribe
+  public void onUtxosResponse(UtxosResponseEvent e) {
+    this.busyRemove(BusyReason.FETCHING_WALLET);
+    WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
+  }
+
+  private void busyAdd(BusyReason busyReason) {
+    this.busyReasons.add(busyReason);
+    WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
+  }
+
+  private void busyRemove(BusyReason busyReason) {
+    this.busyReasons.remove(busyReason);
+    WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
   }
 }

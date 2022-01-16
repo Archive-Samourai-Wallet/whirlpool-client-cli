@@ -1,8 +1,9 @@
 package com.samourai.stomp.client;
 
 import com.samourai.http.client.JavaHttpClient;
+import com.samourai.wallet.util.MessageErrorListener;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.utils.MessageErrorListener;
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 public class JavaStompClient implements IStompClient {
-  private static final Logger log = LoggerFactory.getLogger(JavaStompClient.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int HEARTBEAT_DELAY = 20000;
 
   private JavaHttpClient httpClient;

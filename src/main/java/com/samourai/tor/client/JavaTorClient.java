@@ -2,9 +2,9 @@ package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
-import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -228,7 +228,7 @@ public class JavaTorClient {
     return torInstance.getProgress();
   }
 
-  public Optional<CliProxy> getTorProxy(HttpUsage httpUsage) {
+  public Optional<HttpProxy> getTorProxy(HttpUsage httpUsage) {
     return torInstance.getTorProxy(httpUsage);
   }
 

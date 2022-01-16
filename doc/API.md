@@ -13,7 +13,7 @@ It can be used by whirlpool-gui or any REST client.
 
 ## Pools
 
-### List pools: ```GET /rest/pools[?tx0FeeTarget=BLOCKS_24&?mixFeeTarget=BLOCKS_24]```
+### List pools: ```GET /rest/pools```
 Parameters:
 * (optional) tx0FeeTarget: tx0 fee target for tx0BalanceMin computation
 * (optional) mixFeeTarget: mix fee target for tx0BalanceMin computation

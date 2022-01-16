@@ -28,4 +28,3 @@ See [doc/](doc/) for documentation.
  * [whirlpool-protocol](https://code.samourai.io/whirlpool/whirlpool-protocol)
  * [whirlpool-client](https://code.samourai.io/whirlpool/whirlpool-client)
  * [whirlpool-server](https://code.samourai.io/whirlpool/whirlpool-server)
-

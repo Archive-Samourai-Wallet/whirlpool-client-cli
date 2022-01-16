@@ -3,8 +3,8 @@ package com.samourai.whirlpool.cli.beans;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingVersion;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WhirlpoolPairingPayloadTest {
 
@@ -70,7 +70,7 @@ public class WhirlpoolPairingPayloadTest {
       String payload =
           "{\"wrong\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
       parse(payload, PairingVersion.V1_0_0, PairingNetwork.TESTNET, "foo", null);
-      Assert.assertTrue(false);
+      Assertions.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
@@ -80,7 +80,7 @@ public class WhirlpoolPairingPayloadTest {
       String payload =
           "{\"pairing\":{\"type\":\"foo\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
       parse(payload, PairingVersion.V1_0_0, PairingNetwork.TESTNET, "foo", null);
-      Assert.assertTrue(false);
+      Assertions.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
@@ -90,7 +90,7 @@ public class WhirlpoolPairingPayloadTest {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"0.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
       parse(payload, PairingVersion.V1_0_0, PairingNetwork.TESTNET, "foo", null);
-      Assert.assertTrue(false);
+      Assertions.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
@@ -100,7 +100,7 @@ public class WhirlpoolPairingPayloadTest {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"wrong\",\"mnemonic\":\"foo\"}}";
       parse(payload, PairingVersion.V1_0_0, PairingNetwork.TESTNET, "foo", null);
-      Assert.assertTrue(false);
+      Assertions.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
@@ -110,7 +110,7 @@ public class WhirlpoolPairingPayloadTest {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"\"}}";
       parse(payload, PairingVersion.V1_0_0, PairingNetwork.TESTNET, "foo", null);
-      Assert.assertTrue(false);
+      Assertions.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
@@ -124,9 +124,9 @@ public class WhirlpoolPairingPayloadTest {
       Boolean passphrase)
       throws Exception {
     WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(payload);
-    Assert.assertEquals(pairingNetwork, pairingPayload.getPairing().getNetwork());
-    Assert.assertEquals(pairingVersion, pairingPayload.getPairing().getVersion());
-    Assert.assertEquals(mnemonic, pairingPayload.getPairing().getMnemonic());
-    Assert.assertEquals(passphrase, pairingPayload.getPairing().getPassphrase());
+    Assertions.assertEquals(pairingNetwork, pairingPayload.getPairing().getNetwork());
+    Assertions.assertEquals(pairingVersion, pairingPayload.getPairing().getVersion());
+    Assertions.assertEquals(mnemonic, pairingPayload.getPairing().getMnemonic());
+    Assertions.assertEquals(passphrase, pairingPayload.getPairing().getPassphrase());
   }
 }

@@ -1,25 +1,17 @@
-package com.samourai.xmanager.client;
+package com.samourai.wallet.api.backend;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
-import com.samourai.wallet.api.backend.BackendApi;
-import com.samourai.wallet.api.backend.BackendServer;
-import com.samourai.wallet.api.backend.MinerFeeTarget;
-import com.samourai.wallet.api.backend.beans.MultiAddrResponse;
-import com.samourai.wallet.api.backend.beans.UnspentOutput;
-import com.samourai.wallet.api.backend.beans.WalletResponse;
-import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.wallet.api.backend.beans.*;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java8.util.Lists;
-import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 public class BackendApiTest extends AbstractTest {
   private static final long requestTimeout = 5000;
 
@@ -31,12 +23,9 @@ public class BackendApiTest extends AbstractTest {
   private BackendApi backendApi;
 
   public BackendApiTest() throws Exception {
-    HttpClient jettyHttpClient = CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
     JavaHttpClient httpClient =
-        new JavaHttpClient(HttpUsage.BACKEND, jettyHttpClient, requestTimeout);
-    backendApi =
-        new BackendApi(
-            httpClient, BackendServer.TESTNET.getBackendUrlClear(), java8.util.Optional.empty());
+        new JavaHttpClient(requestTimeout, Optional.empty(), HttpUsage.BACKEND);
+    backendApi = new BackendApi(httpClient, BackendServer.TESTNET.getBackendUrlClear(), null);
   }
 
   @Test
@@ -44,6 +33,7 @@ public class BackendApiTest extends AbstractTest {
     backendApi.initBip84(VPUB_1);
   }
 
+  @Disabled
   @Test
   public void fetchAddress() throws Exception {
     String zpub = VPUB_1;
@@ -96,6 +86,38 @@ public class BackendApiTest extends AbstractTest {
     for (MinerFeeTarget minerFeeTarget : MinerFeeTarget.values()) {
       Assertions.assertTrue(walletResponse.info.fees.get(minerFeeTarget.getValue()) > 0);
     }
+  }
+
+  @Test
+  public void fetchTx() throws Exception {
+    String txid = "0ba8c89afc51b65f133ac40131de7e170a41f87c5a4943502ff5705aae6341a8";
+    TxDetail tx = backendApi.fetchTx(txid, true);
+
+    Assertions.assertEquals(
+        "0ba8c89afc51b65f133ac40131de7e170a41f87c5a4943502ff5705aae6341a8", tx.txid);
+    Assertions.assertEquals(222, tx.size);
+    Assertions.assertEquals(141, tx.vsize);
+    Assertions.assertEquals(1, tx.version);
+    Assertions.assertEquals(0, tx.locktime);
+
+    Assertions.assertEquals(1, tx.inputs.length);
+    Assertions.assertEquals(0, tx.inputs[0].n);
+    Assertions.assertEquals(4294967295L, tx.inputs[0].seq);
+    Assertions.assertEquals(
+        "d60fae44ba8c728d43e7692c530b391eb393e298b169df3c09c150f79a66f1cc",
+        tx.inputs[0].outpoint.txid);
+    Assertions.assertEquals(1, tx.inputs[0].outpoint.vout);
+    Assertions.assertEquals(238749293, tx.inputs[0].outpoint.value);
+    Assertions.assertEquals(
+        "0014ded4c3777ae40d686c981ee566a7021beda15ad1", tx.inputs[0].outpoint.scriptpubkey);
+
+    Assertions.assertEquals(2, tx.outputs.length);
+    Assertions.assertEquals(0, tx.outputs[0].n);
+    Assertions.assertEquals(50000000, tx.outputs[0].value);
+    Assertions.assertEquals(
+        "001495df5bf26f2ae0307133ff6dc0a7d2e729872e89", tx.outputs[0].scriptpubkey);
+    Assertions.assertEquals("witness_v0_keyhash", tx.outputs[0].type);
+    Assertions.assertEquals("tb1qjh04hun09tsrqufnlakupf7juu5cwt5f87gh5u", tx.outputs[0].address);
   }
 
   private void assertAddressEquals(

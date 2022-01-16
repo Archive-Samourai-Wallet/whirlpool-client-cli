@@ -75,7 +75,7 @@ public class RunSetExternalXpub {
       }
 
       // validate
-      boolean validate = CliUtils.readUserInputRequiredBoolean("Continue? (y/n)");
+      boolean validate = CliUtils.readUserInputRequiredBoolean("Continue?");
       if (!validate) {
         throw new NotifiableException("Aborted");
       }
@@ -86,7 +86,7 @@ public class RunSetExternalXpub {
       log.info("⣿ This will unset external XPub. Your funds will stay on your POSTMIX wallet.");
 
       // validate
-      boolean validate = CliUtils.readUserInputRequiredBoolean("Continue? (y/n)");
+      boolean validate = CliUtils.readUserInputRequiredBoolean("Continue?");
       if (!validate) {
         throw new NotifiableException("Aborted");
       }

@@ -1,54 +1,58 @@
 package com.samourai.whirlpool.cli.wallet;
 
-import com.samourai.wallet.client.Bip84Wallet;
+import com.samourai.wallet.api.backend.BackendApi;
+import com.samourai.wallet.client.BipWalletAndAddressType;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
-import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.mix.listener.MixSuccess;
+import com.samourai.whirlpool.client.mix.MixParams;
+import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.MixProgress;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import io.reactivex.Observable;
+import com.samourai.whirlpool.client.wallet.data.dataSource.SamouraiDataSource;
+import com.samourai.whirlpool.protocol.beans.Utxo;
+import io.reactivex.Completable;
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliWallet extends WhirlpoolWallet {
-  private static final Logger log = LoggerFactory.getLogger(CliWallet.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
-  private WalletAggregateService walletAggregateService;
   private CliTorClientService cliTorClientService;
   private JavaHttpClientService httpClientService;
 
   public CliWallet(
-      WhirlpoolWallet whirlpoolWallet,
+      WhirlpoolWalletConfig config,
+      byte[] seed,
+      String passphrase,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
-      WalletAggregateService walletAggregateService,
       CliTorClientService cliTorClientService,
-      JavaHttpClientService httpClientService) {
-    super(whirlpoolWallet);
+      JavaHttpClientService httpClientService)
+      throws Exception {
+    super(config, seed, passphrase);
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
-    this.walletAggregateService = walletAggregateService;
     this.cliTorClientService = cliTorClientService;
     this.httpClientService = httpClientService;
   }
 
   @Override
-  public void start() {
+  public Completable startAsync() {
     if (!cliConfigService.isCliStatusReady()) {
       log.warn("Cannot start wallet: cliStatus is not ready");
-      return;
+      return Completable.error(
+          new NotifiableException("Cannot start wallet: cliStatus is not ready"));
     }
     // start wallet
-    super.start();
+    return super.startAsync();
   }
 
   @Override
@@ -57,15 +61,15 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   @Override
-  public Observable<MixProgress> mix(WhirlpoolUtxo whirlpoolUtxo) throws NotifiableException {
+  public void mix(WhirlpoolUtxo whirlpoolUtxo) throws NotifiableException {
     // get Tor ready before mixing
     cliTorClientService.waitReady();
-    return super.mix(whirlpoolUtxo);
+    super.mix(whirlpoolUtxo);
   }
 
   @Override
-  public void onMixSuccess(WhirlpoolUtxo whirlpoolUtxo, MixSuccess mixSuccess) {
-    super.onMixSuccess(whirlpoolUtxo, mixSuccess);
+  public void onMixSuccess(MixParams mixParams, Utxo receiveUtxo) {
+    super.onMixSuccess(mixParams, receiveUtxo);
 
     // change http Tor identity
     if (cliConfig.getTor()) {
@@ -74,64 +78,17 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   @Override
-  public synchronized void onEmptyWalletException(EmptyWalletException e) {
-    try {
-      if (cliConfig.isAutoAggregatePostmix()) {
-        // run autoAggregatePostmix
-        autoRefill(e);
-      } else {
-        // default management
-        throw e;
-      }
-    } catch (Exception ee) {
-      // default management
-      super.onEmptyWalletException(e);
+  public void onMixFail(MixParams mixParams, MixFailReason failReason, String notifiableError) {
+    super.onMixFail(mixParams, failReason, notifiableError);
+
+    // change http Tor identity
+    if (cliConfig.getTor()) {
+      httpClientService.changeIdentityRest();
     }
   }
 
-  private void autoRefill(EmptyWalletException e) throws Exception {
-    // check balance
-    long totalBalance = getUtxoSupplier().getBalanceTotal();
-    if (log.isDebugEnabled()) {
-      log.debug("totalBalance=" + totalBalance);
-    }
-
-    /*long missingBalance = requiredBalance - totalBalance;
-    if (log.isDebugEnabled()) {
-      log.debug("requiredBalance=" + requiredBalance + " => missingBalance=" + missingBalance);
-    }
-    if (missingBalance > 0) {
-      // cannot autoAggregatePostmix
-      throw new EmptyWalletException("Insufficient balance to continue", missingBalance);
-    }*/
-
-    // auto aggregate postmix is possible
-    log.info(" o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
-    Exception aggregateException = null;
-    try {
-      boolean success = walletAggregateService.consolidateWallet(this);
-      if (!success) {
-        throw new NotifiableException("AutoAggregatePostmix failed (nothing to aggregate?)");
-      }
-      if (log.isDebugEnabled()) {
-        log.debug("AutoAggregatePostmix SUCCESS. ");
-      }
-    } catch (Exception ee) {
-      // resume wallet before throwing exception (to retry later)
-      aggregateException = ee;
-      if (log.isDebugEnabled()) {
-        log.debug("AutoAggregatePostmix ERROR, will throw error later.");
-      }
-    }
-
-    // reset mixing threads to avoid mixing obsolete consolidated utxos
-    mixOrchestrator.stopMixingClients();
-
-    getUtxoSupplier().expire();
-
-    if (aggregateException != null) {
-      throw aggregateException;
-    }
+  public void resyncMixsDone() {
+    ((SamouraiDataSource) getDataSource()).resyncMixsDone();
   }
 
   @Override
@@ -142,17 +99,21 @@ public class CliWallet extends WhirlpoolWallet {
   // make public
 
   @Override
-  public Bip84Wallet getWalletDeposit() {
+  public BipWalletAndAddressType getWalletDeposit() {
     return super.getWalletDeposit();
   }
 
   @Override
-  public Bip84Wallet getWalletPremix() {
+  public BipWalletAndAddressType getWalletPremix() {
     return super.getWalletPremix();
   }
 
   @Override
-  public Bip84Wallet getWalletPostmix() {
+  public BipWalletAndAddressType getWalletPostmix() {
     return super.getWalletPostmix();
+  }
+
+  public BackendApi getBackendApi() {
+    return ((SamouraiDataSource) getDataSource()).getBackendApi();
   }
 }

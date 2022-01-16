@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.JavaTorClient;
 import com.samourai.tor.client.TorClientService;
-import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
@@ -73,7 +73,7 @@ public class CliTorClientService extends TorClientService {
     }
   }
 
-  public Optional<CliProxy> getTorProxy(HttpUsage httpUsage) {
+  public Optional<HttpProxy> getTorProxy(HttpUsage httpUsage) {
     boolean isTorUsage = torHttpUsages.contains(httpUsage);
     if (isTorUsage && torClient.isPresent()) {
       return torClient.get().getTorProxy(httpUsage);

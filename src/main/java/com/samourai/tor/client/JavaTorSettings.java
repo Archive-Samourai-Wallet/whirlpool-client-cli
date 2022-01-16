@@ -1,15 +1,15 @@
 package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.DefaultSettings;
-import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
+import com.samourai.http.client.HttpProxy;
+import com.samourai.http.client.HttpProxyProtocol;
 import java.util.Optional;
 
 public class JavaTorSettings extends DefaultSettings {
-  private CliProxy cliProxy;
+  private HttpProxy cliProxy;
   private String customTorrc;
 
-  public JavaTorSettings(Optional<CliProxy> cliProxy, String customTorrc) {
+  public JavaTorSettings(Optional<HttpProxy> cliProxy, String customTorrc) {
     this.cliProxy = cliProxy.orElse(null);
     this.customTorrc = customTorrc;
   }
@@ -58,7 +58,7 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public String getProxyHost() {
-    if (cliProxy != null && CliProxyProtocol.HTTP.equals(cliProxy.getProtocol())) {
+    if (cliProxy != null && HttpProxyProtocol.HTTP.equals(cliProxy.getProtocol())) {
       return cliProxy.getHost();
     }
     return null;
@@ -66,7 +66,7 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public String getProxyPort() {
-    if (cliProxy != null && CliProxyProtocol.HTTP.equals(cliProxy.getProtocol())) {
+    if (cliProxy != null && HttpProxyProtocol.HTTP.equals(cliProxy.getProtocol())) {
       return Integer.toString(cliProxy.getPort());
     }
     return null;
@@ -74,7 +74,7 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public String getProxySocks5Host() {
-    if (cliProxy != null && CliProxyProtocol.SOCKS.equals(cliProxy.getProtocol())) {
+    if (cliProxy != null && HttpProxyProtocol.SOCKS.equals(cliProxy.getProtocol())) {
       return cliProxy.getHost();
     }
     return null;
@@ -82,7 +82,7 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public String getProxySocks5ServerPort() {
-    if (cliProxy != null && CliProxyProtocol.SOCKS.equals(cliProxy.getProtocol())) {
+    if (cliProxy != null && HttpProxyProtocol.SOCKS.equals(cliProxy.getProtocol())) {
       return Integer.toString(cliProxy.getPort());
     }
     return null;
