@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.CliRestartException;
+import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
@@ -174,14 +175,7 @@ public class CliService {
     boolean hasCommandToRun = (commandToRun != null);
     if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
       // no passphrase but listening => keep listening
-      log.info(CliUtils.LOG_SEPARATOR);
-      log.info("⣿ AUTHENTICATION REQUIRED");
-      log.info("⣿ Whirlpool wallet is CLOSED.");
-      log.info("⣿ Please start GUI to authenticate and start mixing.");
-      log.info("⣿ Or authenticate with --authenticate");
-      log.info(CliUtils.LOG_SEPARATOR);
-      keepRunning();
-      return CliResult.KEEP_RUNNING;
+      return keepRunningNoAuth();
     }
 
     // authenticate
@@ -194,7 +188,14 @@ public class CliService {
       } else if (commandToRun != null) {
         reason = "to run --" + commandToRun;
       }
-      String seedPassphrase = authenticate(reason);
+
+      String seedPassphrase;
+      try {
+        seedPassphrase = authenticate(reason);
+      } catch (NoUserInputException e) {
+        // no user input available
+        return keepRunningNoAuth();
+      }
       try {
         // we may have authenticated from API in the meantime...
         cliWallet =
@@ -229,6 +230,17 @@ public class CliService {
       keepRunning();
       return CliResult.KEEP_RUNNING;
     }
+  }
+
+  private CliResult keepRunningNoAuth() {
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ AUTHENTICATION REQUIRED");
+    log.info("⣿ Whirlpool wallet is CLOSED.");
+    log.info("⣿ Please start GUI to authenticate and start mixing.");
+    log.info("⣿ Or authenticate with --authenticate");
+    log.info(CliUtils.LOG_SEPARATOR);
+    keepRunning();
+    return CliResult.KEEP_RUNNING;
   }
 
   private void keepRunning() {

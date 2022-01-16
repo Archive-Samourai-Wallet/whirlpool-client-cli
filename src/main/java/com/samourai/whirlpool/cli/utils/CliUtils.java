@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.utils;
 import ch.qos.logback.classic.Level;
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpProxyProtocol;
+import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
@@ -26,7 +27,7 @@ public class CliUtils {
   }
 
   public static void waitUserAction(String message) throws NotifiableException {
-    Console console = System.console();
+    Console console = getConsole();
     if (console != null) {
       log.info("⣿ ACTION REQUIRED ⣿ " + message);
       log.info("Press <ENTER> when ready:");
@@ -113,7 +114,7 @@ public class CliUtils {
   }
 
   public static String readUserInput(String message, boolean secret) {
-    Console console = System.console();
+    Console console = getConsole();
     String inviteMessage = message + ">";
 
     // read line
@@ -123,8 +124,11 @@ public class CliUtils {
       line = secret ? new String(console.readPassword()) : console.readLine();
     } else {
       // allow console redirection
-      Scanner input = new Scanner(System.in);
+      Scanner input = getConsoleRedirection();
       System.out.print(inviteMessage);
+      if (!input.hasNextLine()) {
+        throw new NoUserInputException();
+      }
       line = input.nextLine();
     }
     if (line != null) {
@@ -137,7 +141,7 @@ public class CliUtils {
   }
 
   public static Character readChar() {
-    Console console = System.console();
+    Console console = getConsole();
     if (console != null) {
       try {
         return (char) console.reader().read();
@@ -148,8 +152,17 @@ public class CliUtils {
     return null;
   }
 
+  public static Scanner getConsoleRedirection() {
+    Scanner input = new Scanner(System.in);
+    return input;
+  }
+
+  public static Console getConsole() {
+    return System.console();
+  }
+
   public static boolean hasConsole() {
-    return System.console() != null;
+    return getConsole() != null;
   }
 
   public static void notifyError(String message) {
