@@ -43,6 +43,8 @@ public class Application implements ApplicationRunner {
   @Autowired CliService cliService;
 
   public static void main(String... args) {
+    args = adaptArgs(args);
+
     // override configuration with local file
     System.setProperty(
         "spring.config.location",
@@ -188,5 +190,17 @@ public class Application implements ApplicationRunner {
     return Arrays.stream(applicationArguments.getSourceArgs())
         .filter(a -> !ArrayUtils.contains(ignoreArgs, a.toLowerCase()))
         .toArray(i -> new String[i]);
+  }
+
+  private static String[] adaptArgs(String... args) {
+    if (args != null) {
+      for (int i = 0; i < args.length; i++) {
+        String arg = args[i];
+        // rename Spring arg: logging.file => logging.file.name
+        arg = arg.replace("--logging.file=", "--logging.file.name=");
+        args[i] = arg;
+      }
+    }
+    return args;
   }
 }
