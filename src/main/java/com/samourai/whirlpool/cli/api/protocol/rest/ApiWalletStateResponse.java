@@ -12,13 +12,13 @@ public class ApiWalletStateResponse {
   private int nbQueued;
   private Collection<ApiUtxo> threads;
 
-  public ApiWalletStateResponse(MixingState mixingState) {
+  public ApiWalletStateResponse(MixingState mixingState, int latestBlockHeight) {
     this.started = mixingState.isStarted();
     this.nbMixing = mixingState.getNbMixing();
     this.nbQueued = mixingState.getNbQueued();
     this.threads =
         mixingState.getUtxosMixing().stream()
-            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
+            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, latestBlockHeight))
             .collect(Collectors.toList());
   }
 

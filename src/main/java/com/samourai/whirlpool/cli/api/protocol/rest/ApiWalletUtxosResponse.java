@@ -19,6 +19,7 @@ public class ApiWalletUtxosResponse {
   private long lastUpdate;
 
   public ApiWalletUtxosResponse(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
     Comparator<WhirlpoolUtxo> comparator =
         (o1, o2) -> {
           // last activity first
@@ -38,17 +39,31 @@ public class ApiWalletUtxosResponse {
           }
 
           // last confirmed
-          return Ints.compare(o1.getUtxo().confirmations, o2.getUtxo().confirmations);
+          int o1confirmations = o1.computeConfirmations(latestBlockHeight);
+          int o2confirmations = o2.computeConfirmations(latestBlockHeight);
+          return Ints.compare(o1confirmations, o2confirmations);
         };
     this.deposit =
         computeApiWallet(
-            WhirlpoolAccount.DEPOSIT, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
+            WhirlpoolAccount.DEPOSIT,
+            AddressType.SEGWIT_NATIVE,
+            whirlpoolWallet,
+            latestBlockHeight,
+            comparator);
     this.premix =
         computeApiWallet(
-            WhirlpoolAccount.PREMIX, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
+            WhirlpoolAccount.PREMIX,
+            AddressType.SEGWIT_NATIVE,
+            whirlpoolWallet,
+            latestBlockHeight,
+            comparator);
     this.postmix =
         computeApiWallet(
-            WhirlpoolAccount.POSTMIX, AddressType.SEGWIT_NATIVE, whirlpoolWallet, comparator);
+            WhirlpoolAccount.POSTMIX,
+            AddressType.SEGWIT_NATIVE,
+            whirlpoolWallet,
+            latestBlockHeight,
+            comparator);
     this.balance = this.deposit.getBalance() + this.premix.getBalance() + this.postmix.getBalance();
     this.lastUpdate = whirlpoolWallet.getUtxoSupplier().getLastUpdate();
   }
@@ -57,10 +72,11 @@ public class ApiWalletUtxosResponse {
       WhirlpoolAccount account,
       AddressType addressType,
       WhirlpoolWallet whirlpoolWallet,
+      int latestBlockHeight,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
     String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, addressType).getPub();
-    return new ApiWallet(utxos, zpub, comparator);
+    return new ApiWallet(utxos, zpub, latestBlockHeight, comparator);
   }
 
   public ApiWallet getDeposit() {

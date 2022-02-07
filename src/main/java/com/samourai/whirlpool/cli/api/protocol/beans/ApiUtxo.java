@@ -23,12 +23,12 @@ public class ApiUtxo {
   private String error;
   private Long lastActivityElapsed;
 
-  public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo) {
+  public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo, int latestBlockHeight) {
     UnspentOutput utxo = whirlpoolUtxo.getUtxo();
     this.hash = utxo.tx_hash;
     this.index = utxo.tx_output_n;
     this.value = utxo.value;
-    this.confirmations = utxo.confirmations;
+    this.confirmations = whirlpoolUtxo.computeConfirmations(latestBlockHeight);
     this.path = utxo.xpub.path;
     this.address = utxo.addr;
 

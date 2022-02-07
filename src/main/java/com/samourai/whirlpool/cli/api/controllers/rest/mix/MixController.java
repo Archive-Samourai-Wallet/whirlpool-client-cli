@@ -22,7 +22,8 @@ public class MixController extends AbstractRestController {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     MixingState mixingState = whirlpoolWallet.getMixingState();
-    return new ApiWalletStateResponse(mixingState);
+    int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
+    return new ApiWalletStateResponse(mixingState, latestBlockHeight);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_START, method = RequestMethod.POST)
