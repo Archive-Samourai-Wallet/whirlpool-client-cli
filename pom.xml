@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.samourai.code.whirlpool</groupId>
     <artifactId>whirlpool-client-cli</artifactId>
-    <version>0.10.13-SNAPSHOT</version>
+    <version>0.10.13</version>
     <name>whirlpool-client-cli</name>
     <properties>
         <spring-boot.version>2.6.2</spring-boot.version>
@@ -153,6 +153,6 @@
     </repositories>
     <scm>
         <connection>scm:git:git@code.samourai.io:whirlpool/whirlpool-client-cli.git</connection>
-        <tag>0.10.12</tag>
+        <tag>0.10.13</tag>
     </scm>
 </project>
