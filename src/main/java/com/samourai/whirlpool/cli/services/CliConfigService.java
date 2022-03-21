@@ -1,19 +1,26 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.util.CallbackWithArg;
+import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
+import com.samourai.wallet.payload.BackupPayload;
 import com.samourai.wallet.util.CharSequenceX;
+import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.SortedProperties;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
+import io.reactivex.functions.Consumer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -22,11 +29,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DefaultPropertiesPersister;
 
@@ -90,15 +99,92 @@ public class CliConfigService {
     return WhirlpoolPairingPayload.parse(pairingWalletPayload);
   }
 
+  public Pair<WhirlpoolPairingPayload, String> createWallet(
+      PairingDojo pairingDojo, String passphrase, NetworkParameters params) throws Exception {
+    // create wallet
+    HD_Wallet hdw = HD_WalletFactoryGeneric.getInstance().newWallet(passphrase, params);
+    String mnemonic = hdw.getMnemonic();
+
+    // pairing
+    WhirlpoolPairingPayload pairing =
+        WhirlpoolPairingPayload.newInstance(mnemonic, passphrase, true, pairingDojo, params);
+    return Pair.of(pairing, mnemonic);
+  }
+
+  public WhirlpoolPairingPayload restoreExternal(
+      PairingDojo pairingDojo,
+      String passphrase,
+      NetworkParameters params,
+      String seedWords,
+      boolean appendPassphrase)
+      throws Exception {
+
+    // restore wallet
+    String mnemonic;
+    try {
+      String passphraseOrNull = appendPassphrase ? passphrase : null;
+      HD_Wallet hdw =
+          HD_WalletFactoryGeneric.getInstance()
+              .restoreWalletFromWords(seedWords, passphraseOrNull, params);
+      mnemonic = hdw.getMnemonic();
+    } catch (Exception e) {
+      // forward error details
+      throw new NotifiableException("Failed to restore wallet: " + e.getMessage());
+    }
+
+    // pairing
+    WhirlpoolPairingPayload pairing =
+        WhirlpoolPairingPayload.newInstance(
+            mnemonic, passphrase, appendPassphrase, pairingDojo, params);
+    return pairing;
+  }
+
+  public WhirlpoolPairingPayload restoreBackup(
+      BackupPayload backup, PairingDojo pairingDojo, String passphrase) throws Exception {
+    // restore wallet
+    HD_Wallet hdw;
+    try {
+      hdw = backup.computeHdWallet();
+    } catch (Exception e) {
+      // forward error details
+      throw new NotifiableException("Failed to restore backup: " + e.getMessage());
+    }
+    String mnemonic = hdw.getMnemonic();
+    NetworkParameters params = backup.computeNetworkParameters();
+    boolean appendPassphrase = backup.getWalletPassphrase() != null;
+
+    // pairing
+    WhirlpoolPairingPayload pairing =
+        WhirlpoolPairingPayload.newInstance(
+            mnemonic, passphrase, appendPassphrase, pairingDojo, params);
+    return pairing;
+  }
+
   protected String encryptDojoApiKey(String dojoApiKey, String seedPassphrase) throws Exception {
     String encrypted = AESUtil.encrypt(dojoApiKey, new CharSequenceX(seedPassphrase));
     return encrypted;
   }
 
-  public PairingPayload.PairingDojo computePairingDojo(String dojoUrl, String dojoApiKey)
-      throws Exception {
+  public PairingDojo computePairingDojo(String dojoUrl, String dojoApiKey) throws Exception {
     String dojoApiKeyEncrypted = encryptDojoApiKey(dojoUrl, dojoApiKey);
-    return new PairingPayload.PairingDojo(dojoUrl, dojoApiKeyEncrypted);
+    return new PairingDojo(dojoUrl, dojoApiKeyEncrypted);
+  }
+
+  public WhirlpoolPairingPayload computePairingPayload() throws Exception {
+    PairingNetwork pairingNetwork =
+        FormatsUtilGeneric.getInstance().isTestNet(cliConfig.getServer().getParams())
+            ? PairingNetwork.TESTNET
+            : PairingNetwork.MAINNET;
+
+    PairingDojo dojo = null;
+    CliConfigFile.DojoConfig dojoConfig = cliConfig.getDojo();
+    if (dojoConfig.isEnabled()) {
+      dojo = computePairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
+    }
+
+    String seedEncrypted = cliConfig.getSeed();
+    return new WhirlpoolPairingPayload(
+        pairingNetwork, seedEncrypted, cliConfig.isSeedAppendPassphrase(), dojo);
   }
 
   public String initialize(WhirlpoolPairingPayload pairingWallet, boolean tor, Boolean dojo)
@@ -108,7 +194,7 @@ public class CliConfigService {
     // use dojo?
     String dojoUrl = null;
     String dojoApiKeyEncrypted = null;
-    PairingPayload.PairingDojo pairingDojo = pairingWallet.getDojo();
+    PairingDojo pairingDojo = pairingWallet.getDojo();
     if (pairingDojo != null) {
       dojoUrl = pairingDojo.getUrl();
       dojoApiKeyEncrypted = pairingDojo.getApikey();
@@ -161,6 +247,9 @@ public class CliConfigService {
     }
     if (StringUtils.isEmpty(encryptedMnemonic)) {
       throw new NotifiableException("Invalid mnemonic");
+    }
+    if (dojoEnabled && (StringUtils.isEmpty(dojoUrl) || StringUtils.isEmpty(dojoApiKeyEncrypted))) {
+      throw new NotifiableException("Invalid dojo settings");
     }
 
     // preserve apiKey when already defined
@@ -337,7 +426,7 @@ public class CliConfigService {
 
     // write
     File f = getConfigurationFile();
-    CallbackWithArg<File> callback =
+    Consumer<File> callback =
         tempFile -> {
           OutputStream out = new FileOutputStream(tempFile);
           try {
@@ -347,7 +436,7 @@ public class CliConfigService {
             out.close();
           }
         };
-    ClientUtils.safeWrite(f, callback);
+    SystemUtil.safeWrite(f, callback);
   }
 
   private File getConfigurationFile() {

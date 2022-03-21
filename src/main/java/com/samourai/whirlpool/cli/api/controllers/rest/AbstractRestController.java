@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.rest;
 
-import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.cli.CliApplication;
 import com.samourai.whirlpool.cli.api.protocol.CliApi;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -49,7 +49,7 @@ public abstract class AbstractRestController {
           } catch (Exception e) {
             log.error("", e);
           }
-          Application.restart();
+          CliApplication.restart();
         });
   }
 }

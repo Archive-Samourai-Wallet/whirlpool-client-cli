@@ -1,11 +1,7 @@
 package com.samourai.whirlpool.cli.beans;
 
-import com.samourai.wallet.api.pairing.PairingNetwork;
-import com.samourai.wallet.api.pairing.PairingPayload;
-import com.samourai.wallet.api.pairing.PairingType;
-import com.samourai.wallet.api.pairing.PairingVersion;
+import com.samourai.wallet.api.pairing.*;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -33,19 +29,21 @@ public class WhirlpoolPairingPayload extends PairingPayload {
         dojo);
   }
 
-  public static WhirlpoolPairingPayload newInstance(HD_Wallet hdw, PairingDojo dojo)
+  public static WhirlpoolPairingPayload newInstance(
+      String mnemonic,
+      String passphrase,
+      boolean appendPassphrase,
+      PairingDojo dojo,
+      NetworkParameters params)
       throws Exception {
-    String mnemonic = hdw.getMnemonic();
-    String passphrase = hdw.getPassphrase();
     String mnemonicEncrypted = encryptSeedWords(mnemonic, passphrase);
 
-    NetworkParameters params = hdw.getParams();
     PairingNetwork network =
         FormatsUtilGeneric.getInstance().isTestNet(params)
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
 
-    return new WhirlpoolPairingPayload(network, mnemonicEncrypted, true, dojo);
+    return new WhirlpoolPairingPayload(network, mnemonicEncrypted, appendPassphrase, dojo);
   }
 
   protected static String encryptSeedWords(String seedWords, String seedPassphrase)

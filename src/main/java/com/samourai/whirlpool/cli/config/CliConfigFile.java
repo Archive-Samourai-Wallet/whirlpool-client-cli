@@ -223,7 +223,6 @@ public abstract class CliConfigFile {
     @NotEmpty private int autoTx0Delay;
     @NotEmpty private int tx0MaxOutputs;
     @NotEmpty private int tx0MaxRetry;
-    @NotEmpty private boolean tx0StrictMode;
     @NotEmpty private boolean autoMix;
     private Map<String, Long> overspend;
 
@@ -237,7 +236,6 @@ public abstract class CliConfigFile {
       this.autoTx0Delay = copy.autoTx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
       this.tx0MaxRetry = copy.tx0MaxRetry;
-      this.tx0StrictMode = copy.tx0StrictMode;
       this.autoMix = copy.autoMix;
       this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
     }
@@ -299,14 +297,6 @@ public abstract class CliConfigFile {
       this.tx0MaxRetry = tx0MaxRetry;
     }
 
-    public boolean isTx0StrictMode() {
-      return tx0StrictMode;
-    }
-
-    public void setTx0StrictMode(boolean tx0StrictMode) {
-      this.tx0StrictMode = tx0StrictMode;
-    }
-
     public boolean isAutoMix() {
       return autoMix;
     }
@@ -332,7 +322,6 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/autoTx0Delay", Integer.toString(autoTx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
       configInfo.put("cli/mix/tx0MaxRetry", Integer.toString(tx0MaxRetry));
-      configInfo.put("cli/mix/tx0StrictMode", Boolean.toString(tx0StrictMode));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
       return configInfo;
@@ -661,7 +650,6 @@ public abstract class CliConfigFile {
     config.setAutoTx0Delay(mix.getAutoTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
     config.setTx0MaxRetry(mix.getTx0MaxRetry());
-    config.setTx0StrictMode(mix.isTx0StrictMode());
     config.setAutoMix(mix.isAutoMix());
     config.setOverspend(mix.getOverspend());
 

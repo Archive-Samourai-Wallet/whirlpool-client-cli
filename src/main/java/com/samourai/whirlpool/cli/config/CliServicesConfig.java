@@ -1,7 +1,13 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.javawsserver.config.JWSSConfig;
+import com.samourai.wallet.payload.PayloadUtilGeneric;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.wallet.send.SweepUtilGeneric;
+import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
+import com.samourai.whirlpool.cli.utils.WalletRoutingDataSource;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import org.apache.catalina.connector.Connector;
 import org.bitcoinj.core.NetworkParameters;
@@ -34,6 +40,16 @@ public class CliServicesConfig {
   @Bean
   Bech32UtilGeneric bech32Util() {
     return Bech32UtilGeneric.getInstance();
+  }
+
+  @Bean
+  PayloadUtilGeneric payloadUtil() {
+    return PayloadUtilGeneric.getInstance();
+  }
+
+  @Bean
+  SweepUtilGeneric sweepUtil() {
+    return SweepUtilGeneric.getInstance();
   }
 
   @Bean
@@ -72,5 +88,20 @@ public class CliServicesConfig {
     TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
     factory.addAdditionalTomcatConnectors(connector);
     return factory;
+  }
+
+  @Bean
+  JWSSConfig jwssConfig() {
+    return new JWSSConfig(
+        CliApiEndpoint.WS_ENDPOINTS,
+        CliApiEndpoint.WS_PREFIX_USER_PRIVATE,
+        CliApiEndpoint.WS_PREFIX,
+        CliApiEndpoint.WS_PREFIX_DESTINATION,
+        CliApiEndpoint.WS_PREFIX_USER_REPLY);
+  }
+
+  @Bean
+  WalletRoutingDataSource walletRoutingDataSource() throws NotifiableException {
+    return new WalletRoutingDataSource();
   }
 }

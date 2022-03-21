@@ -1,8 +1,9 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.mix;
 
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiWalletStateResponse;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiMixStateResponse;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
@@ -18,18 +19,17 @@ public class MixController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX, method = RequestMethod.GET)
-  public ApiWalletStateResponse wallet(@RequestHeader HttpHeaders headers) throws Exception {
+  public ApiMixStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     MixingState mixingState = whirlpoolWallet.getMixingState();
-    int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
-    return new ApiWalletStateResponse(mixingState, latestBlockHeight);
+    return new ApiMixStateResponse(mixingState);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_START, method = RequestMethod.POST)
   public void start(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
-    cliWalletService.getSessionWallet().startAsync().blockingAwait();
+    AsyncUtil.getInstance().blockingAwait(cliWalletService.getSessionWallet().startAsync());
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_STOP, method = RequestMethod.POST)

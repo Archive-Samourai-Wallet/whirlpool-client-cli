@@ -7,4 +7,14 @@ public class ApiUtxoRef {
   @NotEmpty public int index;
 
   public ApiUtxoRef() {}
+
+  public ApiUtxoRef(String hash, int index) {
+    this.hash = hash;
+    this.index = index;
+  }
+
+  @Override
+  public String toString() {
+    return hash + ":" + index;
+  }
 }

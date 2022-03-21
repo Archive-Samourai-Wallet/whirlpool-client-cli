@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.wallet;
 
 import com.samourai.wallet.api.backend.BackendApi;
-import com.samourai.wallet.client.BipWalletAndAddressType;
+import com.samourai.wallet.bipWallet.BipWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
@@ -13,7 +13,7 @@ import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.data.dataSource.SamouraiDataSource;
+import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSource;
 import com.samourai.whirlpool.protocol.beans.Utxo;
 import io.reactivex.Completable;
 import java.lang.invoke.MethodHandles;
@@ -88,7 +88,7 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   public void resyncMixsDone() {
-    ((SamouraiDataSource) getDataSource()).resyncMixsDone();
+    ((DojoDataSource) getDataSource()).resyncMixsDone();
   }
 
   @Override
@@ -99,21 +99,21 @@ public class CliWallet extends WhirlpoolWallet {
   // make public
 
   @Override
-  public BipWalletAndAddressType getWalletDeposit() {
+  public BipWallet getWalletDeposit() {
     return super.getWalletDeposit();
   }
 
   @Override
-  public BipWalletAndAddressType getWalletPremix() {
+  public BipWallet getWalletPremix() {
     return super.getWalletPremix();
   }
 
   @Override
-  public BipWalletAndAddressType getWalletPostmix() {
+  public BipWallet getWalletPostmix() {
     return super.getWalletPostmix();
   }
 
   public BackendApi getBackendApi() {
-    return ((SamouraiDataSource) getDataSource()).getBackendApi();
+    return ((DojoDataSource) getDataSource()).getBackendApi();
   }
 }

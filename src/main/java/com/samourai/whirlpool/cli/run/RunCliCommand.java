@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.whirlpool.cli.services.CliArgs;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import java.lang.invoke.MethodHandles;
@@ -10,17 +11,20 @@ import org.slf4j.LoggerFactory;
 public class RunCliCommand {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ApplicationArgs appArgs;
+  private CliArgs appArgs;
   private CliWalletService cliWalletService;
+  private CliConfigService cliConfigService;
 
-  public RunCliCommand(ApplicationArgs appArgs, CliWalletService cliWalletService) {
+  public RunCliCommand(
+      CliArgs appArgs, CliWalletService cliWalletService, CliConfigService cliConfigService) {
     this.appArgs = appArgs;
     this.cliWalletService = cliWalletService;
+    this.cliConfigService = cliConfigService;
   }
 
   public void run() throws Exception {
     if (appArgs.isDumpPayload()) {
-      new RunDumpPayload(cliWalletService).run();
+      new RunDumpPayload(cliConfigService).run();
     } else if (appArgs.isAggregate()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
@@ -44,12 +48,12 @@ public class RunCliCommand {
     }
   }
 
-  public static String getCommandToRun(ApplicationArgs appArgs) {
+  public static String getCommandToRun(CliArgs appArgs) {
     if (appArgs.isDumpPayload()) {
-      return ApplicationArgs.ARG_DUMP_PAYLOAD;
+      return CliArgs.ARG_DUMP_PAYLOAD;
     }
     if (appArgs.isAggregate()) {
-      return ApplicationArgs.ARG_AGGREGATE;
+      return CliArgs.ARG_AGGREGATE;
     }
     if (appArgs.isListPools()) {
       return appArgs.ARG_LIST_POOLS;

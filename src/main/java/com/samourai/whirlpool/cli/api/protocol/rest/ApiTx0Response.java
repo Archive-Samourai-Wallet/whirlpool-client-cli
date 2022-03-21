@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.client.tx0.Tx0;
 
-public class ApiTx0Response extends ApiTx0PreviewResponse {
+public class ApiTx0Response extends ApiTx0Preview {
   private String txid;
 
   public ApiTx0Response(Tx0 tx0) {

@@ -2,12 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.samourai.code.whirlpool</groupId>
-    <artifactId>whirlpool-client-cli</artifactId>
-    <version>0.10.13</version>
-    <name>whirlpool-client-cli</name>
+    <artifactId>wallet-cli</artifactId>
+    <version>dearly-1-SNAPSHOT</version>
+    <name>wallet-cli</name>
     <properties>
         <spring-boot.version>2.6.2</spring-boot.version>
-        <spring-websocket.version>5.3.14</spring-websocket.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.scm.id>samourai</project.scm.id>
@@ -16,12 +15,23 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.23.38.1</version>
+            <version>0.23.41</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.wallet</groupId>
             <artifactId>java-http-client</artifactId>
+            <version>1.0.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.samourai.code.wallet</groupId>
+                    <artifactId>extlibj</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.samourai.code.wallet</groupId>
+            <artifactId>java-websocket-server</artifactId>
             <version>1.0.4</version>
             <exclusions>
                 <exclusion>
@@ -44,20 +54,26 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
             <version>${spring-boot.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-websocket</artifactId>
-            <version>${spring-websocket.version}</version>
-            <scope>compile</scope>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.200</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-messaging</artifactId>
-            <version>${spring-websocket.version}</version>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>8.5.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -74,6 +90,11 @@
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>jtorctl</artifactId>
             <version>0.2.3-samourai</version>
+        </dependency>
+        <dependency>
+            <groupId>io.samourai.code.wallet</groupId>
+            <artifactId>boltzmann-java</artifactId>
+            <version>1.0.4</version>
         </dependency>
         <!-- jdk >= 9 -->
         <dependency>
@@ -108,7 +129,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>com.samourai.whirlpool.cli.Application</mainClass>
+                    <mainClass>com.samourai.whirlpool.cli.CliApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -153,6 +174,6 @@
     </repositories>
     <scm>
         <connection>scm:git:git@code.samourai.io:whirlpool/whirlpool-client-cli.git</connection>
-        <tag>0.10.13</tag>
+        <tag>0.10.12-dsk</tag>
     </scm>
 </project>

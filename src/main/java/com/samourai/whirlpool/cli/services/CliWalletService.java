@@ -1,36 +1,37 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
-import com.samourai.wallet.api.pairing.PairingNetwork;
-import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.api.pairing.PairingDojo;
+import com.samourai.wallet.bipWallet.WalletSupplier;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
+import com.samourai.wallet.payload.PayloadUtilGeneric;
 import com.samourai.wallet.util.CharSequenceX;
-import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.beans.BusyReason;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
-import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.event.CliStateChangeEvent;
 import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.CliRestartException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.utils.WalletRoutingDataSource;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.event.UtxosRequestEvent;
 import com.samourai.whirlpool.client.event.UtxosResponseEvent;
+import com.samourai.whirlpool.client.event.WalletCloseEvent;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolEventService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java8.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ import org.springframework.stereotype.Service;
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
+  private static final String BACKUP_DIR = ".samourai/";
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
@@ -49,6 +50,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
   private CliUpgradeService cliUpgradeService;
+  private WalletRoutingDataSource walletRoutingDataSource;
 
   private Set<BusyReason> busyReasons;
 
@@ -58,7 +60,8 @@ public class CliWalletService extends WhirlpoolWalletService {
       JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService,
-      CliUpgradeService cliUpgradeService) {
+      CliUpgradeService cliUpgradeService,
+      WalletRoutingDataSource walletRoutingDataSource) {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
@@ -66,6 +69,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
     this.cliUpgradeService = cliUpgradeService;
+    this.walletRoutingDataSource = walletRoutingDataSource;
 
     this.busyReasons = new LinkedHashSet<>();
 
@@ -127,6 +131,16 @@ public class CliWalletService extends WhirlpoolWalletService {
             httpClientService);
     cliWallet = (CliWallet) openWallet(cliWallet);
 
+    // update datasource
+    walletRoutingDataSource.setDataSourceWallet(cliWallet.getWalletIdentifier(), passphrase);
+
+    // write backup
+    try {
+      writeBackup(cliWallet, passphrase);
+    } catch (Exception e) {
+      log.error("writeBackup failed", e);
+    }
+
     // check upgrade
     boolean shouldRestart = cliUpgradeService.upgradeAuthenticated(cliWallet);
     if (shouldRestart) {
@@ -158,6 +172,10 @@ public class CliWalletService extends WhirlpoolWalletService {
     return decrypted;
   }
 
+  protected static String decryptDojoApiKey(String apiKey, String seedPassphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
+  }
+
   public CliWallet getSessionWallet() throws NoSessionWalletException {
     Optional<CliWallet> cliWalletOpt = (Optional) getWhirlpoolWallet();
     if (!cliWalletOpt.isPresent()) {
@@ -179,24 +197,28 @@ public class CliWalletService extends WhirlpoolWalletService {
     return new CliState(cliStatus, cliMessage, loggedIn, busyReasons, torProgress);
   }
 
-  public String computePairingPayload() throws Exception {
-    PairingNetwork pairingNetwork =
-        formatUtils.isTestNet(cliConfig.getServer().getParams())
-            ? PairingNetwork.TESTNET
-            : PairingNetwork.MAINNET;
+  protected File computeBackupFile(CliWallet cliWallet) throws Exception {
+    // create backup dir
+    File backupDir = new File(BACKUP_DIR);
+    SystemUtil.mkDir(backupDir);
 
-    PairingPayload.PairingDojo dojo = null;
-    CliConfigFile.DojoConfig dojoConfig = cliConfig.getDojo();
-    if (dojoConfig.isEnabled()) {
-      dojo = cliConfigService.computePairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
+    // create backup file
+    // TODO zeroleak use paynymID?
+    String fileName = "whirlpool-cli-backup-" + cliWallet.getWalletIdentifier() + ".txt";
+    return new File(backupDir, fileName);
+  }
+
+  protected void writeBackup(CliWallet cliWallet, String password) throws Exception {
+    WalletSupplier walletSupplier = cliWallet.getWalletSupplier();
+    String scode = cliWallet.getConfig().getScode();
+    PairingDojo pairingDojo = cliConfigService.computePairingPayload().getDojo();
+    File file = computeBackupFile(cliWallet);
+
+    if (log.isDebugEnabled()) {
+      log.debug("Writing backup: " + file.getAbsolutePath());
     }
-
-    String seedEncrypted = cliConfig.getSeed();
-    PairingPayload pairingPayload =
-        new WhirlpoolPairingPayload(
-            pairingNetwork, seedEncrypted, cliConfig.isSeedAppendPassphrase(), dojo);
-    String json = ClientUtils.toJsonString(pairingPayload);
-    return json;
+    PayloadUtilGeneric.getInstance()
+        .writeBackup(walletSupplier, scode, pairingDojo, password, file);
   }
 
   @Subscribe
@@ -209,6 +231,12 @@ public class CliWalletService extends WhirlpoolWalletService {
   public void onUtxosResponse(UtxosResponseEvent e) {
     this.busyRemove(BusyReason.FETCHING_WALLET);
     WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
+  }
+
+  @Subscribe
+  public void onWalletClose(WalletCloseEvent e) {
+    // update datasource
+    walletRoutingDataSource.clearDataSourceWallet();
   }
 
   private void busyAdd(BusyReason busyReason) {

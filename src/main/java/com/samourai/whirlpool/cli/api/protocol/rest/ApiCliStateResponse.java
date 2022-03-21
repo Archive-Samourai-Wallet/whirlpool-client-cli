@@ -8,6 +8,7 @@ public class ApiCliStateResponse {
   private CliStatus cliStatus;
   private String cliMessage;
   private boolean loggedIn;
+  private boolean fetchingWallet;
   private Integer torProgress;
 
   private String network;
@@ -22,6 +23,7 @@ public class ApiCliStateResponse {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
+    this.fetchingWallet = cliState.isFetchingWallet();
     this.torProgress = cliState.getTorProgress();
     this.network = cliConfig.getServer().getParams().getPaymentProtocolId();
     this.serverUrl = cliConfig.computeServerUrl();
@@ -42,6 +44,10 @@ public class ApiCliStateResponse {
 
   public boolean isLoggedIn() {
     return loggedIn;
+  }
+
+  public boolean isFetchingWallet() {
+    return fetchingWallet;
   }
 
   public Integer getTorProgress() {

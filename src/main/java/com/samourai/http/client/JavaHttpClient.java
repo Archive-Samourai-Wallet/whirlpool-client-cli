@@ -2,6 +2,7 @@ package com.samourai.http.client;
 
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,7 @@ public class JavaHttpClient extends JettyHttpClient {
   private HttpUsage httpUsage;
 
   public JavaHttpClient(
-      long requestTimeout, java.util.Optional<HttpProxy> cliProxyOptional, HttpUsage httpUsage) {
+      long requestTimeout, Optional<HttpProxy> cliProxyOptional, HttpUsage httpUsage) {
     super(requestTimeout, cliProxyOptional, ClientUtils.USER_AGENT);
     log = ClientUtils.prefixLogger(log, httpUsage.name());
     this.httpUsage = httpUsage;

@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.config.security;
 
+import com.samourai.javawsserver.config.JWSSConfig;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import java.lang.invoke.MethodHandles;
@@ -19,10 +20,12 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliConfig cliConfig;
+  private JWSSConfig config;
 
   @Autowired
-  public CliWebSecurityConfig(CliConfig cliConfig) {
+  public CliWebSecurityConfig(CliConfig cliConfig, JWSSConfig config) {
     this.cliConfig = cliConfig;
+    this.config = config;
   }
 
   @Override
@@ -39,6 +42,10 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
         // authorize REST API
         .authorizeRequests()
         .antMatchers(CliApiEndpoint.REST_ENDPOINTS)
+        .permitAll()
+
+        // authorize websocket API
+        .antMatchers(CliApiEndpoint.WS_PREFIX + CliApiEndpoint.WS_CONNECT + "/**")
         .permitAll()
 
         // reject others

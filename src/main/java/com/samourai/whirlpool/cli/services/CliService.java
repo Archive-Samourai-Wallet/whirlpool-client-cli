@@ -1,7 +1,8 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpProxy;
-import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.wallet.util.AsyncUtil;
+import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -33,17 +34,17 @@ public class CliService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int CLI_STATUS_DELAY = 5000;
 
-  private ApplicationArgs appArgs;
-  private CliConfig cliConfig;
-  private CliConfigService cliConfigService;
-  private CliWalletService cliWalletService;
-  private CliUpgradeService cliUpgradeService;
-  private CliTorClientService cliTorClientService;
-  private JavaHttpClientService httpClientService;
-  private CliStatusOrchestrator cliStatusOrchestrator;
+  protected CliArgs appArgs;
+  protected CliConfig cliConfig;
+  protected CliConfigService cliConfigService;
+  protected CliWalletService cliWalletService;
+  protected CliUpgradeService cliUpgradeService;
+  protected CliTorClientService cliTorClientService;
+  protected JavaHttpClientService httpClientService;
+  protected CliStatusOrchestrator cliStatusOrchestrator;
 
   public CliService(
-      ApplicationArgs appArgs,
+      CliArgs appArgs,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       CliWalletService cliWalletService,
@@ -89,12 +90,12 @@ public class CliService {
     String lockErrorMsg =
         "Another Whirlpool instance seems already running in same directory. If not, please delete "
             + dirLockFile.getAbsolutePath();
-    FileLock dirFileLock = ClientUtils.lockFile(dirLockFile, lockErrorMsg);
+    FileLock dirFileLock = SystemUtil.lockFile(dirLockFile, lockErrorMsg);
     return dirFileLock;
   }
 
   public void unlockDirectory(FileLock dirFileLock) throws Exception {
-    ClientUtils.unlockFile(dirFileLock);
+    SystemUtil.unlockFile(dirFileLock);
     File dirLockFile = computeDirLockFile();
     dirLockFile.delete();
   }
@@ -135,10 +136,29 @@ public class CliService {
       return CliResult.RESTART;
     }
 
+    // check create
+    if (appArgs.isCreate()) {
+      new RunCliInit(cliConfigService, cliConfig).runCreateWallet();
+      return CliResult.RESTART;
+    }
+
+    // check restore backup
+    if (appArgs.isRestoreBackup()) {
+      new RunCliInit(cliConfigService, cliConfig).runRestoreBackup();
+      return CliResult.RESTART;
+    }
+
+    // check restore external
+    if (appArgs.isRestoreExternal()) {
+      new RunCliInit(cliConfigService, cliConfig).runRestoreExternal();
+      return CliResult.RESTART;
+    }
+
     // check CLI initialized
     if (cliConfigService.isCliStatusNotInitialized() && !listen) {
       log.info("⣿ CLI NOT INITIALIZED");
-      log.info("⣿ Use --init to pair with an existing wallet");
+      log.info(
+          "⣿ Use --create to create a new wallet, --init to pair with an existing wallet, --restore-backup to restore from existing backup, or --restore-external to restore from an external wallet");
       return CliResult.EXIT_SUCCESS;
     }
 
@@ -184,7 +204,7 @@ public class CliService {
       // authenticate to open wallet when passphrase providen through arguments
       String reason = null;
       if (isXpub) {
-        reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
+        reason = "to run --" + CliArgs.ARG_SET_EXTERNAL_XPUB;
       } else if (commandToRun != null) {
         reason = "to run --" + commandToRun;
       }
@@ -221,15 +241,19 @@ public class CliService {
     }
     if (hasCommandToRun) {
       // execute specific command
-      new RunCliCommand(appArgs, cliWalletService).run();
+      new RunCliCommand(appArgs, cliWalletService, cliConfigService).run();
       return CliResult.EXIT_SUCCESS;
     } else {
-      // start wallet
-      log.info("⣿ Whirlpool is starting...");
-      cliWallet.startAsync().blockingAwait();
-      keepRunning();
+      // start whirlpool
+      onWalletReady(cliWallet);
       return CliResult.KEEP_RUNNING;
     }
+  }
+
+  protected void onWalletReady(CliWallet cliWallet) throws Exception {
+    log.info("⣿ Whirlpool is starting...");
+    AsyncUtil.getInstance().blockingAwait(cliWallet.startAsync());
+    keepRunning();
   }
 
   private CliResult keepRunningNoAuth() {
@@ -243,7 +267,11 @@ public class CliService {
     return CliResult.KEEP_RUNNING;
   }
 
-  private void keepRunning() {
+  protected void keepRunning() {
+    startCliStatusOrchestrator();
+  }
+
+  protected void startCliStatusOrchestrator() {
     // disable statusOrchestrator when redirecting output
     if (CliUtils.hasConsole()) {
       // log status

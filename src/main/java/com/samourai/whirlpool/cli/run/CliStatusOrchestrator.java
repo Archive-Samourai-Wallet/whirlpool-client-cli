@@ -96,7 +96,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + nbPremix
               + "), P[O]stmix("
               + nbPostmix
-              + "), [W]allet, POO[L]S, DE[B]UG\r");
+              + "), [W]allet, POO[L]S, PAY[N]YM, DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {

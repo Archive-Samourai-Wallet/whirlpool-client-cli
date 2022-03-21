@@ -1,12 +1,14 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.cli;
 
-import com.samourai.whirlpool.cli.Application;
+import com.samourai.wallet.api.pairing.PairingDojo;
+import com.samourai.wallet.payload.BackupPayload;
+import com.samourai.wallet.payload.PayloadUtilGeneric;
+import com.samourai.wallet.util.AsyncUtil;
+import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.whirlpool.cli.CliApplication;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
+import com.samourai.whirlpool.cli.api.protocol.rest.*;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -17,9 +19,11 @@ import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import javax.validation.Valid;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,25 +69,135 @@ public class CliController extends AbstractRestController {
     return response;
   }
 
-  @RequestMapping(value = CliApiEndpoint.REST_CLI_LOGIN, method = RequestMethod.POST)
-  public ApiCliStateResponse login(
-      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliLoginRequest payload)
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_CREATE, method = RequestMethod.POST)
+  public ApiCliCreateResponse create(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliCreateRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // security: check not already initialized
+    if (!CliStatus.NOT_INITIALIZED.equals(cliConfigService.getCliStatus())) {
+      throw new NotifiableException("CLI is already initialized.");
+    }
+
+    // create
+    boolean tor = payload.tor;
+    boolean dojo = payload.dojo;
+    String dojoUrl = payload.dojoUrl;
+    String dojoApiKey = payload.dojoApiKey;
+    String passphrase = payload.passphrase;
+    boolean testnet = payload.testnet;
+    PairingDojo pairingDojo =
+        dojo ? cliConfigService.computePairingDojo(dojoUrl, dojoApiKey) : null;
+    NetworkParameters params = FormatsUtilGeneric.getInstance().getNetworkParams(testnet);
+    Pair<WhirlpoolPairingPayload, String> pair =
+        cliConfigService.createWallet(pairingDojo, passphrase, params);
+    WhirlpoolPairingPayload pairing = pair.getFirst();
+    String mnemonic = pair.getSecond();
+
+    // init
+    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
+    ApiCliCreateResponse response = new ApiCliCreateResponse(apiKey, mnemonic, passphrase);
+
+    // restart CLI
+    restartAfterReply();
+    return response;
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_RESTORE_EXTERNAL, method = RequestMethod.POST)
+  public ApiCliRestoreExternalResponse restoreExternal(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliRestoreExternalRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // security: check not already initialized
+    if (!CliStatus.NOT_INITIALIZED.equals(cliConfigService.getCliStatus())) {
+      throw new NotifiableException("CLI is already initialized.");
+    }
+
+    // restore
+    boolean tor = payload.tor;
+    boolean dojo = payload.dojo;
+    String dojoUrl = payload.dojoUrl;
+    String dojoApiKey = payload.dojoApiKey;
+    String mnemonic = payload.mnemonic;
+    String passphrase = payload.passphrase;
+    boolean appendPassphrase = payload.appendPassphrase;
+    boolean testnet = payload.testnet;
+    PairingDojo pairingDojo =
+        dojo ? cliConfigService.computePairingDojo(dojoUrl, dojoApiKey) : null;
+    NetworkParameters params = FormatsUtilGeneric.getInstance().getNetworkParams(testnet);
+    WhirlpoolPairingPayload pairing =
+        cliConfigService.restoreExternal(
+            pairingDojo, passphrase, params, mnemonic, appendPassphrase);
+
+    // init
+    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
+    ApiCliRestoreExternalResponse response = new ApiCliRestoreExternalResponse(apiKey);
+
+    // restart CLI
+    restartAfterReply();
+    return response;
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_RESTORE_BACKUP, method = RequestMethod.POST)
+  public ApiCliRestoreBackupResponse restoreBackup(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliRestoreBackupRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // security: check not already initialized
+    if (!CliStatus.NOT_INITIALIZED.equals(cliConfigService.getCliStatus())) {
+      throw new NotifiableException("CLI is already initialized.");
+    }
+
+    // init
+    boolean tor = payload.tor;
+    boolean dojo = payload.dojo;
+    String passphrase = payload.passphrase;
+    String encryptedBackup = payload.backup;
+
+    // restore
+    BackupPayload backup;
+    try {
+      backup = PayloadUtilGeneric.getInstance().readBackup(encryptedBackup, passphrase);
+    } catch (Exception e) {
+      // forward error details
+      throw new NotifiableException(e.getMessage());
+    }
+    PairingDojo pairingDojo = backup.computePairingDojo();
+    WhirlpoolPairingPayload pairing =
+        cliConfigService.restoreBackup(backup, pairingDojo, passphrase);
+
+    // init
+    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
+    ApiCliRestoreBackupResponse response = new ApiCliRestoreBackupResponse(apiKey);
+
+    // restart CLI
+    restartAfterReply();
+    return response;
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_OPEN_WALLET, method = RequestMethod.POST)
+  public ApiCliStateResponse openWallet(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliOpenWalletRequest payload)
       throws Exception {
     checkHeaders(headers);
 
     try {
-      cliWalletService.openWallet(payload.seedPassphrase).startAsync().blockingAwait();
+      AsyncUtil.getInstance()
+          .blockingAwait(cliWalletService.openWallet(payload.seedPassphrase).startAsync());
     } catch (CliRestartException e) {
       // CLI upgrade success => restart
-      Application.restart();
+      CliApplication.restart();
     }
 
     // success
     return state(headers);
   }
 
-  @RequestMapping(value = CliApiEndpoint.REST_CLI_LOGOUT, method = RequestMethod.POST)
-  public ApiCliStateResponse logout(@RequestHeader HttpHeaders headers) throws Exception {
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_CLOSE_WALLET, method = RequestMethod.POST)
+  public ApiCliStateResponse closeWallet(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
 
     cliWalletService.closeWallet();
@@ -96,7 +210,7 @@ public class CliController extends AbstractRestController {
   public ApiCliStateResponse restart(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
 
-    Application.restart();
+    CliApplication.restart();
 
     // success
     return state(headers);

@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.utxo;
 
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiWalletUtxosResponse;
@@ -22,7 +23,7 @@ public class UtxosListController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     if (refresh) {
       // wait for utxo refresh
-      whirlpoolWallet.refreshUtxosAsync().blockingAwait();
+      AsyncUtil.getInstance().blockingAwait(whirlpoolWallet.refreshUtxosAsync());
     }
     return new ApiWalletUtxosResponse(whirlpoolWallet);
   }

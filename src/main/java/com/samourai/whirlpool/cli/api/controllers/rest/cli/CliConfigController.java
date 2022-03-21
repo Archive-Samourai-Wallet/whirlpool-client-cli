@@ -1,9 +1,8 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.cli;
 
-import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.cli.CliApplication;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigResponse;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -12,7 +11,11 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CliConfigController extends AbstractRestController {
@@ -35,11 +38,10 @@ public class CliConfigController extends AbstractRestController {
     checkHeaders(headers);
 
     // set config
-    ApiCliConfig apiCliConfig = payload.getConfig();
-    cliConfigService.setApiConfig(apiCliConfig);
+    cliConfigService.setApiConfig(payload.config);
 
     // restart
-    Application.restart();
+    CliApplication.restart();
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_CONFIG, method = RequestMethod.DELETE)
@@ -47,6 +49,6 @@ public class CliConfigController extends AbstractRestController {
     checkHeaders(headers);
 
     cliConfigService.resetConfiguration();
-    Application.restart();
+    CliApplication.restart();
   }
 }

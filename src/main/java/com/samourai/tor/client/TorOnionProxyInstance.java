@@ -9,7 +9,7 @@ import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpProxyProtocol;
 import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
-import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.cli.CliApplication;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -88,7 +88,7 @@ public class TorOnionProxyInstance {
                 waitReady();
               } catch (Exception e) {
                 log.error("Tor failed to start", e);
-                Application.exit(1);
+                CliApplication.exit(1);
               }
             },
             "TorOnionProxyInstance-start");
