@@ -58,6 +58,9 @@ public abstract class CliConfigFile {
   public CliConfigFile() {
     // warning: properties are NOT loaded yet
     // it will be loaded later on SpringBoot application run()
+    this.mix = new MixConfig();
+    this.api = new ApiConfig();
+    this.externalDestination = new ExternalDestinationConfig();
   }
 
   public CliConfigFile(CliConfigFile copy) {

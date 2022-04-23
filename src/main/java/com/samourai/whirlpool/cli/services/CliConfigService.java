@@ -107,11 +107,11 @@ public class CliConfigService {
 
     // use dojo?
     String dojoUrl = null;
-    String dojoApiKeyEncrypted = null;
+    String dojoApiKey = null;
     PairingPayload.PairingDojo pairingDojo = pairingWallet.getDojo();
     if (pairingDojo != null) {
       dojoUrl = pairingDojo.getUrl();
-      dojoApiKeyEncrypted = pairingDojo.getApikey();
+      dojoApiKey = pairingDojo.getApikey();
       if (dojo == null) {
         dojo = true;
       }
@@ -135,13 +135,7 @@ public class CliConfigService {
             : WhirlpoolServer.TESTNET;
 
     return initialize(
-        encryptedMnemonic,
-        appendPassphrase,
-        whirlpoolServer,
-        tor,
-        dojoUrl,
-        dojoApiKeyEncrypted,
-        dojo);
+        encryptedMnemonic, appendPassphrase, whirlpoolServer, tor, dojoUrl, dojoApiKey, dojo);
   }
 
   public synchronized String initialize(
@@ -150,7 +144,7 @@ public class CliConfigService {
       WhirlpoolServer whirlpoolServer,
       boolean tor,
       String dojoUrl,
-      String dojoApiKeyEncrypted,
+      String dojoApiKey,
       boolean dojoEnabled)
       throws Exception {
     if (log.isDebugEnabled()) {
@@ -181,8 +175,8 @@ public class CliConfigService {
     if (dojoUrl != null) {
       props.put(KEY_DOJO_URL, dojoUrl);
     }
-    if (dojoApiKeyEncrypted != null) {
-      props.put(KEY_DOJO_APIKEY, dojoApiKeyEncrypted);
+    if (dojoApiKey != null) {
+      props.put(KEY_DOJO_APIKEY, dojoApiKey);
     }
     props.put(KEY_DOJO_ENABLED, Boolean.toString(dojoEnabled));
     try {
