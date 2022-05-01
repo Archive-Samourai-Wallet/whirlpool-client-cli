@@ -125,7 +125,7 @@ public class CliWalletService extends WhirlpoolWalletService {
             cliConfigService,
             cliTorClientService,
             httpClientService);
-    cliWallet = (CliWallet) openWallet(cliWallet);
+    cliWallet = (CliWallet) openWallet(cliWallet, passphrase);
 
     // check upgrade
     boolean shouldRestart = cliUpgradeService.upgradeAuthenticated(cliWallet);

@@ -6,12 +6,14 @@ import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.websocket.client.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSourceFactory;
@@ -56,8 +58,13 @@ public class CliConfig extends CliConfigFile {
     // Dojo backend
     if (isDojoEnabled()) {
       String dojoUrl = getDojo().getUrl();
-      String dojoApiKey = getDojo().getApiKey();
-      return new DojoDataSourceFactory(dojoUrl, dojoApiKey, wsClient);
+      return new DojoDataSourceFactory(dojoUrl, null, wsClient) {
+        @Override
+        protected String computeDojoApiKey(
+            WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w, String passphrase) throws Exception {
+          return decryptDojoApiKey(getDojo().getApiKey(), passphrase);
+        }
+      };
     }
 
     // Samourai backend
