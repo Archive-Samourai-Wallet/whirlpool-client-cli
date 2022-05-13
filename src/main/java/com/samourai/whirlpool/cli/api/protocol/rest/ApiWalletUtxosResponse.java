@@ -1,7 +1,8 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.google.common.primitives.Ints;
-import com.samourai.wallet.hd.AddressType;
+import com.samourai.wallet.bipFormat.BIP_FORMAT;
+import com.samourai.wallet.bipFormat.BipFormat;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
@@ -9,7 +10,6 @@ import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoState;
 import java.util.Collection;
 import java.util.Comparator;
-import java8.lang.Longs;
 
 public class ApiWalletUtxosResponse {
   private ApiWallet deposit;
@@ -32,7 +32,7 @@ public class ApiWalletUtxosResponse {
             if (s2.getLastActivity() != null && s1.getLastActivity() == null) {
               return 1;
             }
-            int compare = Longs.compare(s2.getLastActivity(), s1.getLastActivity());
+            int compare = Long.compare(s2.getLastActivity(), s1.getLastActivity());
             if (compare != 0) {
               return compare;
             }
@@ -46,21 +46,21 @@ public class ApiWalletUtxosResponse {
     this.deposit =
         computeApiWallet(
             WhirlpoolAccount.DEPOSIT,
-            AddressType.SEGWIT_NATIVE,
+            BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
             comparator);
     this.premix =
         computeApiWallet(
             WhirlpoolAccount.PREMIX,
-            AddressType.SEGWIT_NATIVE,
+            BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
             comparator);
     this.postmix =
         computeApiWallet(
             WhirlpoolAccount.POSTMIX,
-            AddressType.SEGWIT_NATIVE,
+            BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
             comparator);
@@ -70,12 +70,12 @@ public class ApiWalletUtxosResponse {
 
   private ApiWallet computeApiWallet(
       WhirlpoolAccount account,
-      AddressType addressType,
+      BipFormat bipFormat,
       WhirlpoolWallet whirlpoolWallet,
       int latestBlockHeight,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, addressType).getPub();
+    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, bipFormat).getPub();
     return new ApiWallet(utxos, zpub, latestBlockHeight, comparator);
   }
 

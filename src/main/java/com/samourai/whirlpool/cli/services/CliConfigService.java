@@ -1,10 +1,11 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.util.CallbackWithArg;
 import com.samourai.wallet.util.CharSequenceX;
+import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
@@ -14,6 +15,7 @@ import com.samourai.whirlpool.cli.utils.SortedProperties;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
+import io.reactivex.functions.Consumer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -95,10 +97,9 @@ public class CliConfigService {
     return encrypted;
   }
 
-  public PairingPayload.PairingDojo computePairingDojo(String dojoUrl, String dojoApiKey)
-      throws Exception {
+  public PairingDojo computePairingDojo(String dojoUrl, String dojoApiKey) throws Exception {
     String dojoApiKeyEncrypted = encryptDojoApiKey(dojoUrl, dojoApiKey);
-    return new PairingPayload.PairingDojo(dojoUrl, dojoApiKeyEncrypted);
+    return new PairingDojo(dojoUrl, dojoApiKeyEncrypted);
   }
 
   public String initialize(WhirlpoolPairingPayload pairingWallet, boolean tor, Boolean dojo)
@@ -108,7 +109,7 @@ public class CliConfigService {
     // use dojo?
     String dojoUrl = null;
     String dojoApiKeyEncrypted = null;
-    PairingPayload.PairingDojo pairingDojo = pairingWallet.getDojo();
+    PairingDojo pairingDojo = pairingWallet.getDojo();
     if (pairingDojo != null) {
       dojoUrl = pairingDojo.getUrl();
       dojoApiKeyEncrypted = pairingDojo.getApikey();
@@ -337,7 +338,7 @@ public class CliConfigService {
 
     // write
     File f = getConfigurationFile();
-    CallbackWithArg<File> callback =
+    Consumer<File> callback =
         tempFile -> {
           OutputStream out = new FileOutputStream(tempFile);
           try {
@@ -347,7 +348,7 @@ public class CliConfigService {
             out.close();
           }
         };
-    ClientUtils.safeWrite(f, callback);
+    SystemUtil.safeWrite(f, callback);
   }
 
   private File getConfigurationFile() {

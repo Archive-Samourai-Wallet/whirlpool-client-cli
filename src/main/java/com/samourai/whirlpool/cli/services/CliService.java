@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpProxy;
+import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
@@ -89,12 +90,12 @@ public class CliService {
     String lockErrorMsg =
         "Another Whirlpool instance seems already running in same directory. If not, please delete "
             + dirLockFile.getAbsolutePath();
-    FileLock dirFileLock = ClientUtils.lockFile(dirLockFile, lockErrorMsg);
+    FileLock dirFileLock = SystemUtil.lockFile(dirLockFile, lockErrorMsg);
     return dirFileLock;
   }
 
   public void unlockDirectory(FileLock dirFileLock) throws Exception {
-    ClientUtils.unlockFile(dirFileLock);
+    SystemUtil.unlockFile(dirFileLock);
     File dirLockFile = computeDirLockFile();
     dirLockFile.delete();
   }

@@ -17,7 +17,6 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSourceFactory;
-import com.samourai.whirlpool.client.wallet.data.dataSource.SamouraiDataSourceFactory;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,11 +73,11 @@ public class CliConfig extends CliConfigFile {
         getTor()
             && getTorConfig().getBackend().isEnabled()
             && getTorConfig().getBackend().isOnion();
-    return new SamouraiDataSourceFactory(backendServer, useOnion, wsClient);
+    return new DojoDataSourceFactory(backendServer, useOnion, wsClient);
   }
 
-  protected static String decryptDojoApiKey(String apiKey, String seedPassphrase) throws Exception {
-    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
+  protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(passphrase));
   }
 
   public boolean isAutoTx0Aggregate() {

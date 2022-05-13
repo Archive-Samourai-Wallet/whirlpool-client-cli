@@ -1,9 +1,6 @@
 package com.samourai.whirlpool.cli.beans;
 
-import com.samourai.wallet.api.pairing.PairingNetwork;
-import com.samourai.wallet.api.pairing.PairingPayload;
-import com.samourai.wallet.api.pairing.PairingType;
-import com.samourai.wallet.api.pairing.PairingVersion;
+import com.samourai.wallet.api.pairing.*;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.CharSequenceX;

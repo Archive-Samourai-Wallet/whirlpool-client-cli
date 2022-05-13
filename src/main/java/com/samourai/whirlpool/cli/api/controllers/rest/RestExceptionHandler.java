@@ -21,7 +21,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     if (log.isDebugEnabled()) {
       log.debug("RestExceptionHandler: " + notifiable.getMessage());
     }
-    RestErrorResponse restErrorResponse = new RestErrorResponse(notifiable.getMessage());
+    RestErrorResponse restErrorResponse = new RestErrorResponse(600, notifiable.getMessage());
     HttpStatus httpStatus = HttpStatus.valueOf(notifiable.getStatus());
     return new ResponseEntity<>(restErrorResponse, httpStatus);
   }

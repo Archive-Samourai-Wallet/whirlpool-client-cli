@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
+import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.crypto.AESUtil;
@@ -29,8 +30,8 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java8.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
@@ -185,7 +186,7 @@ public class CliWalletService extends WhirlpoolWalletService {
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
 
-    PairingPayload.PairingDojo dojo = null;
+    PairingDojo dojo = null;
     CliConfigFile.DojoConfig dojoConfig = cliConfig.getDojo();
     if (dojoConfig.isEnabled()) {
       dojo = cliConfigService.computePairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
