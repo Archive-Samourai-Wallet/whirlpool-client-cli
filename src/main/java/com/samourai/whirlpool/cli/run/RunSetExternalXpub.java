@@ -4,6 +4,7 @@ import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.wallet.util.XPubUtil;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -27,7 +28,8 @@ public class RunSetExternalXpub {
     this.cliConfigService = cliConfigService;
   }
 
-  public void run(NetworkParameters params, String passphrase) throws Exception {
+  public void run(NetworkParameters params, CliWallet cliWallet, String passphrase)
+      throws Exception {
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ EXTERNAL XPUB CONFIGURATION");
     log.info("⣿ This will configure an external XPub as destination for your mixed funds.");
@@ -82,6 +84,9 @@ public class RunSetExternalXpub {
 
       // set configuration
       cliConfigService.setExternalDestination(xpub, chain, startIndex, mixs, passphrase);
+
+      // set next postmix index
+      cliWallet.getWalletStateSupplier().getIndexHandlerExternal().set(startIndex, true);
     } else {
       log.info("⣿ This will unset external XPub. Your funds will stay on your POSTMIX wallet.");
 
@@ -93,6 +98,9 @@ public class RunSetExternalXpub {
 
       // clear configuration
       cliConfigService.clearExternalDestination();
+
+      // clear postmix index
+      cliWallet.getWalletStateSupplier().getIndexHandlerExternal().set(0, true);
     }
 
     log.info(CliUtils.LOG_SEPARATOR);

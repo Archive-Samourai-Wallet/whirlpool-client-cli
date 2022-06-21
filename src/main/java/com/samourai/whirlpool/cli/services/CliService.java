@@ -206,7 +206,7 @@ public class CliService {
 
         // set-destination
         if (appArgs.isSetExternalXpub()) {
-          new RunSetExternalXpub(cliConfigService).run(params, seedPassphrase);
+          new RunSetExternalXpub(cliConfigService).run(params, cliWallet, seedPassphrase);
           return CliResult.RESTART;
         }
 
