@@ -18,11 +18,13 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.FileSystemUtils;
 
 public final class WhirlpoolTorInstaller extends TorInstaller {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final TorConfig config;
   private boolean useExecutableFromZip;
+  private File installDir;
 
   public WhirlpoolTorInstaller(String torDir, Optional<File> torExecutable, int fileCreationTimeout)
       throws Exception {
@@ -30,12 +32,13 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
     this.useExecutableFromZip = !torExecutable.isPresent();
   }
 
-  private static TorConfig computeTorConfig(
+  private TorConfig computeTorConfig(
       String dirName, Optional<File> torExecutable, int fileCreationTimeout) throws Exception {
-    File dir = Files.createTempDirectory(dirName).toFile();
-    dir.deleteOnExit();
+    installDir = Files.createTempDirectory(dirName).toFile();
+    installDir.deleteOnExit(); // not always working so we use onShutdown()
 
-    TorConfig.Builder torConfigBuilder = new TorConfig.Builder(dir, dir).homeDir(dir);
+    TorConfig.Builder torConfigBuilder =
+        new TorConfig.Builder(installDir, installDir).homeDir(installDir);
 
     if (torExecutable.isPresent()) {
       if (LOG.isDebugEnabled()) {
@@ -129,5 +132,12 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
 
   public TorConfig getConfig() {
     return config;
+  }
+
+  public void clear() {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("clearing Tor directory: " + installDir.getAbsolutePath());
+    }
+    FileSystemUtils.deleteRecursively(installDir);
   }
 }

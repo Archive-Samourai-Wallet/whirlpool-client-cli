@@ -25,6 +25,7 @@ public class TorOnionProxyInstance {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int PROGRESS_CONNECTING = 50;
 
+  private WhirlpoolTorInstaller torInstaller;
   private OnionProxyManager onionProxyManager;
   private Thread startThread;
   private boolean torSocksReady = false;
@@ -34,6 +35,7 @@ public class TorOnionProxyInstance {
   public TorOnionProxyInstance(
       WhirlpoolTorInstaller torInstaller, TorSettings torSettings, Collection<HttpUsage> httpUsages)
       throws Exception {
+    this.torInstaller = torInstaller;
     TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
@@ -165,7 +167,7 @@ public class TorOnionProxyInstance {
     } catch (Exception e) {
       log.error("", e);
     }*/
-    onionProxyManager.getContext().getConfig().getInstallDir().delete();
+    torInstaller.clear();
   }
 
   public void changeIdentity() {
