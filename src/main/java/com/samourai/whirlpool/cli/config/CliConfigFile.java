@@ -660,6 +660,7 @@ public abstract class CliConfigFile {
     config.setExternalDestination(ed);
 
     config.setResyncOnFirstRun(true);
+    config.setFeeOpReturnImplV0();
     return config;
   }
 
