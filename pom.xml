@@ -63,12 +63,12 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
             <artifactId>universal</artifactId>
-            <version>0.0.3-samourai</version>
+            <version>0.0.4-samourai</version>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
             <artifactId>java</artifactId>
-            <version>0.0.3-samourai</version>
+            <version>0.0.4-samourai</version>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
