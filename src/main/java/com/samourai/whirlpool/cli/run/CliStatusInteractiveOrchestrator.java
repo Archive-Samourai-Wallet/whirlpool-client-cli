@@ -4,6 +4,7 @@ import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.services.DbService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.DebugUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
@@ -19,12 +20,14 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
 
   private CliWalletService cliWalletService;
   private CliConfig cliConfig;
+  private DbService dbService;
 
   public CliStatusInteractiveOrchestrator(
-      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
+      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig, DbService dbService) {
     super(loopDelay);
     this.cliWalletService = cliWalletService;
     this.cliConfig = cliConfig;
+    this.dbService = dbService;
   }
 
   @Override
@@ -93,6 +96,13 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
   private void printDebug() throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     log.info(DebugUtils.getDebug(whirlpoolWallet));
+
+    // datasource
+    StringBuilder sb = new StringBuilder().append("\n");
+    sb.append("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿" + "\n");
+    sb.append("⣿ DATABASE" + "\n");
+    sb.append(dbService.getDebug());
+    log.info(sb.toString());
   }
 
   private void printPools() throws Exception {

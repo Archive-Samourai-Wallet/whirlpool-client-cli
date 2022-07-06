@@ -5,6 +5,7 @@ import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoRef;
 import com.samourai.whirlpool.cli.api.protocol.rest.*;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.services.WsNotifierService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Config;
@@ -15,6 +16,7 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.util.LinkedList;
 import java.util.List;
 import javax.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UtxoController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
+  @Autowired private WsNotifierService wsNotifierService;
+
+  private WhirlpoolUtxo findUtxo(ApiUtxoRef utxoRef) throws Exception {
+    return findUtxo(utxoRef.hash, utxoRef.index);
+  }
 
   private WhirlpoolUtxo findUtxo(String utxoHash, int utxoIndex) throws Exception {
     // find utxo
@@ -83,35 +90,51 @@ public class UtxoController extends AbstractRestController {
     return new ApiTx0Response(tx0);
   }
 
-  @RequestMapping(value = CliApiEndpoint.REST_UTXO_STARTMIX, method = RequestMethod.POST)
-  public void startMix(
-      @RequestHeader HttpHeaders headers,
-      @PathVariable("hash") String utxoHash,
-      @PathVariable("index") int utxoIndex)
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_SETMIX, method = RequestMethod.POST)
+  public void setMix(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiUtxoSetMixRequest payload)
       throws Exception {
     checkHeaders(headers);
 
     // find utxo
-    WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
+    WhirlpoolUtxo whirlpoolUtxo = findUtxo(payload.utxo);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
-    // start mix
-    whirlpoolWallet.mix(whirlpoolUtxo);
+    if (payload.mix) {
+      whirlpoolWallet.mix(whirlpoolUtxo);
+    } else {
+      whirlpoolWallet.mixStop(whirlpoolUtxo);
+    }
+
+    // notify utxos
+    wsNotifierService.onUtxoChanges(whirlpoolWallet);
   }
 
-  @RequestMapping(value = CliApiEndpoint.REST_UTXO_STOPMIX, method = RequestMethod.POST)
-  public void stopMix(
-      @RequestHeader HttpHeaders headers,
-      @PathVariable("hash") String utxoHash,
-      @PathVariable("index") int utxoIndex)
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_SETNOTE, method = RequestMethod.POST)
+  public void setNote(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiUtxoSetNoteRequest payload)
       throws Exception {
     checkHeaders(headers);
 
     // find utxo
-    WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    WhirlpoolUtxo whirlpoolUtxo = findUtxo(payload.utxo);
+    whirlpoolUtxo.setNote(StringUtils.isEmpty(payload.note) ? null : payload.note);
 
-    // stop mix
-    whirlpoolWallet.mixStop(whirlpoolUtxo);
+    // notify utxos
+    wsNotifierService.onUtxoChanges((WhirlpoolWallet) null);
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_SETBLOCKED, method = RequestMethod.POST)
+  public void setBlocked(
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiUtxoSetBlockedRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // find utxo
+    WhirlpoolUtxo whirlpoolUtxo = findUtxo(payload.utxo);
+    whirlpoolUtxo.setBlocked(payload.blocked);
+
+    // notify utxos
+    wsNotifierService.onUtxoChanges((WhirlpoolWallet) null);
   }
 }

@@ -42,6 +42,7 @@ public class CliService {
   protected CliTorClientService cliTorClientService;
   protected JavaHttpClientService httpClientService;
   protected CliStatusOrchestrator cliStatusOrchestrator;
+  protected DbService dbService;
 
   public CliService(
       CliArgs appArgs,
@@ -50,7 +51,8 @@ public class CliService {
       CliWalletService cliWalletService,
       CliUpgradeService cliUpgradeService,
       CliTorClientService cliTorClientService,
-      JavaHttpClientService httpClientService) {
+      JavaHttpClientService httpClientService,
+      DbService dbService) {
     this.appArgs = appArgs;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
@@ -58,6 +60,7 @@ public class CliService {
     this.cliUpgradeService = cliUpgradeService;
     this.cliTorClientService = cliTorClientService;
     this.httpClientService = httpClientService;
+    this.dbService = dbService;
     this.cliStatusOrchestrator = null;
     init();
   }
@@ -225,7 +228,7 @@ public class CliService {
 
         // set-destination
         if (appArgs.isSetExternalXpub()) {
-          new RunSetExternalXpub(cliConfigService).run(params, seedPassphrase);
+          new RunSetExternalXpub(cliConfigService).run(params, cliWallet, seedPassphrase);
           return CliResult.RESTART;
         }
 
@@ -276,7 +279,7 @@ public class CliService {
     if (CliUtils.hasConsole()) {
       // log status
       this.cliStatusOrchestrator =
-          new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig);
+          new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig, dbService);
       this.cliStatusOrchestrator.start(true);
     }
   }

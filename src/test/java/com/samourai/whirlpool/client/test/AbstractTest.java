@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client.test;
 
 import ch.qos.logback.classic.Level;
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
@@ -21,6 +22,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Import({BuildProperties.class})
 public class AbstractTest {
   protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  protected AsyncUtil asyncUtil = AsyncUtil.getInstance();
 
   public AbstractTest() {
     ClientUtils.setLogLevel(Level.DEBUG, Level.DEBUG);

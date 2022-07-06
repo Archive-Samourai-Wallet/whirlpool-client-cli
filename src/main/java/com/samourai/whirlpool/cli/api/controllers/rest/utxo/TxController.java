@@ -5,7 +5,7 @@ import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiTxBoltzmannRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiTxBoltzmannResponse;
-import com.samourai.whirlpool.cli.persistence.entity.Boltzmann;
+import com.samourai.whirlpool.cli.persistence.entity.BoltzmannEntity;
 import com.samourai.whirlpool.cli.services.BoltzmannService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -29,7 +29,7 @@ public class TxController extends AbstractRestController {
 
     // compute
     BackendApi backendApi = cliWallet.getBackendApi();
-    Boltzmann boltzmann = boltzmannService.getOrCompute(payload.txid, backendApi);
-    return new ApiTxBoltzmannResponse(boltzmann);
+    BoltzmannEntity boltzmannEntity = boltzmannService.getOrCompute(payload.txid, backendApi);
+    return new ApiTxBoltzmannResponse(boltzmannEntity);
   }
 }

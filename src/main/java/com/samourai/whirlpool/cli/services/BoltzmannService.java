@@ -5,7 +5,7 @@ import com.samourai.boltzmann.beans.BoltzmannSettings;
 import com.samourai.boltzmann.beans.Txos;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.beans.TxDetail;
-import com.samourai.whirlpool.cli.persistence.entity.Boltzmann;
+import com.samourai.whirlpool.cli.persistence.entity.BoltzmannEntity;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,22 +21,22 @@ public class BoltzmannService {
     this.dbService = dbService;
   }
 
-  public Boltzmann getOrCompute(String txid, BackendApi backendApi) throws Exception {
+  public BoltzmannEntity getOrCompute(String txid, BackendApi backendApi) throws Exception {
     // find existing
-    Boltzmann boltzmann = dbService.findBoltzmann(txid);
-    if (boltzmann != null) {
+    BoltzmannEntity boltzmannEntity = dbService.findBoltzmann(txid);
+    if (boltzmannEntity != null) {
       if (log.isDebugEnabled()) {
         log.debug("found existing result: " + txid);
       }
-      return boltzmann;
+      return boltzmannEntity;
     }
 
     // compute
     BoltzmannResult boltzmannResult = tx(txid, backendApi);
 
     // save
-    boltzmann = dbService.createBoltzmann(txid, boltzmannResult);
-    return boltzmann;
+    boltzmannEntity = dbService.createBoltzmann(txid, boltzmannResult);
+    return boltzmannEntity;
   }
 
   private Txos fetchTx(String txid, BackendApi backendApi) throws Exception {

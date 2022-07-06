@@ -12,9 +12,12 @@ import com.samourai.whirlpool.cli.event.CliStateChangeEvent;
 import com.samourai.whirlpool.client.event.*;
 import com.samourai.whirlpool.client.wallet.WhirlpoolEventService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import com.samourai.whirlpool.client.wallet.data.minerFee.MinerFeeSupplier;
 import com.samourai.whirlpool.client.wallet.data.paynym.PaynymSupplier;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -39,15 +42,21 @@ public class WsNotifierService {
 
   // WALLET DATA
 
-  public ApiWalletDataResponse walletData() throws Exception {
-    if (!cliWalletService.hasSessionWallet()) return null;
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+  public ApiWalletDataResponse walletData(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    if (whirlpoolWallet == null) {
+      if (!cliWalletService.hasSessionWallet()) return null;
+      whirlpoolWallet = cliWalletService.getSessionWallet();
+    }
     return new ApiWalletDataResponse(whirlpoolWallet);
   }
 
   @Subscribe
   public void onUtxoChanges(UtxoChangesEvent utxosChangeEvent) throws Exception {
-    ApiWalletDataResponse walletData = walletData();
+    onUtxoChanges(utxosChangeEvent.getWhirlpoolWallet());
+  }
+
+  public void onUtxoChanges(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    ApiWalletDataResponse walletData = walletData(whirlpoolWallet);
     if (walletData == null) {
       return;
     }
@@ -66,26 +75,13 @@ public class WsNotifierService {
   }
 
   @Subscribe
-  public void onWalletStart(WalletStartEvent walletStartEvent) throws Exception {
-    onStateChange();
-
-    // push all datas
-    onChainBlockChange(null);
-  }
-
-  @Subscribe
-  public void onWalletStop(WalletStopEvent walletStopEvent) throws Exception {
-    onStateChange();
-  }
-
-  @Subscribe
-  public void onWalletOpen(WalletOpenEvent walletOpenEvent) throws Exception {
-    onStateChange();
+  public void onWalletOpen(WalletOpenEvent walletStopEvent) throws Exception {
+    onStateChange(); // notify loggedIn
   }
 
   @Subscribe
   public void onWalletClose(WalletCloseEvent walletCloseEvent) throws Exception {
-    onStateChange();
+    onStateChange(); // notify loggedOut
   }
 
   @Subscribe
@@ -95,15 +91,17 @@ public class WsNotifierService {
 
   // POOLS
 
-  public ApiPoolsResponse pools() throws Exception {
-    if (!cliWalletService.hasSessionWallet()) return null;
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-    return new ApiPoolsResponse(whirlpoolWallet);
+  public ApiPoolsResponse pools(Collection<Pool> pools) throws Exception {
+    if (pools == null) {
+      if (!cliWalletService.hasSessionWallet()) return null;
+      pools = cliWalletService.getSessionWallet().getPoolSupplier().getPools();
+    }
+    return new ApiPoolsResponse(pools);
   }
 
   @Subscribe
   public void onPoolsChange(PoolsChangeEvent poolsChangeEvent) throws Exception {
-    ApiPoolsResponse pools = pools();
+    ApiPoolsResponse pools = pools(poolsChangeEvent.getPoolData().getPools());
     if (pools == null) {
       return;
     }
@@ -112,15 +110,18 @@ public class WsNotifierService {
 
   // MIX STATE
 
-  public ApiMixStateResponse mixState() throws Exception {
-    if (!cliWalletService.hasSessionWallet()) return null;
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-    return new ApiMixStateResponse(whirlpoolWallet.getMixingState());
+  public ApiMixStateResponse mixState(MixingState mixingState) throws Exception {
+    if (mixingState == null) {
+      if (!cliWalletService.hasSessionWallet()) return null;
+      WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+      mixingState = whirlpoolWallet.getMixingState();
+    }
+    return new ApiMixStateResponse(mixingState);
   }
 
   @Subscribe
   public void onMixStateChange(MixStateChangeEvent mixStateChangeEvent) throws Exception {
-    ApiMixStateResponse mixState = mixState();
+    ApiMixStateResponse mixState = mixState(mixStateChangeEvent.getMixingState());
     if (mixState == null) {
       return;
     }
@@ -141,8 +142,7 @@ public class WsNotifierService {
 
   @Subscribe
   public void onChainBlockChange(ChainBlockChangeEvent chainBlockChangeEvent) throws Exception {
-    ApiChainDataResponse chainData =
-        chainData(chainBlockChangeEvent != null ? chainBlockChangeEvent.getBlock() : null);
+    ApiChainDataResponse chainData = chainData(chainBlockChangeEvent.getBlock());
     if (chainData == null) {
       return;
     }
@@ -172,8 +172,7 @@ public class WsNotifierService {
 
   @Subscribe
   public void onMinerFeeChange(MinerFeeChangeEvent minerFeeChangeEvent) throws Exception {
-    ApiMinerFeeResponse minerFee =
-        minerFee(minerFeeChangeEvent != null ? minerFeeChangeEvent.getMinerFee() : null);
+    ApiMinerFeeResponse minerFee = minerFee(minerFeeChangeEvent.getMinerFee());
     if (minerFee == null) {
       return;
     }
@@ -195,8 +194,7 @@ public class WsNotifierService {
 
   @Subscribe
   public void onPaynymChange(PaynymChangeEvent paynymChangeEvent) throws Exception {
-    ApiPaynymResponse response =
-        paynym(paynymChangeEvent != null ? paynymChangeEvent.getPaynymState() : null);
+    ApiPaynymResponse response = paynym(paynymChangeEvent.getPaynymState());
     if (response == null) {
       return;
     }

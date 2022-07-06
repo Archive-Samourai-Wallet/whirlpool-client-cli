@@ -17,6 +17,6 @@ public class PoolsController extends AbstractRestController {
   public ApiPoolsResponse pools(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-    return new ApiPoolsResponse(whirlpoolWallet);
+    return new ApiPoolsResponse(whirlpoolWallet.getPoolSupplier().getPools());
   }
 }

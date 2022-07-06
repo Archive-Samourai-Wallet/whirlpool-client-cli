@@ -26,8 +26,9 @@ public class CliApiEndpoint {
   public static final String REST_MIX_STOP = REST_PREFIX + "mix/stop";
 
   public static final String REST_UTXOS = REST_PREFIX + "utxos";
-  public static final String REST_UTXO_STARTMIX = REST_PREFIX + "utxos/{hash}:{index}/startMix";
-  public static final String REST_UTXO_STOPMIX = REST_PREFIX + "utxos/{hash}:{index}/stopMix";
+  public static final String REST_UTXO_SETMIX = REST_PREFIX + "utxo/setMix";
+  public static final String REST_UTXO_SETNOTE = REST_PREFIX + "utxo/setNote";
+  public static final String REST_UTXO_SETBLOCKED = REST_PREFIX + "utxo/setBlocked";
   public static final String REST_TX0 = REST_PREFIX + "tx0";
   public static final String REST_TX0_PREVIEWS = REST_PREFIX + "tx0/previews";
 
@@ -60,10 +61,11 @@ public class CliApiEndpoint {
         REST_MIX_START,
         REST_MIX_STOP,
         REST_UTXOS,
-        REST_UTXO_STARTMIX,
-        REST_UTXO_STOPMIX,
-        REST_TX0_PREVIEWS,
+        REST_UTXO_SETMIX,
+        REST_UTXO_SETNOTE,
+        REST_UTXO_SETBLOCKED,
         REST_TX0,
+        REST_TX0_PREVIEWS,
         REST_ADDRESS_SIGN,
         REST_ADDRESS_PRIVATE,
         REST_SWEEP_PREVIEW,

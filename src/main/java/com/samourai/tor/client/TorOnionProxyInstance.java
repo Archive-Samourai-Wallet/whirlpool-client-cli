@@ -8,7 +8,7 @@ import com.msopentech.thali.toronionproxy.TorSettings;
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpProxyProtocol;
 import com.samourai.http.client.HttpUsage;
-import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
+import com.samourai.tor.client.utils.SamouraiTorInstaller;
 import com.samourai.whirlpool.cli.CliApplication;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
@@ -32,7 +32,7 @@ public class TorOnionProxyInstance {
   private int progress;
 
   public TorOnionProxyInstance(
-      WhirlpoolTorInstaller torInstaller, TorSettings torSettings, Collection<HttpUsage> httpUsages)
+      SamouraiTorInstaller torInstaller, TorSettings torSettings, Collection<HttpUsage> httpUsages)
       throws Exception {
     TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {

@@ -4,6 +4,7 @@ import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.services.DbService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
@@ -23,11 +24,11 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   private CliConfig cliConfig;
 
   public CliStatusOrchestrator(
-      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
+      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig, DbService dbService) {
     super(loopDelay);
     if (CliUtils.hasConsole()) {
       this.statusInteractiveOrchestrator =
-          new CliStatusInteractiveOrchestrator(loopDelay, cliWalletService, cliConfig);
+          new CliStatusInteractiveOrchestrator(loopDelay, cliWalletService, cliConfig, dbService);
     }
     this.cliWalletService = cliWalletService;
     this.cliConfig = cliConfig;

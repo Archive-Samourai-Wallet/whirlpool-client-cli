@@ -37,7 +37,7 @@ public class SubscribeController extends AbstractWebSocketController {
   public ApiWalletDataResponse subscribeWallet(Principal principal, StompHeaderAccessor headers)
       throws Exception {
     onSubscribe(principal, headers);
-    return wsNotifierService.walletData();
+    return wsNotifierService.walletData(null);
   }
 
   @SubscribeMapping(CliApiEndpoint.WS_PREFIX_DESTINATION + CliApiEndpoint.WS_STATE)
@@ -51,14 +51,14 @@ public class SubscribeController extends AbstractWebSocketController {
   public ApiPoolsResponse subscribePools(Principal principal, StompHeaderAccessor headers)
       throws Exception {
     onSubscribe(principal, headers);
-    return wsNotifierService.pools();
+    return wsNotifierService.pools(null);
   }
 
   @SubscribeMapping(CliApiEndpoint.WS_PREFIX_DESTINATION + CliApiEndpoint.WS_MIX_STATE)
   public ApiMixStateResponse subscribeMixState(Principal principal, StompHeaderAccessor headers)
       throws Exception {
     onSubscribe(principal, headers);
-    return wsNotifierService.mixState();
+    return wsNotifierService.mixState(null);
   }
 
   @SubscribeMapping(CliApiEndpoint.WS_PREFIX_DESTINATION + CliApiEndpoint.WS_CHAIN)

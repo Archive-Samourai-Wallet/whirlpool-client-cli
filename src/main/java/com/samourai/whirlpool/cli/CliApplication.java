@@ -99,6 +99,13 @@ public class CliApplication implements ApplicationRunner {
   public void run(ApplicationArguments applicationArguments) {
     restart = false;
 
+    boolean isUnitTest = env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING);
+    if (isUnitTest) {
+      log.info("Running unit test...");
+      debug = true;
+      listen = true;
+    }
+
     CliApplication.applicationArguments = applicationArguments;
     CliUtils.setLogLevel(debug, debugClient); // run twice to fix incorrect log level
 
@@ -114,11 +121,6 @@ public class CliApplication implements ApplicationRunner {
     try {
       // setup Tor etc...
       cliService.setup();
-
-      if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
-        log.info("Running unit test...");
-        return;
-      }
 
       fileLock = cliService.lockDirectory();
 

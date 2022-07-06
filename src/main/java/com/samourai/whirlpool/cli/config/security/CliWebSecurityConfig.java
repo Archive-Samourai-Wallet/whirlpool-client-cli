@@ -35,6 +35,9 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
       log.debug("Configuring REST API: httpEnable=" + httpEnable);
     }
 
+    // allow frames for h2-console
+    // http.headers().frameOptions().disable();
+
     // disable CSRF
     http.csrf()
         .disable()
@@ -47,6 +50,8 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
         // authorize websocket API
         .antMatchers(CliApiEndpoint.WS_PREFIX + CliApiEndpoint.WS_CONNECT + "/**")
         .permitAll()
+
+        // .antMatchers("/h2-console/**").permitAll()
 
         // reject others
         .anyRequest()

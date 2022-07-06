@@ -4,7 +4,7 @@ import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorSettings;
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpUsage;
-import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
+import com.samourai.tor.client.utils.SamouraiTorInstaller;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -32,11 +32,11 @@ public class JavaTorClient {
 
     // setup
     TorSettings torSettings = computeTorSettings();
-    WhirlpoolTorInstaller torInstaller = computeTorInstaller();
+    SamouraiTorInstaller torInstaller = computeTorInstaller();
     this.torInstance = new TorOnionProxyInstance(torInstaller, torSettings, torHttpUsages);
   }
 
-  private WhirlpoolTorInstaller computeTorInstaller() throws Exception {
+  private SamouraiTorInstaller computeTorInstaller() throws Exception {
     CliTorExecutableMode executableMode = cliConfig.getTorConfig().getExecutableMode();
     String executablePath =
         CliTorExecutableMode.SPECIFIED.equals(executableMode)
@@ -165,7 +165,7 @@ public class JavaTorClient {
     return file;
   }
 
-  private WhirlpoolTorInstaller checkTorInstaller(Optional<File> torExecutable) throws Exception {
+  private SamouraiTorInstaller checkTorInstaller(Optional<File> torExecutable) throws Exception {
     if (log.isDebugEnabled()) {
       log.debug(
           "Verifying Tor executable ("
@@ -173,8 +173,8 @@ public class JavaTorClient {
               + ")");
     }
     int fileCreationTimeout = cliConfig.getTorConfig().getFileCreationTimeout();
-    WhirlpoolTorInstaller torInstaller =
-        new WhirlpoolTorInstaller("whirlpoolTor", torExecutable, fileCreationTimeout);
+    SamouraiTorInstaller torInstaller =
+        new SamouraiTorInstaller("whirlpoolTor", torExecutable, fileCreationTimeout);
     torInstaller.setup(); // throws
     return torInstaller;
   }

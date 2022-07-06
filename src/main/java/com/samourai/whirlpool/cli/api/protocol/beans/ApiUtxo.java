@@ -10,6 +10,8 @@ public class ApiUtxo extends ApiUtxoDetails {
   private Integer progressPercent;
   private String poolId;
   private int mixsDone;
+  private boolean blocked;
+  private String note;
   private String message;
   private String error;
   private Long lastActivityElapsed;
@@ -27,6 +29,8 @@ public class ApiUtxo extends ApiUtxoDetails {
             : null;
     this.poolId = whirlpoolUtxo.getUtxoState().getPoolId();
     this.mixsDone = whirlpoolUtxo.getMixsDone();
+    this.blocked = whirlpoolUtxo.isBlocked();
+    this.note = whirlpoolUtxo.getNote();
     this.message = utxoState.getMessage();
     this.error = utxoState.getError();
     this.lastActivityElapsed =
@@ -57,6 +61,14 @@ public class ApiUtxo extends ApiUtxoDetails {
 
   public int getMixsDone() {
     return mixsDone;
+  }
+
+  public boolean isBlocked() {
+    return blocked;
+  }
+
+  public String getNote() {
+    return note;
   }
 
   public String getMessage() {

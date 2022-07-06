@@ -27,6 +27,7 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfigService cliConfigService;
   private CliTorClientService cliTorClientService;
   private JavaHttpClientService httpClientService;
+  private String passphraseHash;
 
   public CliWallet(
       WhirlpoolWalletConfig config,
@@ -42,6 +43,15 @@ public class CliWallet extends WhirlpoolWallet {
     this.cliConfigService = cliConfigService;
     this.cliTorClientService = cliTorClientService;
     this.httpClientService = httpClientService;
+    this.passphraseHash = computePassphraseHash(passphrase);
+  }
+
+  private String computePassphraseHash(String passphraseHash) {
+    return CliUtils.sha512Hash(passphraseHash);
+  }
+
+  public boolean checkPassphraseHash(String hash) {
+    return this.passphraseHash.equals(hash);
   }
 
   @Override

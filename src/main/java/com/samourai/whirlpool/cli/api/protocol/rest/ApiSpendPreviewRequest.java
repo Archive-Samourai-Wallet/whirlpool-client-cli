@@ -15,6 +15,12 @@ public class ApiSpendPreviewRequest {
   public Integer minerFeeSatPerByte; // nullable
   public boolean stonewall;
   public boolean rbfOptIn;
+  public ApiSpendRicochet ricochet; // nullable
 
   public ApiSpendPreviewRequest() {}
+
+  public static class ApiSpendRicochet {
+    public int hops;
+    public boolean useTimeLock;
+  }
 }

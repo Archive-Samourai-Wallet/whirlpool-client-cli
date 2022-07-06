@@ -42,8 +42,6 @@ import org.springframework.stereotype.Service;
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String BACKUP_DIR = ".samourai/";
-
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
@@ -129,10 +127,11 @@ public class CliWalletService extends WhirlpoolWalletService {
             cliConfigService,
             cliTorClientService,
             httpClientService);
-    cliWallet = (CliWallet) openWallet(cliWallet, walletPassphrase);
 
-    // update datasource
+    // switch datasource *BEFORE* opening wallet
     walletRoutingDataSource.setDataSourceWallet(cliWallet.getWalletIdentifier(), passphrase);
+
+    cliWallet = (CliWallet) openWallet(cliWallet, passphrase);
 
     // write backup
     try {
@@ -199,7 +198,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   protected File computeBackupFile(CliWallet cliWallet) throws Exception {
     // create backup dir
-    File backupDir = new File(BACKUP_DIR);
+    File backupDir = new File(cliConfig.getBackupDirectory());
     SystemUtil.mkDir(backupDir);
 
     // create backup file

@@ -11,7 +11,10 @@ import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.websocket.client.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
+import com.samourai.whirlpool.cli.persistence.repository.UtxoConfigRepository;
+import com.samourai.whirlpool.cli.persistence.repository.WalletStateRepository;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
+import com.samourai.whirlpool.cli.wallet.data.dataPersister.DbDataPersisterFactory;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
@@ -25,12 +28,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CliConfig extends CliConfigFile {
+  private UtxoConfigRepository utxoConfigRepository;
+  private WalletStateRepository walletStateRepository;
+
   private boolean autoTx0Aggregate;
   private String autoTx0PoolId;
   private boolean resync;
 
-  public CliConfig() {
+  public CliConfig(
+      UtxoConfigRepository utxoConfigRepository, WalletStateRepository walletStateRepository) {
     super();
+    this.utxoConfigRepository = utxoConfigRepository;
+    this.walletStateRepository = walletStateRepository;
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
@@ -47,6 +56,8 @@ public class CliConfig extends CliConfigFile {
             dataSourceFactory, httpClientService, stompClientService, torClientService, passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
+    config.setDataPersisterFactory(
+        new DbDataPersisterFactory(utxoConfigRepository, walletStateRepository));
     return config;
   }
 
@@ -76,8 +87,8 @@ public class CliConfig extends CliConfigFile {
     return new DojoDataSourceFactory(backendServer, useOnion, wsClient);
   }
 
-  protected static String decryptDojoApiKey(String apiKey, String seedPassphrase) throws Exception {
-    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
+  protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(passphrase));
   }
 
   public boolean isAutoTx0Aggregate() {
@@ -104,6 +115,10 @@ public class CliConfig extends CliConfigFile {
     this.resync = resync;
   }
 
+  public String getBackupDirectory() {
+    return ClientUtils.getDirUserHome() + "/.samourai/";
+  }
+
   @Override
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = super.getConfigInfo();
@@ -122,6 +137,7 @@ public class CliConfig extends CliConfigFile {
     configInfo.put("cli/autoTx0Aggregate", Boolean.toString(autoTx0Aggregate));
     configInfo.put("cli/autoTx0PoolId", autoTx0PoolId != null ? autoTx0PoolId : "null");
     configInfo.put("cli/resync", Boolean.toString(resync));
+    configInfo.put("cli/backupDirectory", getBackupDirectory());
     return configInfo;
   }
 

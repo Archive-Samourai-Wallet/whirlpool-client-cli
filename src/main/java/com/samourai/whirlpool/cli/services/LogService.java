@@ -10,12 +10,10 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolEventService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoChanges;
 import com.samourai.whirlpool.client.wallet.data.pool.PoolSupplier;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.beans.Utxo;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,7 @@ public class LogService {
     long created = System.currentTimeMillis();
     String data = null;
     Tx0 tx0 = e.getTx0();
-    Long amount = tx0.getNbPremix() * tx0.getPremixValue();
+    Long amount = tx0.getTotalValue();
     WhirlpoolAccount fromAccount = WhirlpoolAccount.DEPOSIT;
     String fromHash = null;
     Integer fromIndex = null;
@@ -69,13 +67,19 @@ public class LogService {
 
   @Subscribe
   public void onMixSuccess(MixSuccessEvent e) {
-    createLog(e, e.getReceiveUtxo());
+    createLogMix(e, e.getReceiveUtxo());
   }
 
-  private void createLog(AbstractMixEvent e, Utxo receiveUtxo) {
+  private void createLogMix(AbstractMixEvent e, Utxo receiveUtxo) {
+    PoolSupplier poolSupplier;
+    try {
+      poolSupplier = getPoolSupplier();
+    } catch (Exception ee) {
+      return; // poolSupplier not available on shutdown
+    }
     long created = System.currentTimeMillis();
     String data = null;
-    Pool pool = getPoolSupplier().findPoolById(e.getMixProgress().getPoolId());
+    Pool pool = poolSupplier.findPoolById(e.getMixProgress().getPoolId());
     Long amount = pool.getDenomination();
     WhirlpoolUtxo fromUtxo = e.getWhirlpoolUtxo();
     WhirlpoolAccount fromAccount = fromUtxo.getAccount();
@@ -114,41 +118,6 @@ public class LogService {
 
   @Subscribe
   public void onMixFail(MixFailEvent e) {
-    createLog(e, null);
-  }
-
-  @Subscribe
-  public void onUtxoChanges(UtxoChangesEvent e) {
-    WhirlpoolUtxoChanges utxoChanges = e.getUtxoData().getUtxoChanges();
-    Collection<WhirlpoolUtxo> utxosAdded = utxoChanges.getUtxosAdded();
-    for (WhirlpoolUtxo whirlpoolUtxo : utxosAdded) {
-      if (whirlpoolUtxo.getAccount() == WhirlpoolAccount.DEPOSIT) {
-        long created = System.currentTimeMillis();
-        String data = null;
-        long amount = whirlpoolUtxo.getUtxo().value;
-        WhirlpoolAccount fromAccount = null;
-        String fromHash = null;
-        Integer fromIndex = null;
-        String fromAddress = null;
-
-        DestinationType destinationType = DestinationType.find(whirlpoolUtxo.getAccount());
-        String toHash = whirlpoolUtxo.getUtxo().tx_hash;
-        Integer toIndex = whirlpoolUtxo.getUtxo().tx_output_n;
-        String toAddress = whirlpoolUtxo.getUtxo().addr;
-        dbService.createLog(
-            created,
-            LogType.RECEIVED,
-            data,
-            amount,
-            fromAccount,
-            fromHash,
-            fromIndex,
-            fromAddress,
-            destinationType,
-            toHash,
-            toIndex,
-            toAddress);
-      }
-    }
+    createLogMix(e, null);
   }
 }

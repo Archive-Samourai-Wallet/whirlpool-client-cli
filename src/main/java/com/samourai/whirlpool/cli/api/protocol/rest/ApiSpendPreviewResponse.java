@@ -1,14 +1,13 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import com.samourai.wallet.ricochet.Ricochet;
 import com.samourai.wallet.send.MyTransactionOutPoint;
 import com.samourai.wallet.send.beans.SpendTx;
 import com.samourai.wallet.send.beans.SpendType;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoDetails;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApiSpendPreviewResponse {
@@ -17,6 +16,7 @@ public class ApiSpendPreviewResponse {
   private long spendValue;
   private long changeValue;
   private long minerFee;
+  private long samouraiFee;
   private int vSize;
   private int weight;
   private SpendType spendType;
@@ -27,6 +27,7 @@ public class ApiSpendPreviewResponse {
       long spendValue,
       long changeValue,
       long minerFee,
+      long samouraiFee,
       int vSize,
       int weight,
       SpendType spendType) {
@@ -35,6 +36,7 @@ public class ApiSpendPreviewResponse {
     this.spendValue = spendValue;
     this.changeValue = changeValue;
     this.minerFee = minerFee;
+    this.samouraiFee = samouraiFee;
     this.vSize = vSize;
     this.weight = weight;
     this.spendType = spendType;
@@ -47,13 +49,33 @@ public class ApiSpendPreviewResponse {
         spendTx.getAmount(),
         spendTx.getChange(),
         spendTx.getFee(),
+        0,
         spendTx.getvSize(),
         spendTx.getWeight(),
         spendTx.getSpendType());
   }
 
+  public ApiSpendPreviewResponse(Ricochet ricochet, UtxoSupplier utxoSupplier) {
+    this(
+        toUtxoRefs(ricochet.getSpendFrom(), utxoSupplier),
+        computeSpendTo(ricochet.getDestination(), ricochet.getSpend_amount()),
+        ricochet.getSpend_amount(),
+        ricochet.getChange_amount(),
+        ricochet.getTotal_miner_fee(),
+        ricochet.getSamourai_fee(),
+        (int) ricochet.getTotal_vSize(),
+        (int) ricochet.getTotal_weight(),
+        SpendType.RICOCHET);
+  }
+
+  public static Map<String, Long> computeSpendTo(String destination, long amount) {
+    Map<String, Long> map = new LinkedHashMap<>();
+    map.put(destination, amount);
+    return map;
+  }
+
   private static Collection<ApiUtxoDetails> toUtxoRefs(
-      List<MyTransactionOutPoint> outPoints, UtxoSupplier utxoSupplier) {
+      Collection<MyTransactionOutPoint> outPoints, UtxoSupplier utxoSupplier) {
     return outPoints.stream()
         .map(
             outPoint -> {
@@ -102,6 +124,14 @@ public class ApiSpendPreviewResponse {
 
   public void setMinerFee(long minerFee) {
     this.minerFee = minerFee;
+  }
+
+  public long getSamouraiFee() {
+    return samouraiFee;
+  }
+
+  public void setSamouraiFee(long samouraiFee) {
+    this.samouraiFee = samouraiFee;
   }
 
   public int getvSize() {

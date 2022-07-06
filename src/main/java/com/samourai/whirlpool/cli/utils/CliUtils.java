@@ -15,19 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.UUID;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.token.Sha512DigestUtils;
 
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   public static final String LOG_SEPARATOR = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
   public static final String SPRING_PROFILE_TESTING = "testing";
 
-  public static String generateUniqueString() {
-    return UUID.randomUUID().toString().replace("-", "");
+  public static String sha512Hash(String str) {
+    return Sha512DigestUtils.shaHex(str);
   }
 
   public static void waitUserAction(String message) throws NotifiableException {
@@ -269,6 +269,7 @@ public class CliUtils {
     Level whirlpoolClientLevel = isDebugClient ? Level.TRACE : Level.INFO;
     ClientUtils.setLogLevel(whirlpoolLevel, whirlpoolClientLevel);
 
+    LogbackUtils.setLogLevel("com.samourai.whirlpool.cli", whirlpoolLevel.toString());
     LogbackUtils.setLogLevel(
         "com.msopentech.thali.toronionproxy", org.slf4j.event.Level.WARN.toString());
     LogbackUtils.setLogLevel(

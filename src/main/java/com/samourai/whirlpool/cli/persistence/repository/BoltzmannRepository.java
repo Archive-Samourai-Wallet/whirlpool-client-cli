@@ -1,11 +1,11 @@
 package com.samourai.whirlpool.cli.persistence.repository;
 
-import com.samourai.whirlpool.cli.persistence.entity.Boltzmann;
+import com.samourai.whirlpool.cli.persistence.entity.BoltzmannEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BoltzmannRepository extends CrudRepository<Boltzmann, String> {
+public interface BoltzmannRepository extends CrudRepository<BoltzmannEntity, String> {
 
-  Boltzmann getByTxid(String txid);
+  BoltzmannEntity getByTxid(String txid);
 }

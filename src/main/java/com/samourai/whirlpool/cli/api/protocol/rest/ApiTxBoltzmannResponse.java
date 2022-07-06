@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.cli.persistence.beans.BoltzmannData;
-import com.samourai.whirlpool.cli.persistence.entity.Boltzmann;
+import com.samourai.whirlpool.cli.persistence.entity.BoltzmannEntity;
 import java.util.Map;
 
 public class ApiTxBoltzmannResponse {
@@ -28,8 +28,8 @@ public class ApiTxBoltzmannResponse {
   private String[][] dtrmLnks;
   private long duration;
 
-  public ApiTxBoltzmannResponse(Boltzmann boltzmann) {
-    BoltzmannData boltzmannData = boltzmann.data;
+  public ApiTxBoltzmannResponse(BoltzmannEntity boltzmannEntity) {
+    BoltzmannData boltzmannData = boltzmannEntity.data;
     this.nbCmbn = boltzmannData.getNbCmbn();
     this.matLnkCombinations = boltzmannData.getMatLnkCombinations();
 

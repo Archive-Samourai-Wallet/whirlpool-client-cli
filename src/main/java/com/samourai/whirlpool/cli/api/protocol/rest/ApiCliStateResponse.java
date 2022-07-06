@@ -19,6 +19,8 @@ public class ApiCliStateResponse {
   private boolean dojo;
   private String version;
 
+  public ApiCliStateResponse() {}
+
   public ApiCliStateResponse(CliState cliState, CliConfig cliConfig) {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
