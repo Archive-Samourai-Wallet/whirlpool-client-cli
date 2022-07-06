@@ -59,9 +59,9 @@ public class CliConfig extends CliConfigFile {
       String dojoUrl = getDojo().getUrl();
       return new DojoDataSourceFactory(dojoUrl, null, wsClient) {
         @Override
-        protected String computeDojoApiKey(WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w)
-            throws Exception {
-          return decryptDojoApiKey(getDojo().getApiKey(), bip44w.getPassphrase());
+        protected String computeDojoApiKey(
+            WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w, String passphrase) throws Exception {
+          return decryptDojoApiKey(getDojo().getApiKey(), passphrase);
         }
       };
     }

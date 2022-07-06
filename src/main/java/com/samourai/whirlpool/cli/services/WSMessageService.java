@@ -23,7 +23,7 @@ public class WSMessageService extends JWSSMessageService {
 
   public void sendPrivateError(String username, String message) {
     log.warn("(>) " + username + " sendPrivateError: " + message);
-    ErrorResponse errorResponse = new ErrorResponse(message);
+    ErrorResponse errorResponse = new ErrorResponse(600, message);
     sendPrivate(username, errorResponse);
   }
 }

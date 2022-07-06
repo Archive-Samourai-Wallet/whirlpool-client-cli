@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.samourai.code.whirlpool</groupId>
-    <artifactId>wallet-cli</artifactId>
-    <version>0.0.1-dearly</version>
-    <name>wallet-cli</name>
+    <artifactId>whirlpool-client-cli</artifactId>
+    <version>dearly-SNAPSHOT</version>
+    <name>whirlpool-client-cli</name>
     <properties>
         <spring-boot.version>2.6.2</spring-boot.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.23.41</version>
+            <version>0.23.43-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
