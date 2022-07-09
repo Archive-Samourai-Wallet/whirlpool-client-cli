@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.wallet;
 
+import com.samourai.wallet.bipFormat.BIP_FORMAT;
+import com.samourai.wallet.bipWallet.BipWallet;
 import com.samourai.wallet.ricochet.Ricochet;
 import com.samourai.wallet.ricochet.RicochetConfig;
 import com.samourai.wallet.ricochet.RicochetUtilGeneric;
@@ -52,7 +54,7 @@ public class SpendController extends AbstractRestController {
       return new ApiSpendPreviewResponse(ricochet, whirlpoolWallet.getUtxoSupplier());
     }
 
-    SpendBuilder spendBuilder = whirlpoolWallet.getSpendBuilder(null);
+    SpendBuilder spendBuilder = whirlpoolWallet.getSpendBuilder();
 
     try {
       // preview
@@ -108,7 +110,7 @@ public class SpendController extends AbstractRestController {
       }
 
       // preview
-      SpendBuilder spendBuilder = cliWallet.getSpendBuilder(null);
+      SpendBuilder spendBuilder = cliWallet.getSpendBuilder();
 
       SpendTx spendTx = computeSpendTx(spendBuilder, cliWallet, payload);
 
@@ -144,9 +146,14 @@ public class SpendController extends AbstractRestController {
     }
 
     int blockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
+    // TODO zeroleak
+    BipWallet spendWallet =
+        whirlpoolWallet.getWalletSupplier().getWallet(payload.account, BIP_FORMAT.SEGWIT_NATIVE);
+    BipWallet changeWallet = spendWallet;
     SpendTx spendTx =
         spendBuilder.preview(
-            payload.account,
+            spendWallet,
+            changeWallet,
             payload.spendTo,
             payload.spendAmount,
             payload.stonewall,
