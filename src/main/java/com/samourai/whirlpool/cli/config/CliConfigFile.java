@@ -4,6 +4,8 @@ import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
+import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
+import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
@@ -623,12 +625,14 @@ public abstract class CliConfigFile {
       TorClientService torClientService,
       String passphrase)
       throws NotifiableException {
+    ISecretPointFactory secretPointFactory = SecretPointFactoryJava.getInstance();
     String serverUrl = computeServerUrl();
     NetworkParameters params = server.getParams();
     ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             dataSourceFactory,
+            secretPointFactory,
             httpClientService,
             stompClientService,
             torClientService,
