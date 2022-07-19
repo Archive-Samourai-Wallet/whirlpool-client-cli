@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
+import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import java.lang.invoke.MethodHandles;
@@ -39,6 +41,11 @@ public class CliServicesConfig {
   @Bean
   NetworkParameters networkParameters(CliConfig cliConfig) {
     return cliConfig.getServer().getParams();
+  }
+
+  @Bean
+  ISecretPointFactory secretPointFactory() {
+    return SecretPointFactoryJava.getInstance();
   }
 
   @Bean

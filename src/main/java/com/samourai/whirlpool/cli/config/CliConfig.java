@@ -5,6 +5,7 @@ import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
+import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.CharSequenceX;
@@ -34,6 +35,7 @@ public class CliConfig extends CliConfigFile {
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
+      ISecretPointFactory secretPointFactory,
       IHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
@@ -44,7 +46,12 @@ public class CliConfig extends CliConfigFile {
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            dataSourceFactory, httpClientService, stompClientService, torClientService, passphrase);
+            dataSourceFactory,
+            secretPointFactory,
+            httpClientService,
+            stompClientService,
+            torClientService,
+            passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
     return config;

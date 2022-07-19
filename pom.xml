@@ -16,7 +16,7 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.23.42-SNAPSHOT</version>
+            <version>0.23.45</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -63,12 +63,12 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
             <artifactId>universal</artifactId>
-            <version>0.0.4-samourai</version>
+            <version>0.0.6-samourai</version>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.whirlpool.Tor_Onion_Proxy_Library</groupId>
             <artifactId>java</artifactId>
-            <version>0.0.4-samourai</version>
+            <version>0.0.6-samourai</version>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>

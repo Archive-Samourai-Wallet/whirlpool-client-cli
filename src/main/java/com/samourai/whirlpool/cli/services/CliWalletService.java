@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.util.CharSequenceX;
@@ -44,6 +45,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
+  private ISecretPointFactory secretPointFactory;
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
@@ -54,6 +56,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private Set<BusyReason> busyReasons;
 
   public CliWalletService(
+      ISecretPointFactory secretPointFactory,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       JavaHttpClientService httpClientService,
@@ -61,6 +64,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliTorClientService cliTorClientService,
       CliUpgradeService cliUpgradeService) {
     super();
+    this.secretPointFactory = secretPointFactory;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.httpClientService = httpClientService;
@@ -115,7 +119,11 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, cliTorClientService, passphrase);
+            secretPointFactory,
+            httpClientService,
+            stompClientService,
+            cliTorClientService,
+            passphrase);
 
     CliWallet cliWallet =
         new CliWallet(
