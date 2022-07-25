@@ -2,15 +2,19 @@ package com.samourai.wallet.api.backend;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
-import com.samourai.wallet.api.backend.beans.*;
+import com.samourai.wallet.api.backend.beans.MultiAddrResponse;
+import com.samourai.wallet.api.backend.beans.TxDetail;
+import com.samourai.wallet.api.backend.beans.UnspentOutput;
+import com.samourai.wallet.api.backend.beans.WalletResponse;
 import com.samourai.whirlpool.client.test.AbstractTest;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java8.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class BackendApiTest extends AbstractTest {
   private static final long requestTimeout = 5000;
@@ -56,14 +60,14 @@ public class BackendApiTest extends AbstractTest {
   @Test
   public void fetchUtxos() throws Exception {
     String zpub = VPUB_1;
-    List<UnspentOutput> unspentOutputs = Lists.of(backendApi.fetchWallet(zpub).unspent_outputs);
+    List<UnspentOutput> unspentOutputs = Arrays.asList(backendApi.fetchWallet(zpub).unspent_outputs);
     Assertions.assertEquals(0, unspentOutputs.size());
   }
 
   @Test
   public void fetchUtxosMulti() throws Exception {
     String[] zpubs = new String[] {VPUB_1, VPUB_2};
-    List<UnspentOutput> unspentOutputs = Lists.of(backendApi.fetchWallet(zpubs).unspent_outputs);
+    List<UnspentOutput> unspentOutputs = Arrays.asList(backendApi.fetchWallet(zpubs).unspent_outputs);
     Assertions.assertEquals(0, unspentOutputs.size());
   }
 
