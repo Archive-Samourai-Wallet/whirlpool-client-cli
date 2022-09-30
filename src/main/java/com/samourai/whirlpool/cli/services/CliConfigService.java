@@ -9,13 +9,13 @@ import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.payload.BackupPayload;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.wallet.util.RandomUtil;
 import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.SortedProperties;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
-import java.util.Base64;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
@@ -290,9 +289,7 @@ public class CliConfigService {
   }
 
   protected String generateApiKey() {
-    return Base64.getEncoder()
-        .withoutPadding()
-        .encodeToString(RandomUtil.getInstance().nextBytes(APIKEY_LENGTH));
+    return CliUtils.generateRandomString(APIKEY_LENGTH);
   }
 
   public Properties loadProperties() throws Exception {

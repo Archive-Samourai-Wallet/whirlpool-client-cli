@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.wallet;
 
 import com.samourai.wallet.api.backend.BackendApi;
-import com.samourai.wallet.bipWallet.BipWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
@@ -17,6 +16,7 @@ import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSource;
 import com.samourai.whirlpool.protocol.beans.Utxo;
 import io.reactivex.Completable;
 import java.lang.invoke.MethodHandles;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,22 +108,15 @@ public class CliWallet extends WhirlpoolWallet {
 
   // make public
 
-  @Override
-  public BipWallet getWalletDeposit() {
-    return super.getWalletDeposit();
-  }
-
-  @Override
-  public BipWallet getWalletPremix() {
-    return super.getWalletPremix();
-  }
-
-  @Override
-  public BipWallet getWalletPostmix() {
-    return super.getWalletPostmix();
-  }
-
   public BackendApi getBackendApi() {
     return ((DojoDataSource) getDataSource()).getBackendApi();
+  }
+
+  public NetworkParameters getParams() {
+    return cliConfig.getServer().getParams();
+  }
+
+  public CliConfig getCliConfig() {
+    return cliConfig;
   }
 }

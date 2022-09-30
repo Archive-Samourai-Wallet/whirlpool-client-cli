@@ -40,6 +40,9 @@ public class CliApiEndpoint {
 
   public static final String REST_TX_BOLTZMANN = REST_PREFIX + "tx/boltzmann";
 
+  public static final String REST_AUTH_LOGIN = REST_PREFIX + "auth/login";
+  public static final String REST_AUTH_REFRESH = REST_PREFIX + "auth/refresh";
+
   public static final String[] REST_ENDPOINTS =
       new String[] {
         REST_CLI,
@@ -70,7 +73,9 @@ public class CliApiEndpoint {
         REST_ADDRESS_PRIVATE,
         REST_SWEEP_PREVIEW,
         REST_SWEEP_SUBMIT,
-        REST_TX_BOLTZMANN
+        REST_TX_BOLTZMANN,
+        REST_AUTH_LOGIN,
+        REST_AUTH_REFRESH
       };
 
   public static final String WS_CONNECT = "connect";

@@ -1,7 +1,14 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.wallet;
 
+import com.samourai.soroban.cahoots.CahootsContext;
+import com.samourai.soroban.client.wallet.sender.SorobanWalletInitiator;
+import com.samourai.wallet.SamouraiWalletConst;
+import com.samourai.wallet.bip47.rpc.PaymentCode;
 import com.samourai.wallet.bipFormat.BIP_FORMAT;
 import com.samourai.wallet.bipWallet.BipWallet;
+import com.samourai.wallet.cahoots.Cahoots;
+import com.samourai.wallet.cahoots.CahootsType;
+import com.samourai.wallet.cahoots.CahootsWallet;
 import com.samourai.wallet.ricochet.Ricochet;
 import com.samourai.wallet.ricochet.RicochetConfig;
 import com.samourai.wallet.ricochet.RicochetUtilGeneric;
@@ -9,7 +16,9 @@ import com.samourai.wallet.send.MyTransactionOutPoint;
 import com.samourai.wallet.send.beans.SpendTx;
 import com.samourai.wallet.send.exceptions.SpendException;
 import com.samourai.wallet.send.spend.SpendBuilder;
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.wallet.util.FeeUtil;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.wallet.util.TxUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
@@ -23,19 +32,25 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.SamouraiAccountIndex;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import javax.validation.Valid;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class SpendController extends AbstractRestController {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   @Autowired private CliWalletService cliWalletService;
   @Autowired private CliConfig cliConfig;
   private RicochetUtilGeneric ricochetUtil = RicochetUtilGeneric.getInstance();
@@ -104,21 +119,26 @@ public class SpendController extends AbstractRestController {
         // broadcast ricochet
         String lastTxId = null;
         for (String txHex : ricochet.getTransactions()) {
-          lastTxId = cliWallet.pushTx(txHex);
+          lastTxId = cliWallet.getPushTx().pushTx(txHex);
         }
         return new ApiSpendResponse(lastTxId, ricochet, cliWallet.getUtxoSupplier());
       }
 
-      // preview
-      SpendBuilder spendBuilder = cliWallet.getSpendBuilder();
+      SpendTx spendTx = null;
+      if (payload.cahoots != null) {
+        // do Cahoots & broadcast
+        spendTx = doCahoots(payload, cliWallet);
+      }
+      if (spendTx == null) {
+        // preview
+        SpendBuilder spendBuilder = cliWallet.getSpendBuilder();
+        spendTx = computeSpendTx(spendBuilder, cliWallet, payload);
 
-      SpendTx spendTx = computeSpendTx(spendBuilder, cliWallet, payload);
-
-      // spend
-      Transaction tx = spendTx.getTx();
-      cliWallet.pushTx(TxUtil.getInstance().getTxHex(tx));
-
-      return new ApiSpendResponse(tx.getHashAsString(), spendTx, cliWallet.getUtxoSupplier());
+        // broadcast
+        Transaction tx = spendTx.getTx();
+        cliWallet.getPushTx().pushTx(TxUtil.getInstance().getTxHex(tx));
+      }
+      return new ApiSpendResponse(spendTx, cliWallet.getUtxoSupplier());
     } catch (SpendException e) {
       // forward SpendError
       throw new NotifiableException(e.getSpendError().name());
@@ -163,5 +183,40 @@ public class SpendController extends AbstractRestController {
             preselectedInputs,
             blockHeight);
     return spendTx;
+  }
+
+  private SpendTx doCahoots(ApiSpendRequest request, CliWallet cliWallet) throws Exception {
+    int account = SamouraiAccountIndex.find(request.account);
+    CahootsWallet cahootsWallet = cliWallet.getCahootsWallet();
+
+    int feePerB = computeFeePerB(request, cliWallet);
+    PaymentCode paymentCodeCounterparty = new PaymentCode(request.cahoots.paymentCodeCounterparty);
+
+    CahootsType cahootsType = CahootsType.valueOf(request.cahoots.cahootsType);
+    if (CahootsType.MULTI.equals(cahootsType)) {
+      boolean isTestnet =
+          FormatsUtilGeneric.getInstance().isTestNet(cliConfig.getServer().getParams());
+      paymentCodeCounterparty = new PaymentCode(SamouraiWalletConst.getSaasPcode(isTestnet));
+    }
+
+    // initiate cahoots
+    CahootsContext cahootsContext =
+        CahootsContext.newInitiator(
+            cahootsWallet,
+            cahootsType,
+            account,
+            feePerB,
+            request.spendAmount,
+            request.spendTo,
+            null);
+    SorobanWalletInitiator sorobanWalletInitiator = cliWalletService.getSorobanWalletInitiator();
+    Cahoots cahoots =
+        AsyncUtil.getInstance()
+            .blockingGet(
+                sorobanWalletInitiator.meetAndInitiate(cahootsContext, paymentCodeCounterparty));
+
+    // push
+    cahoots.pushTx(cliWallet.getPushTx());
+    return cahoots.getSpendTx(cahootsContext, cliWallet.getUtxoSupplier());
   }
 }

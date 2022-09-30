@@ -1,9 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.IHttpClientService;
-import com.samourai.http.client.JavaHttpClient;
+import com.samourai.http.client.*;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
@@ -14,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JavaHttpClientService implements IHttpClientService {
+public class JavaHttpClientService implements IWhirlpoolHttpClientService, IHttpClientService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliTorClientService torClientService;
@@ -26,6 +23,11 @@ public class JavaHttpClientService implements IHttpClientService {
     this.torClientService = torClientService;
     this.cliConfig = cliConfig;
     this.httpClients = new ConcurrentHashMap<>();
+  }
+
+  @Override
+  public IHttpClient getHttpClient() {
+    return getHttpClient(HttpUsage.BACKEND);
   }
 
   @Override

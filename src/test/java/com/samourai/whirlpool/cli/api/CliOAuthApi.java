@@ -3,8 +3,12 @@ package com.samourai.whirlpool.cli.api;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.beans.RefreshTokenResponse;
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.wallet.util.oauth.OAuthApi;
-import java.util.HashMap;
+import com.samourai.whirlpool.cli.api.protocol.CliApi;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiAuthLoginRequest;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiAuthRefreshRequest;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class CliOAuthApi implements OAuthApi {
   private Logger log = LoggerFactory.getLogger(BackendApi.class);
+  private static final AsyncUtil asyncUtil = AsyncUtil.getInstance();
   private static final String URL_GET_AUTH_LOGIN = "/auth/login";
   private static final String URL_GET_AUTH_REFRESH = "/auth/refresh";
   private IHttpClient httpClient;
@@ -22,6 +27,12 @@ public class CliOAuthApi implements OAuthApi {
     this.urlCli = urlBackend;
   }
 
+  private Map<String, String> computeHeaders() {
+    Map<String, String> headers = new LinkedHashMap<>();
+    headers.put(CliApi.HEADER_API_VERSION, CliApi.API_VERSION);
+    return headers;
+  }
+
   @Override
   public RefreshTokenResponse.Authorization oAuthAuthenticate(String apiKey) throws Exception {
     String url = this.urlCli + "/rest/auth/login";
@@ -29,10 +40,14 @@ public class CliOAuthApi implements OAuthApi {
       this.log.debug("tokenAuthenticate");
     }
 
-    Map<String, String> postBody = new HashMap<>();
-    postBody.put("apikey", apiKey);
+    ApiAuthLoginRequest request = new ApiAuthLoginRequest();
+    request.apiKey = apiKey;
     RefreshTokenResponse response =
-        this.httpClient.postUrlEncoded(url, RefreshTokenResponse.class, null, postBody);
+        asyncUtil
+            .blockingGet(
+                this.httpClient.postJson(
+                    url, RefreshTokenResponse.class, computeHeaders(), request))
+            .get();
     if (response.authorizations != null
         && !StringUtils.isEmpty(response.authorizations.access_token)) {
       return response.authorizations;
@@ -48,10 +63,14 @@ public class CliOAuthApi implements OAuthApi {
       this.log.debug("tokenRefresh");
     }
 
-    Map<String, String> postBody = new HashMap();
-    postBody.put("rt", refreshTokenStr);
+    ApiAuthRefreshRequest request = new ApiAuthRefreshRequest();
+    request.refreshToken = refreshTokenStr;
     RefreshTokenResponse response =
-        this.httpClient.postUrlEncoded(url, RefreshTokenResponse.class, null, postBody);
+        asyncUtil
+            .blockingGet(
+                this.httpClient.postJson(
+                    url, RefreshTokenResponse.class, computeHeaders(), request))
+            .get();
     if (response.authorizations != null
         && !StringUtils.isEmpty(response.authorizations.access_token)) {
       return response.authorizations.access_token;

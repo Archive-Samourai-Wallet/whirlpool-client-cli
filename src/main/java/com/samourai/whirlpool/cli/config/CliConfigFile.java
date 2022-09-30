@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.IHttpClientService;
+import com.samourai.http.client.IWhirlpoolHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
@@ -334,6 +334,8 @@ public abstract class CliConfigFile {
     @NotEmpty private int port;
     @NotEmpty private int httpPort;
     @NotEmpty private boolean httpEnable;
+    private int accessTokenExpiration;
+    private int refreshTokenExpiration;
 
     public ApiConfig() {}
 
@@ -341,6 +343,8 @@ public abstract class CliConfigFile {
       this.port = copy.port;
       this.httpPort = copy.httpPort;
       this.httpEnable = copy.httpEnable;
+      this.accessTokenExpiration = copy.accessTokenExpiration;
+      this.refreshTokenExpiration = copy.refreshTokenExpiration;
     }
 
     public int getPort() {
@@ -367,6 +371,22 @@ public abstract class CliConfigFile {
       this.httpEnable = httpEnable;
     }
 
+    public long getAccessTokenExpiration() {
+      return accessTokenExpiration;
+    }
+
+    public void setAccessTokenExpiration(int accessTokenExpiration) {
+      this.accessTokenExpiration = accessTokenExpiration;
+    }
+
+    public long getRefreshTokenExpiration() {
+      return refreshTokenExpiration;
+    }
+
+    public void setRefreshTokenExpiration(int refreshTokenExpiration) {
+      this.refreshTokenExpiration = refreshTokenExpiration;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       String info = "port=" + port;
@@ -375,6 +395,8 @@ public abstract class CliConfigFile {
       }
       info += ", httpEnable=" + httpEnable;
       configInfo.put("cli/api", info);
+      configInfo.put("cli/api/accessTokenExpiration", Integer.toString(accessTokenExpiration));
+      configInfo.put("cli/api/refreshTokenExpiration", Integer.toString(refreshTokenExpiration));
       return configInfo;
     }
   }
@@ -620,7 +642,7 @@ public abstract class CliConfigFile {
 
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       DataSourceFactory dataSourceFactory,
-      IHttpClientService httpClientService,
+      IWhirlpoolHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
       String passphrase)

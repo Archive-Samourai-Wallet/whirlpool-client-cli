@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.wallet.ricochet.Ricochet;
-import com.samourai.wallet.send.MyTransactionOutPoint;
 import com.samourai.wallet.send.beans.SpendTx;
 import com.samourai.wallet.send.beans.SpendType;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoDetails;
@@ -9,6 +8,7 @@ import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.bitcoinj.core.TransactionOutPoint;
 
 public class ApiSpendPreviewResponse {
   private Collection<ApiUtxoDetails> spendFrom;
@@ -21,7 +21,7 @@ public class ApiSpendPreviewResponse {
   private int weight;
   private SpendType spendType;
 
-  private ApiSpendPreviewResponse(
+  protected ApiSpendPreviewResponse(
       Collection<ApiUtxoDetails> spendFrom,
       Map<String, Long> spendTo,
       long spendValue,
@@ -50,8 +50,8 @@ public class ApiSpendPreviewResponse {
         spendTx.getChange(),
         spendTx.getFee(),
         0,
-        spendTx.getvSize(),
-        spendTx.getWeight(),
+        spendTx.getTx().getVirtualTransactionSize(),
+        spendTx.getTx().getWeight(),
         spendTx.getSpendType());
   }
 
@@ -75,12 +75,12 @@ public class ApiSpendPreviewResponse {
   }
 
   private static Collection<ApiUtxoDetails> toUtxoRefs(
-      Collection<MyTransactionOutPoint> outPoints, UtxoSupplier utxoSupplier) {
+      Collection<? extends TransactionOutPoint> outPoints, UtxoSupplier utxoSupplier) {
     return outPoints.stream()
         .map(
             outPoint -> {
               WhirlpoolUtxo whirlpoolUtxo =
-                  utxoSupplier.findUtxo(outPoint.getTxHash().toString(), outPoint.getTxOutputN());
+                  utxoSupplier.findUtxo(outPoint.getHash().toString(), (int) outPoint.getIndex());
               return new ApiUtxoDetails(whirlpoolUtxo);
             })
         .collect(Collectors.toSet());

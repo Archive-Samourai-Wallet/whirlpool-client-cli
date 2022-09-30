@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.IHttpClientService;
+import com.samourai.http.client.IWhirlpoolHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
@@ -43,7 +43,7 @@ public class CliConfig extends CliConfigFile {
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
-      IHttpClientService httpClientService,
+      IWhirlpoolHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
       String passphrase)
@@ -61,7 +61,7 @@ public class CliConfig extends CliConfigFile {
     return config;
   }
 
-  private DataSourceFactory computeDataSourceFactory(IHttpClientService httpClientService)
+  private DataSourceFactory computeDataSourceFactory(IWhirlpoolHttpClientService httpClientService)
       throws Exception {
     IWebsocketClient wsClient = new JavaWebsocketClient((JavaHttpClientService) httpClientService);
 
@@ -80,11 +80,19 @@ public class CliConfig extends CliConfigFile {
     // Samourai backend
     boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
-    boolean useOnion =
-        getTor()
-            && getTorConfig().getBackend().isEnabled()
-            && getTorConfig().getBackend().isOnion();
-    return new DojoDataSourceFactory(backendServer, useOnion, wsClient);
+    return new DojoDataSourceFactory(backendServer, useOnionBackend(), wsClient);
+  }
+
+  public boolean useOnionBackend() {
+    return getTor()
+        && getTorConfig().getBackend().isEnabled()
+        && getTorConfig().getBackend().isOnion();
+  }
+
+  public boolean useOnionCoordinator() {
+    return getTor()
+        && getTorConfig().getCoordinator().isEnabled()
+        && getTorConfig().getCoordinator().isOnion();
   }
 
   protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
@@ -155,12 +163,12 @@ public class CliConfig extends CliConfigFile {
     }
 
     // backend
-    if (getTorConfig().getBackend().isEnabled()) {
+    if (useOnionBackend()) {
       httpUsages.add(HttpUsage.BACKEND);
     }
 
     // coordinator
-    if (getTorConfig().getCoordinator().isEnabled()) {
+    if (useOnionCoordinator()) {
       httpUsages.add(HttpUsage.COORDINATOR_WEBSOCKET);
       httpUsages.add(HttpUsage.COORDINATOR_REST);
       httpUsages.add(HttpUsage.COORDINATOR_REGISTER_OUTPUT);

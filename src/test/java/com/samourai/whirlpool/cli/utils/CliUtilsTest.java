@@ -18,4 +18,16 @@ public class CliUtilsTest {
         "f7fbba6e0636f890e56fbbf3283e524c6fa3204ae298382d624741d0dc6638326e282c41be5e4254d8820772c5518a2c5a8c0c7f7eda19594a7eb539453e1ed7",
         CliUtils.sha512Hash("foo"));
   }
+
+  @Test
+  public void decryptSeedWords() throws Exception {
+    String seedWordsEncrypted;
+    String passphrase;
+
+    seedWordsEncrypted =
+        "t6MNj4oCb9T54lKWNAF274Hg72E0q0uJooUwKjzGD+ysWsFv8Ib47ubdnjStkeJ/G9UltiERHAm1tKRtHbaJiA==";
+    passphrase = "secret";
+    Assertions.assertTrue(
+        CliUtils.decryptSeedWords(seedWordsEncrypted, passphrase).split(" ").length == 12);
+  }
 }

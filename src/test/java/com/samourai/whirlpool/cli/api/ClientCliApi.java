@@ -2,12 +2,11 @@ package com.samourai.whirlpool.cli.api;
 
 import com.samourai.http.client.IHttpClient;
 import com.samourai.wallet.util.oauth.OAuthManager;
-import com.samourai.whirlpool.cli.api.protocol.CliApi;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliOpenWalletRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiPoolsResponse;
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,21 +19,17 @@ public class ClientCliApi {
   private IHttpClient httpClient;
   private String urlCli;
   private OAuthManager oAuthManager;
-  private String apiKey;
 
-  protected ClientCliApi(
-      IHttpClient httpClient, String urlCli, String apiKey, OAuthManager oAuthManager) {
+  public ClientCliApi(IHttpClient httpClient, String urlCli, OAuthManager oAuthManager) {
     this.httpClient = httpClient;
     this.urlCli = urlCli;
-    this.apiKey = apiKey;
     this.oAuthManager = oAuthManager;
     if (log.isDebugEnabled()) {
       log.debug("urlCli=" + urlCli + ", oAuthManager=" + (oAuthManager != null ? "yes" : "no"));
     }
   }
 
-  public Observable<Optional<ApiCliStateResponse>> openWallet(String seedPassphrase)
-      throws Exception {
+  public Single<Optional<ApiCliStateResponse>> openWallet(String seedPassphrase) throws Exception {
     String url = this.urlCli + CliApiEndpoint.REST_CLI_OPEN_WALLET;
     if (log.isDebugEnabled()) {
       log.debug("pools");
@@ -62,7 +57,6 @@ public class ClientCliApi {
     if (this.oAuthManager != null) {
       headers.put("Authorization", "Bearer " + this.oAuthManager.getOAuthAccessToken());
     }
-    headers.put(CliApi.HEADER_API_KEY, apiKey); // TODO remove when OAuth ready
     return headers;
   }
 

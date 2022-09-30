@@ -2,7 +2,10 @@ package com.samourai.whirlpool.cli.beans;
 
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingVersion;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
+import org.bitcoinj.params.TestNet3Params;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -116,6 +119,19 @@ public class WhirlpoolPairingPayloadTest {
     }
   }
 
+  @Test
+  public void dump() throws Exception {
+    String mnemonic = "all all all all all all all all all all all all";
+    String passphrase = "test";
+    WhirlpoolPairingPayload pairingPayload =
+        WhirlpoolPairingPayload.newInstance(mnemonic, passphrase, true, null, TestNet3Params.get());
+    String payload = ClientUtils.toJsonString(pairingPayload);
+
+    // verify
+    parseAndDecrypt(
+        payload, PairingVersion.V3_0_0, PairingNetwork.TESTNET, mnemonic, true, passphrase);
+  }
+
   private void parse(
       String payload,
       PairingVersion pairingVersion,
@@ -128,5 +144,23 @@ public class WhirlpoolPairingPayloadTest {
     Assertions.assertEquals(pairingVersion, pairingPayload.getPairing().getVersion());
     Assertions.assertEquals(mnemonic, pairingPayload.getPairing().getMnemonic());
     Assertions.assertEquals(passphrase, pairingPayload.getPairing().getPassphrase());
+  }
+
+  private void parseAndDecrypt(
+      String payload,
+      PairingVersion pairingVersion,
+      PairingNetwork pairingNetwork,
+      String mnemonicDecrypted,
+      Boolean appendPassphrase,
+      String passphrase)
+      throws Exception {
+    WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(payload);
+    Assertions.assertEquals(pairingNetwork, pairingPayload.getPairing().getNetwork());
+    Assertions.assertEquals(pairingVersion, pairingPayload.getPairing().getVersion());
+
+    String decrypted =
+        CliUtils.decryptSeedWords(pairingPayload.getPairing().getMnemonic(), passphrase);
+    Assertions.assertEquals(mnemonicDecrypted, decrypted);
+    Assertions.assertEquals(appendPassphrase, pairingPayload.getPairing().getPassphrase());
   }
 }

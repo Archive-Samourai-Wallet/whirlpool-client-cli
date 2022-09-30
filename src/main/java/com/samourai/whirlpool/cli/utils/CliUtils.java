@@ -3,6 +3,9 @@ package com.samourai.whirlpool.cli.utils;
 import ch.qos.logback.classic.Level;
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.HttpProxyProtocol;
+import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.util.CharSequenceX;
+import com.samourai.wallet.util.RandomUtil;
 import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -11,10 +14,7 @@ import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,6 +25,25 @@ public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   public static final String LOG_SEPARATOR = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
   public static final String SPRING_PROFILE_TESTING = "testing";
+
+  public static String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
+      throws Exception {
+    String decrypted = AESUtil.decrypt(seedWordsEncrypted, new CharSequenceX(seedPassphrase));
+    if (StringUtils.isEmpty(decrypted)) {
+      throw new Exception("Invalid passphrase");
+    }
+    return decrypted;
+  }
+
+  public static String decryptDojoApiKey(String apiKey, String seedPassphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
+  }
+
+  public static String generateRandomString(int length) {
+    return Base64.getEncoder()
+        .withoutPadding()
+        .encodeToString(RandomUtil.getInstance().nextBytes(length));
+  }
 
   public static String sha512Hash(String str) {
     return Sha512DigestUtils.shaHex(str);

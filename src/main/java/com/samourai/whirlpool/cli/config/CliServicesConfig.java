@@ -1,6 +1,15 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.http.client.IHttpClient;
+import com.samourai.http.client.IHttpClientService;
 import com.samourai.javawsserver.config.JWSSConfig;
+import com.samourai.soroban.client.rpc.RpcService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
+import com.samourai.wallet.bip47.rpc.java.Bip47UtilJava;
+import com.samourai.wallet.bipFormat.BIP_FORMAT;
+import com.samourai.wallet.bipFormat.BipFormatSupplier;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.payload.PayloadUtilGeneric;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.send.SweepUtilGeneric;
@@ -9,8 +18,10 @@ import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.utils.WalletRoutingDataSource;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
+import java.security.Provider;
 import org.apache.catalina.connector.Connector;
 import org.bitcoinj.core.NetworkParameters;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -103,5 +114,39 @@ public class CliServicesConfig {
   @Bean
   WalletRoutingDataSource walletRoutingDataSource() throws NotifiableException {
     return new WalletRoutingDataSource();
+  }
+
+  @Bean
+  BipFormatSupplier bipFormatSupplier() {
+    return BIP_FORMAT.PROVIDER;
+  }
+
+  @Bean
+  BIP47UtilGeneric bip47Util() {
+    return Bip47UtilJava.getInstance();
+  }
+
+  // SOROBAN
+
+  @Bean
+  CryptoUtil cryptoUtil() {
+    Provider provider = new BouncyCastleProvider();
+    return CryptoUtil.getInstance(provider);
+  }
+
+  @Bean
+  RpcService rpcService(
+      IHttpClientService httpClientService, CryptoUtil cryptoUtil, CliConfig cliConfig) {
+    IHttpClient httpClient = httpClientService.getHttpClient();
+    return new RpcService(httpClient, cryptoUtil, cliConfig.useOnionCoordinator());
+  }
+
+  @Bean
+  SorobanWalletService sorobanWalletService(
+      BIP47UtilGeneric bip47Util,
+      BipFormatSupplier bipFormatSupplier,
+      NetworkParameters params,
+      RpcService rpcService) {
+    return new SorobanWalletService(bip47Util, bipFormatSupplier, params, rpcService);
   }
 }

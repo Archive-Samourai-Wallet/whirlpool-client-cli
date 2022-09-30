@@ -7,9 +7,9 @@ import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
 public class ApiSpendResponse extends ApiSpendPreviewResponse {
   private String txid;
 
-  public ApiSpendResponse(String txid, SpendTx spendTx, UtxoSupplier utxoSupplier) {
+  public ApiSpendResponse(SpendTx spendTx, UtxoSupplier utxoSupplier) {
     super(spendTx, utxoSupplier);
-    this.txid = txid;
+    this.txid = spendTx.getTx().getHashAsString();
   }
 
   public ApiSpendResponse(String txid, Ricochet ricochet, UtxoSupplier utxoSupplier) {

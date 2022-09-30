@@ -62,6 +62,8 @@ It can be exposed over HTTP at your own risk.
 | cli.api.port | 8899 | Port for CLI API over HTTPS (when started with --listen) |
 | cli.api.http-enable | false | Enable unsecure CLI API over HTTP (not recommended, use it at your own risk!) |
 | cli.api.http-port | 8898 | Port for unsecure CLI API over HTTP (when started with --listen and cli.api.http-enable=true) |
+| cli.api.access-token-expiration | 900 | Access token expiration (seconds) |
+| cli.api.refresh-token-expiration | 7200 | Refresh token expiration (seconds) |
 
 
 #### CLI API certificate

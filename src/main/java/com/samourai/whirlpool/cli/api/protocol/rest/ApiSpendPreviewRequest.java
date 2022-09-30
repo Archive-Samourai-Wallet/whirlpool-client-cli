@@ -16,11 +16,17 @@ public class ApiSpendPreviewRequest {
   public boolean stonewall;
   public boolean rbfOptIn;
   public ApiSpendRicochet ricochet; // nullable
+  public ApiSpendCahoots cahoots; // nullable
 
   public ApiSpendPreviewRequest() {}
 
   public static class ApiSpendRicochet {
     public int hops;
     public boolean useTimeLock;
+  }
+
+  public static class ApiSpendCahoots {
+    public String cahootsType; // TODO cannot use enum due to @JsonValue on CahootsType.value
+    public String paymentCodeCounterparty;
   }
 }

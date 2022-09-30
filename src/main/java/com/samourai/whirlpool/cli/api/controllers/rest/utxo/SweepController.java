@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.api.controllers.rest.utxo;
 
 import com.samourai.wallet.api.backend.ISweepBackend;
 import com.samourai.wallet.api.backend.MinerFeeTarget;
-import com.samourai.wallet.bipFormat.BIP_FORMAT;
+import com.samourai.wallet.bipFormat.BipFormatSupplier;
 import com.samourai.wallet.send.SweepUtilGeneric;
 import com.samourai.wallet.send.beans.SweepPreview;
 import com.samourai.wallet.util.PrivKeyReader;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class SweepController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
   @Autowired private SweepUtilGeneric sweepUtil;
+  @Autowired private BipFormatSupplier bipFormatSupplier;
 
   @RequestMapping(value = CliApiEndpoint.REST_SWEEP_PREVIEW, method = RequestMethod.POST)
   public ApiSweepPreviewResponse sweepPreview(
@@ -51,7 +52,7 @@ public class SweepController extends AbstractRestController {
     for (SweepPreview sweepPreview : sweepPreviews) {
       String receiveAddress = whirlpoolWallet.getDepositAddress(true);
       sweepUtil.sweep(
-          sweepPreview, receiveAddress, getSweepBackend(), BIP_FORMAT.PROVIDER, true, blockHeight);
+          sweepPreview, receiveAddress, getSweepBackend(), bipFormatSupplier, true, blockHeight);
     }
   }
 
