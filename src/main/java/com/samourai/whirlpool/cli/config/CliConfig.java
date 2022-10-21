@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.IWhirlpoolHttpClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
@@ -43,6 +44,7 @@ public class CliConfig extends CliConfigFile {
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
+      SorobanWalletService sorobanWalletService,
       IWhirlpoolHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
@@ -53,7 +55,12 @@ public class CliConfig extends CliConfigFile {
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            dataSourceFactory, httpClientService, stompClientService, torClientService, passphrase);
+            dataSourceFactory,
+            sorobanWalletService,
+            httpClientService,
+            stompClientService,
+            torClientService,
+            passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
     config.setDataPersisterFactory(

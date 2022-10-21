@@ -48,10 +48,10 @@ public class ApiSpendPreviewResponse {
         spendTx.getSpendTo(),
         spendTx.getAmount(),
         spendTx.getChange(),
-        spendTx.getFee(),
+        spendTx.getMinerFeeTotal(),
         0,
-        spendTx.getTx().getVirtualTransactionSize(),
-        spendTx.getTx().getWeight(),
+        spendTx.getVirtualTransactionSize(),
+        spendTx.getWeight(),
         spendTx.getSpendType());
   }
 

@@ -19,7 +19,6 @@ import com.samourai.wallet.send.spend.SpendBuilder;
 import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.wallet.util.FeeUtil;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.wallet.util.TxUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoRef;
@@ -40,7 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.validation.Valid;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,21 +122,22 @@ public class SpendController extends AbstractRestController {
         return new ApiSpendResponse(lastTxId, ricochet, cliWallet.getUtxoSupplier());
       }
 
-      SpendTx spendTx = null;
+      SpendTx spendTx;
       if (payload.cahoots != null) {
         // do Cahoots & broadcast
         spendTx = doCahoots(payload, cliWallet);
-      }
-      if (spendTx == null) {
+      } else {
         // preview
         SpendBuilder spendBuilder = cliWallet.getSpendBuilder();
         spendTx = computeSpendTx(spendBuilder, cliWallet, payload);
-
-        // broadcast
-        Transaction tx = spendTx.getTx();
-        cliWallet.getPushTx().pushTx(TxUtil.getInstance().getTxHex(tx));
       }
-      return new ApiSpendResponse(spendTx, cliWallet.getUtxoSupplier());
+      // compute ApiSpendResponse before pushTx so we can get spendFroms utxos details
+      ApiSpendResponse apiSpendResponse =
+          new ApiSpendResponse(spendTx, cliWallet.getUtxoSupplier());
+
+      // push
+      spendTx.pushTx(cliWallet.getPushTx());
+      return apiSpendResponse;
     } catch (SpendException e) {
       // forward SpendError
       throw new NotifiableException(e.getSpendError().name());
@@ -209,14 +208,11 @@ public class SpendController extends AbstractRestController {
             request.spendAmount,
             request.spendTo,
             null);
-    SorobanWalletInitiator sorobanWalletInitiator = cliWalletService.getSorobanWalletInitiator();
+    SorobanWalletInitiator sorobanWalletInitiator = cliWallet.getSorobanWalletInitiator();
     Cahoots cahoots =
         AsyncUtil.getInstance()
             .blockingGet(
                 sorobanWalletInitiator.meetAndInitiate(cahootsContext, paymentCodeCounterparty));
-
-    // push
-    cahoots.pushTx(cliWallet.getPushTx());
     return cahoots.getSpendTx(cahootsContext, cliWallet.getUtxoSupplier());
   }
 }

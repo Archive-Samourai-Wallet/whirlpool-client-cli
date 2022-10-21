@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.IWhirlpoolHttpClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
@@ -642,6 +643,7 @@ public abstract class CliConfigFile {
 
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       DataSourceFactory dataSourceFactory,
+      SorobanWalletService sorobanWalletService,
       IWhirlpoolHttpClientService httpClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
@@ -655,6 +657,7 @@ public abstract class CliConfigFile {
         new WhirlpoolWalletConfig(
             dataSourceFactory,
             secretPointFactory,
+            sorobanWalletService,
             httpClientService,
             stompClientService,
             torClientService,

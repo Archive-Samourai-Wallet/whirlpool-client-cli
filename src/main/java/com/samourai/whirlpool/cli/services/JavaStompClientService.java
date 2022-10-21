@@ -1,31 +1,35 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.JavaHttpClient;
-import com.samourai.stomp.client.IStompClient;
-import com.samourai.stomp.client.IStompClientService;
-import com.samourai.stomp.client.JavaStompClient;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import com.samourai.http.client.IHttpClient;
+import com.samourai.http.client.IHttpClientService;
+import com.samourai.stomp.client.JettyStompClientService;
+import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JavaStompClientService implements IStompClientService {
-  private JavaHttpClientService httpClientService;
-
-  private ThreadPoolTaskScheduler taskScheduler;
+public class JavaStompClientService extends JettyStompClientService {
 
   public JavaStompClientService(JavaHttpClientService httpClientService) {
-    this.httpClientService = httpClientService;
-
-    taskScheduler = new ThreadPoolTaskScheduler();
-    taskScheduler.setPoolSize(1);
-    taskScheduler.setThreadNamePrefix("stomp-heartbeat");
-    taskScheduler.initialize();
+    super(
+        adaptHttpClientService(httpClientService),
+        WhirlpoolProtocol.HEADER_MESSAGE_TYPE,
+        ClientUtils.USER_AGENT);
   }
 
-  @Override
-  public IStompClient newStompClient() {
-    JavaHttpClient httpClient = httpClientService.getHttpClient(HttpUsage.COORDINATOR_WEBSOCKET);
-    return new JavaStompClient(httpClient, taskScheduler);
+  private static IHttpClientService adaptHttpClientService(
+      JavaHttpClientService httpClientService) {
+    return new IHttpClientService() {
+      @Override
+      public IHttpClient getHttpClient() {
+        return httpClientService.getHttpClient(HttpUsage.COORDINATOR_WEBSOCKET);
+      }
+
+      @Override
+      public void stop() {
+        httpClientService.stop();
+      }
+    };
   }
 }

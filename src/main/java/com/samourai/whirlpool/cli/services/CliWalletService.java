@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
+import com.samourai.soroban.client.meeting.SorobanRequestMessage;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
+import com.samourai.soroban.client.wallet.counterparty.CahootsSorobanCounterpartyListener;
 import com.samourai.soroban.client.wallet.counterparty.SorobanWalletCounterparty;
-import com.samourai.soroban.client.wallet.sender.SorobanWalletInitiator;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.bipWallet.WalletSupplier;
-import com.samourai.wallet.cahoots.CahootsWallet;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.payload.PayloadUtilGeneric;
 import com.samourai.wallet.util.SystemUtil;
@@ -28,6 +28,7 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolEventService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
+import com.samourai.whirlpool.client.wallet.beans.SamouraiAccountIndex;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.LinkedHashSet;
@@ -45,11 +46,11 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
+  private SorobanWalletService sorobanWalletService;
   private JavaHttpClientService httpClientService;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
   private CliUpgradeService cliUpgradeService;
-  private SorobanWalletService sorobanWalletService;
   private WalletRoutingDataSource walletRoutingDataSource;
 
   private Set<BusyReason> busyReasons;
@@ -57,20 +58,20 @@ public class CliWalletService extends WhirlpoolWalletService {
   public CliWalletService(
       CliConfig cliConfig,
       CliConfigService cliConfigService,
+      SorobanWalletService sorobanWalletService,
       JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService,
       CliUpgradeService cliUpgradeService,
-      SorobanWalletService sorobanWalletService,
       WalletRoutingDataSource walletRoutingDataSource) {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
+    this.sorobanWalletService = sorobanWalletService;
     this.httpClientService = httpClientService;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
     this.cliUpgradeService = cliUpgradeService;
-    this.sorobanWalletService = sorobanWalletService;
     this.walletRoutingDataSource = walletRoutingDataSource;
 
     this.busyReasons = new LinkedHashSet<>();
@@ -120,7 +121,11 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClientService, stompClientService, cliTorClientService, passphrase);
+            sorobanWalletService,
+            httpClientService,
+            stompClientService,
+            cliTorClientService,
+            passphrase);
 
     CliWallet cliWallet =
         new CliWallet(
@@ -163,7 +168,31 @@ public class CliWalletService extends WhirlpoolWalletService {
         log.error("", e);
       }
     }
+
+    if (false) { // TODO
+      acceptAnyCahootsRequest();
+    }
     return cliWallet;
+  }
+
+  private void acceptAnyCahootsRequest() throws Exception {
+    SorobanWalletCounterparty sorobanWalletCounterparty =
+        getSessionWallet().getSorobanWalletCounterparty();
+    log.info("Paynym: " + sorobanWalletCounterparty.getCahootsWallet().getPaymentCode().toString());
+    log.info("Deposit: " + getSessionWallet().getDepositAddress(false));
+    CahootsSorobanCounterpartyListener listener =
+        new CahootsSorobanCounterpartyListener(SamouraiAccountIndex.DEPOSIT) {
+          @Override
+          public void onRequest(SorobanRequestMessage sorobanRequest) throws Exception {
+            super.onRequest(sorobanRequest);
+            sorobanWalletCounterparty
+                .acceptAndCounterparty(sorobanRequest, this)
+                .subscribe(
+                    cahoots -> log.info("Cahoots success: " + cahoots),
+                    e -> log.error("Cahoots failure", e));
+          }
+        };
+    sorobanWalletCounterparty.startListening(listener);
   }
 
   public CliWallet getSessionWallet() throws NoSessionWalletException {
@@ -237,15 +266,5 @@ public class CliWalletService extends WhirlpoolWalletService {
   private void busyRemove(BusyReason busyReason) {
     this.busyReasons.remove(busyReason);
     WhirlpoolEventService.getInstance().post(new CliStateChangeEvent());
-  }
-
-  public SorobanWalletInitiator getSorobanWalletInitiator() throws Exception {
-    CahootsWallet cahootsWallet = getSessionWallet().getCahootsWallet();
-    return sorobanWalletService.getSorobanWalletInitiator(cahootsWallet);
-  }
-
-  public SorobanWalletCounterparty getSorobanWalletCounterparty() throws Exception {
-    CahootsWallet cahootsWallet = getSessionWallet().getCahootsWallet();
-    return sorobanWalletService.getSorobanWalletCounterparty(cahootsWallet);
   }
 }

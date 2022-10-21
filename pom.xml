@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.samourai.code.whirlpool</groupId>
     <artifactId>whirlpool-client-cli</artifactId>
-    <version>0.0.5-dearly-SNAPSHOT</version>
+    <version>0.1.0-dearly-SNAPSHOT</version>
     <name>whirlpool-client-cli</name>
     <properties>
         <spring-boot.version>2.6.2</spring-boot.version>
@@ -15,13 +15,7 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.23.47-cahootsForCli-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.samourai.code.wallet</groupId>
-            <artifactId>soroban-client-java</artifactId>
-            <version>0.0.10-SNAPSHOT</version>
+            <version>0.24.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -47,10 +41,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>wf.bitcoin</groupId>
-            <artifactId>JavaBitcoindRpcClient</artifactId>
+            <groupId>io.samourai.code.wallet</groupId>
+            <artifactId>java-websocket-client</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

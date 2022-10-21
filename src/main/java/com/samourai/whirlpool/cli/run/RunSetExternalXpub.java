@@ -7,12 +7,8 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
-import java.nio.ByteBuffer;
 import org.apache.commons.lang3.StringUtils;
-import org.bitcoinj.core.AddressFormatException;
-import org.bitcoinj.core.Base58;
 import org.bitcoinj.core.NetworkParameters;
-import org.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,8 +114,7 @@ public class RunSetExternalXpub {
         return null;
       } else {
         try {
-          // if (!formatUtil.isValidXpub(input)) {
-          if (!isValidXpubOrZpub(input, params)) {
+          if (!formatUtil.isValidXpubOrZpub(input, params)) {
             throw new NotifiableException("Invalid BIP84 XPub/ZPub");
           }
           return input;
@@ -128,59 +123,6 @@ public class RunSetExternalXpub {
         }
         log.info("⣿ ");
       }
-    }
-  }
-
-  // TODO use extlibj
-  private static final int MAGIC_ZPUB = 0x04B24746;
-  private static final int MAGIC_VPUB = 0x045F1CF6;
-  public static final int MAGIC_TPUB = 0x043587CF;
-  public static final int MAGIC_XPUB = 0x0488B21E;
-
-  public boolean isValidXpubOrZpub(String xpub, NetworkParameters params) {
-    int[] magic =
-        formatUtil.isTestNet(params)
-            ? new int[] {MAGIC_VPUB, MAGIC_TPUB}
-            : new int[] {MAGIC_ZPUB, MAGIC_XPUB};
-    return isValidXpub(xpub, magic);
-  }
-
-  private boolean isValidXpub(String xpub, int... versions) {
-
-    try {
-      byte[] xpubBytes = Base58.decodeChecked(xpub);
-
-      if (xpubBytes.length != 78) {
-        return false;
-      }
-
-      ByteBuffer byteBuffer = ByteBuffer.wrap(xpubBytes);
-      int version = byteBuffer.getInt();
-      if (!Arrays.contains(versions, version)) {
-        throw new AddressFormatException("invalid version: " + xpub);
-      } else {
-
-        byte[] chain = new byte[32];
-        byte[] pub = new byte[33];
-        // depth:
-        byteBuffer.get();
-        // parent fingerprint:
-        byteBuffer.getInt();
-        // child no.
-        byteBuffer.getInt();
-        byteBuffer.get(chain);
-        byteBuffer.get(pub);
-
-        ByteBuffer pubBytes = ByteBuffer.wrap(pub);
-        int firstByte = pubBytes.get();
-        if (firstByte == 0x02 || firstByte == 0x03) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    } catch (Exception e) {
-      return false;
     }
   }
 }

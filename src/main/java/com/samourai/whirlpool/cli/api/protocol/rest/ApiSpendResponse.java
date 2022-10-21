@@ -9,7 +9,7 @@ public class ApiSpendResponse extends ApiSpendPreviewResponse {
 
   public ApiSpendResponse(SpendTx spendTx, UtxoSupplier utxoSupplier) {
     super(spendTx, utxoSupplier);
-    this.txid = spendTx.getTx().getHashAsString();
+    this.txid = spendTx.getTxid();
   }
 
   public ApiSpendResponse(String txid, Ricochet ricochet, UtxoSupplier utxoSupplier) {
