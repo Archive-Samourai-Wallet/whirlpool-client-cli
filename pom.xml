@@ -15,7 +15,7 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>f50f3423</version>
+            <version>98f5022b</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
