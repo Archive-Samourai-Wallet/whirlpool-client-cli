@@ -9,6 +9,7 @@ import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.java.Bip47UtilJava;
 import com.samourai.wallet.bipFormat.BIP_FORMAT;
 import com.samourai.wallet.bipFormat.BipFormatSupplier;
+import com.samourai.wallet.chain.ChainSupplier;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.payload.PayloadUtilGeneric;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
@@ -145,8 +146,9 @@ public class CliServicesConfig {
   SorobanWalletService sorobanWalletService(
       BIP47UtilGeneric bip47Util,
       BipFormatSupplier bipFormatSupplier,
+      ChainSupplier chainSupplier,
       NetworkParameters params,
       RpcService rpcService) {
-    return new SorobanWalletService(bip47Util, bipFormatSupplier, params, rpcService);
+    return new SorobanWalletService(bip47Util, bipFormatSupplier, chainSupplier, params, rpcService);
   }
 }
