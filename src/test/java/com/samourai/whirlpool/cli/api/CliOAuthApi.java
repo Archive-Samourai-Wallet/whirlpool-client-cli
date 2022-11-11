@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
 public class CliOAuthApi implements OAuthApi {
   private Logger log = LoggerFactory.getLogger(BackendApi.class);
   private static final AsyncUtil asyncUtil = AsyncUtil.getInstance();
-  private static final String URL_GET_AUTH_LOGIN = "/auth/login";
-  private static final String URL_GET_AUTH_REFRESH = "/auth/refresh";
   private IHttpClient httpClient;
   private String urlCli;
 
