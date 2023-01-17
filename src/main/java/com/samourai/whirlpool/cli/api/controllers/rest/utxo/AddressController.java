@@ -56,7 +56,7 @@ public class AddressController extends AbstractRestController {
     // get private
     ECKey ecKey = findKeyByAddress(payload.address);
     String privateKey = ecKey.getPrivateKeyAsWiF(params);
-    String redeemScript = new SegwitAddress(ecKey.getPubKey(), params).segWitRedeemScriptToString();
+    String redeemScript = new SegwitAddress(ecKey.getPubKey(), params).segwitRedeemScriptToString();
     return new ApiAddressPrivateResponse(privateKey, redeemScript);
   }
 }
