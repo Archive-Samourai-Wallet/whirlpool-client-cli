@@ -75,7 +75,7 @@ public class ApiWalletUtxosResponse {
       int latestBlockHeight,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, bipFormat).getPub();
+    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, bipFormat).getBipPub();
     return new ApiWallet(utxos, zpub, latestBlockHeight, comparator);
   }
 

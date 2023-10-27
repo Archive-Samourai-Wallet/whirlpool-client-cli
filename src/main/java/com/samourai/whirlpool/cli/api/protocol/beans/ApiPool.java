@@ -25,16 +25,16 @@ public class ApiPool {
     this.poolId = pool.getPoolId();
     this.denomination = pool.getDenomination();
     this.feeValue = pool.getFeeValue();
-    this.mustMixBalanceMin = pool.getMustMixBalanceMin();
-    this.mustMixBalanceCap = pool.getMustMixBalanceCap();
-    this.mustMixBalanceMax = pool.getMustMixBalanceMax();
-    this.minAnonymitySet = pool.getMinAnonymitySet();
+    this.mustMixBalanceMin = pool.getPremixValueMin();
+    this.mustMixBalanceCap = pool.getPremixValueMax();
+    this.mustMixBalanceMax = pool.getPremixValueMax(); // TODO
+    this.minAnonymitySet = pool.getAnonymitySet();
     this.tx0MaxOutputs = pool.getTx0MaxOutputs();
-    this.nbRegistered = pool.getNbRegistered();
-    this.mixAnonymitySet = pool.getMixAnonymitySet();
-    this.mixStatus = pool.getMixStatus();
-    this.elapsedTime = pool.getElapsedTime();
-    this.nbConfirmed = pool.getNbConfirmed();
+    this.nbRegistered = 0; // TODO
+    this.mixAnonymitySet = pool.getAnonymitySet();
+    this.mixStatus = MixStatus.CONFIRM_INPUT; // TODO
+    this.elapsedTime = 0; // TODO
+    this.nbConfirmed = 0; // TODO
     this.tx0BalanceMin = tx0BalanceMin;
   }
 

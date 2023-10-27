@@ -1,9 +1,19 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.http.client.IHttpClientService;
+import com.samourai.soroban.client.rpc.RpcClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
+import com.samourai.wallet.bip47.rpc.java.Bip47UtilJava;
 import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
+import com.samourai.wallet.bipFormat.BIP_FORMAT;
+import com.samourai.wallet.bipFormat.BipFormatSupplier;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
+import com.samourai.whirlpool.client.soroban.SorobanClientApi;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolNetwork;
 import java.lang.invoke.MethodHandles;
 import org.apache.catalina.connector.Connector;
 import org.bitcoinj.core.NetworkParameters;
@@ -39,13 +49,57 @@ public class CliServicesConfig {
   }
 
   @Bean
-  NetworkParameters networkParameters(CliConfig cliConfig) {
-    return cliConfig.getServer().getParams();
+  WhirlpoolNetwork whirlpoolNetwork(CliConfig cliConfig) {
+    return cliConfig.getServer().getWhirlpoolNetwork();
+  }
+
+  @Bean
+  NetworkParameters networkParameters(WhirlpoolNetwork whirlpoolNetwork) {
+    return whirlpoolNetwork.getParams();
   }
 
   @Bean
   ISecretPointFactory secretPointFactory() {
     return SecretPointFactoryJava.getInstance();
+  }
+
+  @Bean
+  CryptoUtil cryptoUtil() {
+    return CryptoUtil.getInstanceJava();
+  }
+
+  @Bean
+  BIP47UtilGeneric bip47UtilGeneric() {
+    return Bip47UtilJava.getInstance();
+  }
+
+  @Bean
+  BipFormatSupplier bipFormatSupplier() {
+    return BIP_FORMAT.PROVIDER;
+  }
+
+  @Bean
+  RpcClientService rpcClientService(
+      IHttpClientService httpClientService, CliConfig cliConfig, NetworkParameters params) {
+    boolean onion =
+        cliConfig.getTor()
+            && cliConfig.getTorConfig().getSoroban().isEnabled()
+            && cliConfig.getTorConfig().getSoroban().isOnion();
+    return new RpcClientService(httpClientService, onion, params);
+  }
+
+  @Bean
+  SorobanWalletService sorobanWalletService(
+      BIP47UtilGeneric bip47Util,
+      BipFormatSupplier bipFormatSupplier,
+      NetworkParameters params,
+      RpcClientService rpcClientService) {
+    return new SorobanWalletService(bip47Util, bipFormatSupplier, params, rpcClientService);
+  }
+
+  @Bean
+  SorobanClientApi sorobanClientApi(WhirlpoolNetwork whirlpoolNetwork) {
+    return new SorobanClientApi(whirlpoolNetwork);
   }
 
   @Bean

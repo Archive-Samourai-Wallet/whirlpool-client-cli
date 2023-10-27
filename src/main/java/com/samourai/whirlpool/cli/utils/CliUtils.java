@@ -262,8 +262,7 @@ public class CliUtils {
 
   public static void setLogLevel(boolean isDebug, boolean isDebugClient) {
     Level whirlpoolLevel = isDebug ? (isDebugClient ? Level.TRACE : Level.DEBUG) : Level.INFO;
-    Level whirlpoolClientLevel = isDebugClient ? Level.TRACE : Level.INFO;
-    ClientUtils.setLogLevel(whirlpoolLevel, whirlpoolClientLevel);
+    ClientUtils.setLogLevel(whirlpoolLevel);
 
     LogbackUtils.setLogLevel(
         "com.msopentech.thali.toronionproxy", org.slf4j.event.Level.WARN.toString());

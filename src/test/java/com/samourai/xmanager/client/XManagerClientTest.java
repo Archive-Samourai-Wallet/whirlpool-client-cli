@@ -5,10 +5,9 @@ import com.samourai.http.client.JavaHttpClient;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.xmanager.protocol.XManagerService;
 import com.samourai.xmanager.protocol.rest.AddressIndexResponse;
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import java.util.Map;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +25,7 @@ public class XManagerClientTest extends AbstractTest {
     JavaHttpClient httpClientFailing =
         new JavaHttpClient(requestTimeout, null, HttpUsage.BACKEND) {
           @Override
-          public <T> Observable<Optional<T>> postJson(
+          public <T> Single<Optional<T>> postJson(
               String urlStr, Class<T> responseType, Map<String, String> headers, Object bodyObj) {
             throw new RuntimeException("Failure");
           }

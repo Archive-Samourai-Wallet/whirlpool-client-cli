@@ -127,7 +127,7 @@ public class CliService {
     cliTorClientService.connect();
 
     // initialize bitcoinj context
-    NetworkParameters params = cliConfig.getServer().getParams();
+    NetworkParameters params = cliConfig.getServer().getWhirlpoolNetwork().getParams();
     new Context(params);
 
     // check init

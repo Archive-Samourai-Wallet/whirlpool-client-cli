@@ -2,10 +2,14 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.IHttpClientService;
+import com.samourai.soroban.client.rpc.RpcClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -13,9 +17,9 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolNetwork;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
-import com.samourai.whirlpool.client.whirlpool.ServerApi;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +28,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-import org.bitcoinj.core.NetworkParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
@@ -222,7 +225,7 @@ public abstract class CliConfigFile {
   public static class MixConfig {
     @NotEmpty private int clients;
     @NotEmpty private int clientsPerPool;
-    @NotEmpty private boolean liquidityClient;
+    @NotEmpty private int extraLiquidityClientsPerPool;
     @NotEmpty private int clientDelay;
     @NotEmpty private int autoTx0Delay;
     @NotEmpty private int tx0MaxOutputs;
@@ -235,7 +238,7 @@ public abstract class CliConfigFile {
     public MixConfig(MixConfig copy) {
       this.clients = copy.clients;
       this.clientsPerPool = copy.clientsPerPool;
-      this.liquidityClient = copy.liquidityClient;
+      this.extraLiquidityClientsPerPool = copy.extraLiquidityClientsPerPool;
       this.clientDelay = copy.clientDelay;
       this.autoTx0Delay = copy.autoTx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
@@ -261,12 +264,12 @@ public abstract class CliConfigFile {
       this.clientsPerPool = clientsPerPool;
     }
 
-    public boolean isLiquidityClient() {
-      return liquidityClient;
+    public int getExtraLiquidityClientsPerPool() {
+      return extraLiquidityClientsPerPool;
     }
 
-    public void setLiquidityClient(boolean liquidityClient) {
-      this.liquidityClient = liquidityClient;
+    public void setExtraLiquidityClientsPerPool(int extraLiquidityClientsPerPool) {
+      this.extraLiquidityClientsPerPool = extraLiquidityClientsPerPool;
     }
 
     public int getClientDelay() {
@@ -321,7 +324,8 @@ public abstract class CliConfigFile {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/mix/clients", Integer.toString(clients));
       configInfo.put("cli/mix/clientsPerPool", Integer.toString(clientsPerPool));
-      configInfo.put("cli/mix/liquidityClient", Boolean.toString(liquidityClient));
+      configInfo.put(
+          "cli/mix/extraLiquidityClientsPerPool", Integer.toString(extraLiquidityClientsPerPool));
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/autoTx0Delay", Integer.toString(autoTx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
@@ -463,6 +467,7 @@ public abstract class CliConfigFile {
     private CliTorExecutableMode executableMode;
     @NotEmpty private TorConfigItem coordinator;
     @NotEmpty private TorConfigItem backend;
+    @NotEmpty private TorConfigItem soroban;
     private String customTorrc;
     private int fileCreationTimeout;
 
@@ -472,6 +477,7 @@ public abstract class CliConfigFile {
       this.executable = copy.executable;
       this.coordinator = copy.coordinator;
       this.backend = copy.backend;
+      this.soroban = copy.soroban;
       this.customTorrc = copy.customTorrc;
       this.fileCreationTimeout = copy.fileCreationTimeout;
     }
@@ -507,6 +513,14 @@ public abstract class CliConfigFile {
 
     public void setBackend(TorConfigItem backend) {
       this.backend = backend;
+    }
+
+    public TorConfigItem getSoroban() {
+      return soroban;
+    }
+
+    public void setSoroban(TorConfigItem soroban) {
+      this.soroban = soroban;
     }
 
     public String getCustomTorrc() {
@@ -614,44 +628,45 @@ public abstract class CliConfigFile {
     }
   }
 
-  public String computeServerUrl() {
-    boolean useOnion = tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
-    String serverUrl = server.getServerUrl(useOnion);
-    return serverUrl;
-  }
-
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       DataSourceFactory dataSourceFactory,
       ISecretPointFactory secretPointFactory,
+      CryptoUtil cryptoUtil,
+      SorobanWalletService sorobanWalletService,
       IHttpClientService httpClientService,
+      RpcClientService rpcClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
+      BIP47UtilGeneric bip47Util,
       String passphrase)
       throws NotifiableException {
-    String serverUrl = computeServerUrl();
-    NetworkParameters params = server.getParams();
-    ServerApi serverApi = new ServerApi(serverUrl, httpClientService);
+    boolean torOnionCoordinator =
+        tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
+    WhirlpoolNetwork whirlpoolNetwork = server.getWhirlpoolNetwork();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             dataSourceFactory,
             secretPointFactory,
+            cryptoUtil,
+            sorobanWalletService,
             httpClientService,
+            rpcClientService,
             stompClientService,
             torClientService,
-            serverApi,
-            params,
-            false);
+            bip47Util,
+            whirlpoolNetwork,
+            false,
+            torOnionCoordinator);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
     if (!Strings.isEmpty(partner)) {
       config.setPartner(partner);
     }
-    config.setTx0MinConfirmations(tx0MinConfirmations);
 
     config.setMaxClients(mix.getClients());
     config.setMaxClientsPerPool(mix.getClientsPerPool());
-    config.setLiquidityClient(mix.isLiquidityClient());
+    config.setExtraLiquidityClientsPerPool(mix.getExtraLiquidityClientsPerPool());
     config.setClientDelay(mix.getClientDelay());
     config.setAutoTx0Delay(mix.getAutoTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
@@ -665,6 +680,12 @@ public abstract class CliConfigFile {
     config.setResyncOnFirstRun(true);
     config.setFeeOpReturnImplV0();
     return config;
+  }
+
+  public String computeServerUrl() {
+    boolean useOnion = tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
+    String serverUrl = server.getServerUrl(useOnion);
+    return serverUrl;
   }
 
   private ExternalDestination computeExternalDestination(String passphrase)

@@ -1,11 +1,15 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
+import com.samourai.soroban.client.rpc.RpcClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -46,30 +50,42 @@ public class CliWalletService extends WhirlpoolWalletService {
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
   private ISecretPointFactory secretPointFactory;
+  private CryptoUtil cryptoUtil;
+  private SorobanWalletService sorobanWalletService;
+  private RpcClientService rpcClientService;
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
+  private BIP47UtilGeneric bip47Util;
   private CliUpgradeService cliUpgradeService;
 
   private Set<BusyReason> busyReasons;
 
   public CliWalletService(
       ISecretPointFactory secretPointFactory,
+      CryptoUtil cryptoUtil,
+      SorobanWalletService sorobanWalletService,
+      RpcClientService rpcClientService,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService,
+      BIP47UtilGeneric bip47Util,
       CliUpgradeService cliUpgradeService) {
     super();
     this.secretPointFactory = secretPointFactory;
+    this.cryptoUtil = cryptoUtil;
+    this.sorobanWalletService = sorobanWalletService;
+    this.rpcClientService = rpcClientService;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.httpClientService = httpClientService;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
+    this.bip47Util = bip47Util;
     this.cliUpgradeService = cliUpgradeService;
 
     this.busyReasons = new LinkedHashSet<>();
@@ -120,9 +136,13 @@ public class CliWalletService extends WhirlpoolWalletService {
     WhirlpoolWalletConfig config =
         cliConfig.computeWhirlpoolWalletConfig(
             secretPointFactory,
+            cryptoUtil,
+            sorobanWalletService,
             httpClientService,
+            rpcClientService,
             stompClientService,
             cliTorClientService,
+            bip47Util,
             passphrase);
 
     CliWallet cliWallet =
@@ -190,7 +210,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public String computePairingPayload() throws Exception {
     PairingNetwork pairingNetwork =
-        formatUtils.isTestNet(cliConfig.getServer().getParams())
+        formatUtils.isTestNet(cliConfig.getServer().getWhirlpoolNetwork().getParams())
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
 

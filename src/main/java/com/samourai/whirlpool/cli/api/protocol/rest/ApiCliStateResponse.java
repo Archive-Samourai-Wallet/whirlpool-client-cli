@@ -23,7 +23,7 @@ public class ApiCliStateResponse {
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
     this.torProgress = cliState.getTorProgress();
-    this.network = cliConfig.getServer().getParams().getPaymentProtocolId();
+    this.network = cliConfig.getServer().getWhirlpoolNetwork().getParams().getPaymentProtocolId();
     this.serverUrl = cliConfig.computeServerUrl();
     this.serverName = cliConfig.getServer().name();
     this.dojoUrl = cliConfig.getDojo().getUrl();

@@ -2,11 +2,15 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.IHttpClientService;
+import com.samourai.soroban.client.rpc.RpcClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -36,9 +40,13 @@ public class CliConfig extends CliConfigFile {
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       ISecretPointFactory secretPointFactory,
-      IHttpClientService httpClientService,
+      CryptoUtil cryptoUtil,
+      SorobanWalletService sorobanWalletService,
+      JavaHttpClientService httpClientService,
+      RpcClientService rpcClientService,
       IStompClientService stompClientService,
       TorClientService torClientService,
+      BIP47UtilGeneric bip47Util,
       String passphrase)
       throws Exception {
 
@@ -48,9 +56,13 @@ public class CliConfig extends CliConfigFile {
         super.computeWhirlpoolWalletConfig(
             dataSourceFactory,
             secretPointFactory,
+            cryptoUtil,
+            sorobanWalletService,
             httpClientService,
+            rpcClientService,
             stompClientService,
             torClientService,
+            bip47Util,
             passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
@@ -74,7 +86,8 @@ public class CliConfig extends CliConfigFile {
     }
 
     // Samourai backend
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
+    boolean isTestnet =
+        FormatsUtilGeneric.getInstance().isTestNet(getServer().getWhirlpoolNetwork().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
     boolean useOnion =
         getTor()
