@@ -8,7 +8,6 @@ import com.samourai.xmanager.protocol.rest.AddressIndexResponse;
 import io.reactivex.Observable;
 import java.util.Map;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
