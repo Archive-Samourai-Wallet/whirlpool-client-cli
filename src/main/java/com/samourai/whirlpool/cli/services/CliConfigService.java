@@ -187,7 +187,7 @@ public class CliConfigService {
     }
     props.put(KEY_DOJO_ENABLED, Boolean.toString(dojoEnabled));
     try {
-      save(props);
+      saveProperties(props);
     } catch (Exception e) {
       log.error("", e);
       throw new NotifiableException("Unable to save CLI configuration");
@@ -202,14 +202,6 @@ public class CliConfigService {
     Resource resource = new FileSystemResource(getConfigurationFile());
     Properties props = PropertiesLoaderUtils.loadProperties(resource);
     return props;
-  }
-
-  public synchronized void saveProperties(Properties props) throws Exception {
-    // save
-    save(props);
-
-    // restart needed
-    this.setCliStatusNotReady("Configuration updated. Restarting CLI...");
   }
 
   public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
@@ -262,7 +254,7 @@ public class CliConfigService {
     saveProperties(props);
 
     // restart needed
-    this.setCliStatusNotReady("ExternalDestination updated. Restarting CLI...");
+    this.setCliStatusNotReady("ExternalDestination updated, CLI restart required.");
   }
 
   public synchronized void clearExternalDestination() throws Exception {
@@ -281,7 +273,7 @@ public class CliConfigService {
     saveProperties(props);
 
     // restart needed
-    this.setCliStatusNotReady("ExternalDestination updated. Restarting CLI...");
+    this.setCliStatusNotReady("ExternalDestination updated, CLI restart required.");
   }
 
   public synchronized void setVersion(int version) throws Exception {
@@ -292,7 +284,7 @@ public class CliConfigService {
     props.put(KEY_VERSION, Integer.toString(version));
 
     // save
-    save(props);
+    saveProperties(props);
 
     // update runtime
     cliConfig.setVersion(version);
@@ -317,7 +309,7 @@ public class CliConfigService {
     log.warn("status -> " + error);
   }
 
-  protected synchronized void save(Properties unsortedProps) throws Exception {
+  public synchronized void saveProperties(Properties unsortedProps) throws Exception {
     if (unsortedProps.isEmpty()) {
       throw new IllegalArgumentException("Configuration to save is empty");
     }

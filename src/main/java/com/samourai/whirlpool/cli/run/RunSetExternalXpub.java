@@ -105,8 +105,6 @@ public class RunSetExternalXpub {
 
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ EXTERNAL XPUB CONFIGURATION SUCCESS");
-    log.info("⣿ ");
-    log.info("⣿ Restarting CLI...");
     log.info(CliUtils.LOG_SEPARATOR);
   }
 

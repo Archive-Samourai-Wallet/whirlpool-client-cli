@@ -131,6 +131,7 @@ public class CliUtils {
         throw new NoUserInputException();
       }
       line = input.nextLine();
+      log.info("> " + (secret ? "***" : line) + " (console redirection)");
     }
     if (line != null) {
       line = line.trim();
