@@ -12,7 +12,6 @@ import com.samourai.wallet.bipFormat.BipFormatSupplier;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
-import com.samourai.whirlpool.client.soroban.SorobanClientApi;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolNetwork;
 import java.lang.invoke.MethodHandles;
 import org.apache.catalina.connector.Connector;
@@ -95,11 +94,6 @@ public class CliServicesConfig {
       NetworkParameters params,
       RpcClientService rpcClientService) {
     return new SorobanWalletService(bip47Util, bipFormatSupplier, params, rpcClientService);
-  }
-
-  @Bean
-  SorobanClientApi sorobanClientApi(WhirlpoolNetwork whirlpoolNetwork) {
-    return new SorobanClientApi(whirlpoolNetwork);
   }
 
   @Bean

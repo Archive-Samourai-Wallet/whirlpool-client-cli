@@ -51,16 +51,9 @@ public class JavaHttpClientService implements IHttpClientService {
     return new JavaHttpClient(cliConfig.getRequestTimeout(), cliProxy, httpUsage);
   }
 
-  public void changeIdentityRest() {
-    for (JavaHttpClient httpClient : httpClients.values()) {
-      // restart REST clients
-      if (httpClient.getHttpUsage().isRest()) {
-        if (httpClient != null) {
-          httpClient.restart();
-        }
-      }
-    }
-    // don't break non-REST connexions, it will be renewed on next connexion
+  public void changeIdentityCoordinatorRest() {
+    getHttpClient(HttpUsage.COORDINATOR_REST).restart();
+    getHttpClient(HttpUsage.COORDINATOR_REGISTER_OUTPUT).restart();
   }
 
   @Override

@@ -73,7 +73,7 @@ public class CliWallet extends WhirlpoolWallet {
 
     // change http Tor identity
     if (cliConfig.getTor()) {
-      httpClientService.changeIdentityRest();
+      httpClientService.changeIdentityCoordinatorRest();
     }
   }
 
@@ -83,7 +83,7 @@ public class CliWallet extends WhirlpoolWallet {
 
     // change http Tor identity
     if (cliConfig.getTor()) {
-      httpClientService.changeIdentityRest();
+      httpClientService.changeIdentityCoordinatorRest();
     }
   }
 
