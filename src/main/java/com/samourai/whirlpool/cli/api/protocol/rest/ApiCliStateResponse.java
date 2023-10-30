@@ -1,8 +1,10 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliStateExternalDestination;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
 
 public class ApiCliStateResponse {
   private CliStatus cliStatus;
@@ -17,8 +19,10 @@ public class ApiCliStateResponse {
   private boolean tor;
   private boolean dojo;
   private String version;
+  private ApiCliStateExternalDestination externalDestination;
 
-  public ApiCliStateResponse(CliState cliState, CliConfig cliConfig) {
+  public ApiCliStateResponse(
+      CliState cliState, CliConfig cliConfig, ExternalDestination externalDestination) {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
@@ -30,6 +34,10 @@ public class ApiCliStateResponse {
     this.tor = cliConfig.getTor();
     this.dojo = cliConfig.isDojoEnabled();
     this.version = cliConfig.getBuildVersion();
+    this.externalDestination =
+        externalDestination != null
+            ? new ApiCliStateExternalDestination(externalDestination)
+            : null;
   }
 
   public CliStatus getCliStatus() {
@@ -74,5 +82,9 @@ public class ApiCliStateResponse {
 
   public String getVersion() {
     return version;
+  }
+
+  public ApiCliStateExternalDestination getExternalDestination() {
+    return externalDestination;
   }
 }

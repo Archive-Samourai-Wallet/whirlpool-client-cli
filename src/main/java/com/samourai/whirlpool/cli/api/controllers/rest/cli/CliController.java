@@ -15,6 +15,7 @@ import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
 import java.lang.invoke.MethodHandles;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -34,8 +35,12 @@ public class CliController extends AbstractRestController {
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
+    ExternalDestination externalDestination =
+        cliWalletService.hasSessionWallet()
+            ? cliWalletService.getSessionWallet().getConfig().getExternalDestination()
+            : null;
     ApiCliStateResponse response =
-        new ApiCliStateResponse(cliWalletService.getCliState(), cliConfig);
+        new ApiCliStateResponse(cliWalletService.getCliState(), cliConfig, externalDestination);
     return response;
   }
 
