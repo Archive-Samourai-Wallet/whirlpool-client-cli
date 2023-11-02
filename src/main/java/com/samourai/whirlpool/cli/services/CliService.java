@@ -182,7 +182,7 @@ public class CliService {
     // authenticate
     CliWallet cliWallet = null;
     while (cliWallet == null) {
-      // authenticate to open wallet when passphrase providen through arguments
+      // authenticate to open wallet
       String reason = null;
       if (isXpub) {
         reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
@@ -271,9 +271,6 @@ public class CliService {
       log.debug("shutdown");
     }
 
-    // close cliWallet
-    cliWalletService.closeWallet();
-
     // disconnect Tor
     if (cliTorClientService != null) {
       cliTorClientService.shutdown();
@@ -281,6 +278,9 @@ public class CliService {
 
     // stop httpClient
     httpClientService.stop();
+
+    // close cliWallet
+    cliWalletService.closeWallet();
 
     // stop cliStatusOrchestrator
     if (cliStatusOrchestrator != null) {
