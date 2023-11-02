@@ -84,57 +84,65 @@ public class CliWalletService extends WhirlpoolWalletService {
           "Cannot start wallet: cliStatus=" + cliConfigService.getCliStatus());
     }
 
-    // decrypt seed
-    String seedWords;
+    cliConfigService.setCliStatus(CliStatus.STARTING);
+
+    CliWallet cliWallet;
     try {
-      seedWords = decryptSeedWords(cliConfig.getSeed(), passphrase);
+      // decrypt seed
+      String seedWords;
+      try {
+        seedWords = decryptSeedWords(cliConfig.getSeed(), passphrase);
+      } catch (Exception e) {
+        if (log.isDebugEnabled()) {
+          log.debug("", e);
+        }
+        throw new AuthenticationException("Authentication failed: invalid passphrase?");
+      }
+
+      byte[] seed;
+      String walletPassphrase;
+      try {
+        // init wallet from seed
+        seed = HD_WalletFactoryGeneric.getInstance().computeSeedFromWords(seedWords);
+        walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : null;
+      } catch (MnemonicException e) {
+        if (log.isDebugEnabled()) {
+          log.debug("", e);
+        }
+        throw new AuthenticationException("Authentication failed: invalid passphrase?");
+      }
+
+      // debug cliConfig
+      if (log.isDebugEnabled()) {
+        log.debug("openWallet with cliConfig:");
+        for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
+          log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
+        }
+      }
+
+      // open wallet
+      WhirlpoolWalletConfig config =
+          cliConfig.computeWhirlpoolWalletConfig(
+              secretPointFactory,
+              httpClientService,
+              stompClientService,
+              cliTorClientService,
+              passphrase);
+
+      cliWallet =
+          new CliWallet(
+              config,
+              seed,
+              walletPassphrase,
+              cliConfig,
+              cliConfigService,
+              cliTorClientService,
+              httpClientService);
+      cliWallet = (CliWallet) openWallet(cliWallet, passphrase);
     } catch (Exception e) {
-      if (log.isDebugEnabled()) {
-        log.debug("", e);
-      }
-      throw new AuthenticationException("Authentication failed: invalid passphrase?");
+      cliConfigService.setCliStatus(CliStatus.READY); // revert to READY status
+      throw e;
     }
-
-    byte[] seed;
-    String walletPassphrase;
-    try {
-      // init wallet from seed
-      seed = HD_WalletFactoryGeneric.getInstance().computeSeedFromWords(seedWords);
-      walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : null;
-    } catch (MnemonicException e) {
-      if (log.isDebugEnabled()) {
-        log.debug("", e);
-      }
-      throw new AuthenticationException("Authentication failed: invalid passphrase?");
-    }
-
-    // debug cliConfig
-    if (log.isDebugEnabled()) {
-      log.debug("openWallet with cliConfig:");
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
-      }
-    }
-
-    // open wallet
-    WhirlpoolWalletConfig config =
-        cliConfig.computeWhirlpoolWalletConfig(
-            secretPointFactory,
-            httpClientService,
-            stompClientService,
-            cliTorClientService,
-            passphrase);
-
-    CliWallet cliWallet =
-        new CliWallet(
-            config,
-            seed,
-            walletPassphrase,
-            cliConfig,
-            cliConfigService,
-            cliTorClientService,
-            httpClientService);
-    cliWallet = (CliWallet) openWallet(cliWallet, passphrase);
 
     // check upgrade
     boolean shouldRestart = cliUpgradeService.upgradeAuthenticated(cliWallet);
@@ -155,6 +163,9 @@ public class CliWalletService extends WhirlpoolWalletService {
         log.error("", e);
       }
     }
+
+    // ready
+    cliConfigService.setCliStatus(CliStatus.READY);
     return cliWallet;
   }
 
