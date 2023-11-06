@@ -47,9 +47,10 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public Completable startAsync() {
     if (!cliConfigService.isCliStatusReady()) {
-      log.warn("Cannot start wallet: cliStatus is not ready");
+      log.warn("Cannot start wallet: cliStatus is not ready: " + cliConfigService.getCliStatus());
       return Completable.error(
-          new NotifiableException("Cannot start wallet: cliStatus is not ready"));
+          new NotifiableException(
+              "Cannot start wallet: cliStatus is not ready: " + cliConfigService.getCliStatus()));
     }
     // start wallet
     return super.startAsync();

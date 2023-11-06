@@ -192,7 +192,8 @@ Response:
     "serverName": "TESTNET",
     "dojoUrl": "",
     "tor": true,
-    "dojo": true
+    "dojo": true,
+    "externalDestination":{"xpub":"tpu...re9","mixs":5}}
 }
 ```
 

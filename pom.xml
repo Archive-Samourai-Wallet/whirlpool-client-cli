@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.samourai.code.whirlpool</groupId>
     <artifactId>whirlpool-client-cli</artifactId>
-    <version>0.10.17-QA2-SNAPSHOT</version>
+    <version>1.0.0-dexwp1-SNAPSHOT</version>
     <name>whirlpool-client-cli</name>
     <properties>
         <spring-boot.version>2.6.2</spring-boot.version>
@@ -16,13 +16,13 @@
         <dependency>
             <groupId>io.samourai.code.whirlpool</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.24.3-dexwp-SNAPSHOT</version>
+            <version>1.0.0-dexwp1fix</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.samourai.code.wallet</groupId>
             <artifactId>java-http-client</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.7</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.samourai.code.wallet</groupId>

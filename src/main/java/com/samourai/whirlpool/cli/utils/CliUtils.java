@@ -21,6 +21,7 @@ public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   public static final String LOG_SEPARATOR = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
   public static final String SPRING_PROFILE_TESTING = "testing";
+  private static Scanner scannerSystemIn = null;
 
   public static String generateUniqueString() {
     return UUID.randomUUID().toString().replace("-", "");
@@ -130,6 +131,7 @@ public class CliUtils {
         throw new NoUserInputException();
       }
       line = input.nextLine();
+      log.info("> " + (secret ? "***" : line) + " (console redirection)");
     }
     if (line != null) {
       line = line.trim();
@@ -153,8 +155,10 @@ public class CliUtils {
   }
 
   public static Scanner getConsoleRedirection() {
-    Scanner input = new Scanner(System.in);
-    return input;
+    if (scannerSystemIn == null) {
+      scannerSystemIn = new Scanner(System.in);
+    }
+    return scannerSystemIn;
   }
 
   public static Console getConsole() {
