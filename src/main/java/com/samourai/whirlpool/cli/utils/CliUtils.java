@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
+import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -277,5 +279,22 @@ public class CliUtils {
     LogbackUtils.setLogLevel("org.springframework.test", org.slf4j.event.Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", org.slf4j.event.Level.INFO.toString());
     LogbackUtils.setLogLevel("org.eclipse.jetty", org.slf4j.event.Level.WARN.toString());
+  }
+
+  public static void closeApplicationContext(ApplicationContext context) {
+    while (context instanceof Closeable) {
+      try {
+        if (log.isDebugEnabled()) {
+          log.debug("Closing context: " + context);
+        }
+        ((Closeable) context).close();
+      } catch (IOException e) {
+        log.error("Cannot close context: " + context.getId(), e);
+      }
+      context = context.getParent();
+    }
+    if (context != null) {
+      log.error("context not closeable : " + context);
+    }
   }
 }

@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpProxy;
 import com.samourai.wallet.util.SystemUtil;
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
@@ -100,7 +101,36 @@ public class CliService {
     dirLockFile.delete();
   }
 
-  public CliResult run(boolean listen) throws Exception {
+  public void run(boolean listen) {
+    Thread t =
+        new Thread(
+            () -> {
+              try {
+                CliResult cliResult = doRun(listen);
+                switch (cliResult) {
+                  case RESTART:
+                    Application.restart();
+                    return;
+                  case EXIT_SUCCESS:
+                    Application.exit(0);
+                    return;
+                  case KEEP_RUNNING:
+                    return;
+                }
+              } catch (NotifiableException e) {
+                CliUtils.notifyError(e.getMessage());
+              } catch (IllegalArgumentException e) {
+                log.error("Invalid arguments: " + e.getMessage());
+              } catch (Exception e) {
+                log.error("", e);
+              }
+              Application.exit(1); // error
+            });
+    t.setName("CliService.run");
+    t.start();
+  }
+
+  protected CliResult doRun(boolean listen) throws Exception {
     String[] args = appArgs.getApplicationArguments().getSourceArgs();
 
     log.info("------------ whirlpool-client-cli starting ------------");
@@ -273,17 +303,29 @@ public class CliService {
 
     // disconnect Tor
     if (cliTorClientService != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("shutting down: Tor");
+      }
       cliTorClientService.shutdown();
     }
 
-    // stop httpClient
-    httpClientService.stop();
-
     // close cliWallet
+    if (log.isDebugEnabled()) {
+      log.debug("shutting down: cliWallet");
+    }
     cliWalletService.closeWallet();
+
+    // stop httpClient
+    if (log.isDebugEnabled()) {
+      log.debug("shutting down: httpClient");
+    }
+    httpClientService.stop();
 
     // stop cliStatusOrchestrator
     if (cliStatusOrchestrator != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("shutting down: cliStatusOrchestrator");
+      }
       cliStatusOrchestrator.stop();
     }
   }
