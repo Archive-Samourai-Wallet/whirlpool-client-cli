@@ -38,7 +38,13 @@ public class TorOnionProxyInstance {
     this.torInstaller = torInstaller;
     TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {
-      log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
+      log.debug(
+          "new TorOnionProxyInstance "
+              + torInstaller.version
+              + ": "
+              + torConfig
+              + " ; "
+              + torSettings);
     }
 
     // hardlink to JTorCtl just to make sure it was successfully compiled
