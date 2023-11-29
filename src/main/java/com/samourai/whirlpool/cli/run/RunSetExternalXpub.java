@@ -43,15 +43,15 @@ public class RunSetExternalXpub {
     String xpub = readXpub(params);
     if (xpub != null) {
       // chain
-      log.info("⣿ • Chain for derivation path m/84'/<chain>' (use 0 for standard):");
+      log.info("⣿ • Chain for derivation path m/84'/..'/..'/<chain>/... (use 0 for standard):");
       int chain = CliUtils.readUserInputRequiredInt("Chain?(0)", 0, 0);
       log.info("⣿ ");
 
       // startIndex
       log.info(
-          "⣿ • Starting index for derivation path m/84'/"
+          "⣿ • Starting index for derivation path m/84'/..'/"
               + chain
-              + "'/<starting index>' (use 0 for standard):");
+              + "/<starting index> (use 0 for standard):");
       int startIndex = CliUtils.readUserInputRequiredInt("Starting index?(0)", 0, 0);
       log.info("⣿ ");
 
@@ -69,11 +69,11 @@ public class RunSetExternalXpub {
               + mixs
               + " (re)mixs. This threshold may randomly slightly increase to improve your privacy.");
       log.info("⣿ XPub: " + xpub);
-      log.info("⣿ Derivation path: m/84'/" + chain + "'/" + startIndex + "+'");
+      log.info("⣿ Derivation path: m/84'/...'/...'/" + chain + "/" + startIndex + "+");
       log.info("⣿ Sample destination addresses:");
       for (int i = startIndex; i < startIndex + 3; i++) {
         String address = xPubUtil.getAddressBech32(xpub, i, chain, params);
-        log.info("⣿ m/84'/" + chain + "'/" + i + "'" + ": " + address);
+        log.info("⣿ m/84'/...'/...'/" + chain + "/" + i + ": " + address);
       }
 
       // validate
