@@ -84,10 +84,15 @@ Response:
     }],
     "mixHistory":{
         "startupTime":1701691160201,
-        "nbMixed":0,
-        "nbFailed":0,
-        "mixedVolume":0
-    }
+        "mixedCount":1,
+        "failedCount":0,
+        "mixedLastTime":1701691160201,
+        "failedLastTime":null,
+        "mixedVolume":0,
+        "externalXpubCount":0,
+        "externalXpubVolume":0,
+        "externalXpubLastTime":0,
+    },
 }
 ```
 
@@ -96,12 +101,6 @@ Response:
 Response:
 ```
 {
-    "mixHistory":{
-        "startupTime":1701691160201,
-        "nbMixed":0,
-        "nbFailed":0,
-        "mixedVolume":0
-    },
     "mixResults":[
         {"time":1701691287132,
         "success":true,
@@ -113,6 +112,29 @@ Response:
             "index":3},
         "destinationAddress":"tb1qa688llq8s4r933hh0hd5nzrpnylken7xu9g26q",
         "destinationType":"POSTMIX",
+        "destinationPath":"m/84'/1'/2147483646'/0/12326",
+        "failUtxo":null,
+        "failReason":null,
+        "failError":null
+    }]
+}
+```
+
+### External XPub history: ```GET /rest/mix/history/externalXpub```
+Response:
+```
+{
+    "mixResults":[
+        {"time":1701691287132,
+        "success":true,
+        "poolId":"0.001btc",
+        "amount":100000,
+        "remix":true,
+        "destinationUtxo":{
+            "hash":"aec0686a81c1faeb3b37fa34aa66c96ae0cc8416d123b1e7fe4ff6102b692f69",
+            "index":3},
+        "destinationAddress":"tb1qa688llq8s4r933hh0hd5nzrpnylken7xu9g26q",
+        "destinationType":"XPUB",
         "destinationPath":"m/84'/1'/2147483646'/0/12326",
         "failUtxo":null,
         "failReason":null,

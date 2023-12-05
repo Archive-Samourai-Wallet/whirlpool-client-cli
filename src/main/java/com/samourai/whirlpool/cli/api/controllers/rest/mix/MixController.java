@@ -35,7 +35,19 @@ public class MixController extends AbstractRestController {
 
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     MixHistory mixHistory = whirlpoolWallet.getMixHistory();
-    ApiMixHistoryResponse response = new ApiMixHistoryResponse(mixHistory);
+    ApiMixHistoryResponse response = new ApiMixHistoryResponse(mixHistory.getMixResultsDesc());
+    return response;
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_MIX_HISTORY_EXTERNAL_XPUB, method = RequestMethod.GET)
+  public ApiMixHistoryResponse mixHistoryExternalXpub(@RequestHeader HttpHeaders headers)
+      throws Exception {
+    checkHeaders(headers);
+
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    MixHistory mixHistory = whirlpoolWallet.getMixHistory();
+    ApiMixHistoryResponse response =
+        new ApiMixHistoryResponse(mixHistory.getMixResultsExternalXpubDesc());
     return response;
   }
 

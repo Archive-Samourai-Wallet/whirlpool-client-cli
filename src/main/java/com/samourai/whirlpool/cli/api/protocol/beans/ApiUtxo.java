@@ -21,7 +21,9 @@ public class ApiUtxo {
   private int mixsDone;
   private String message;
   private String error;
-  private Long lastActivityElapsed;
+  private Long lastActivity;
+
+  @Deprecated private Long lastActivityElapsed;
 
   public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo, int latestBlockHeight) {
     UnspentOutput utxo = whirlpoolUtxo.getUtxo();
@@ -43,6 +45,7 @@ public class ApiUtxo {
     this.mixsDone = whirlpoolUtxo.getMixsDone();
     this.message = utxoState.getMessage();
     this.error = utxoState.getError();
+    this.lastActivity = utxoState.getLastActivity();
     this.lastActivityElapsed =
         utxoState.getLastActivity() != null
             ? System.currentTimeMillis() - utxoState.getLastActivity()
@@ -107,6 +110,10 @@ public class ApiUtxo {
 
   public String getError() {
     return error;
+  }
+
+  public Long getLastActivity() {
+    return lastActivity;
   }
 
   public Long getLastActivityElapsed() {

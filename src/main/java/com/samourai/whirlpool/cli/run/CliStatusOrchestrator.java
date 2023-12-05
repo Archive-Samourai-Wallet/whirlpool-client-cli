@@ -75,7 +75,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
               + (cliConfig.getTor() ? " +Tor" : "")
               + (cliConfig.isDojoEnabled() ? " +Dojo" : "")
-              + (walletConfig.getExternalDestination() != null ? " +XPub" : "")
+              + (walletConfig.getExternalDestination() != null
+                  ? " +XPub(" + ClientUtils.satToBtc(mixHistory.getExternalXpubVolume()) + ")"
+                  : "")
               + ", "
               + mixingState.getNbMixing()
               + " mixing ("
@@ -98,8 +100,12 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + nbPremix
               + "), P[O]stmix("
               + nbPostmix
-              + "), [H]istory("
-              + mixHistory.getNbMixed()
+              + "), "
+              + (cliConfig.getExternalDestination() != null
+                  ? "[X]Pub(" + mixHistory.getExternalXpubCount() + "), "
+                  : "")
+              + "[H]istory("
+              + mixHistory.getMixedCount()
               + "), [W]allet, , POO[L]S, DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");

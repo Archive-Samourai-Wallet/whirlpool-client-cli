@@ -54,6 +54,8 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
             printPools();
           } else if (car.equals('H')) {
             printMixHistory();
+          } else if (car.equals('X')) {
+            printXPubHistory();
           }
         } else {
           if (log.isDebugEnabled()) {
@@ -102,6 +104,11 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
 
   private void printMixHistory() throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-    log.info(DebugUtils.getDebugMixHistory(whirlpoolWallet.getMixHistory()));
+    log.info(DebugUtils.getDebugMixHistory(whirlpoolWallet));
+  }
+
+  private void printXPubHistory() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebugXPubHistory(whirlpoolWallet));
   }
 }

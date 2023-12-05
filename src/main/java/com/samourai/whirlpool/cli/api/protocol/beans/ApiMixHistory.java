@@ -4,30 +4,60 @@ import com.samourai.whirlpool.client.wallet.beans.MixHistory;
 
 public class ApiMixHistory {
   private long startupTime;
-  private int nbMixed;
-  private int nbFailed;
+  private int mixedCount;
+  private int failedCount;
+  private Long mixedLastTime;
+  private Long failedLastTime;
   private long mixedVolume;
+  private int externalXpubCount;
+  private long externalXpubVolume;
+  private Long externalXpubLastTime;
 
   public ApiMixHistory(MixHistory mixHistory) {
     this.startupTime = mixHistory.getStartupTime();
-    this.nbMixed = mixHistory.getNbMixed();
-    this.nbFailed = mixHistory.getNbFailed();
+    this.mixedCount = mixHistory.getMixedCount();
+    this.failedCount = mixHistory.getFailedCount();
+    this.mixedLastTime = mixHistory.getMixedLastTime();
+    this.failedLastTime = mixHistory.getFailedLastTime();
     this.mixedVolume = mixHistory.getMixedVolume();
+    this.externalXpubCount = mixHistory.getExternalXpubCount();
+    this.externalXpubVolume = mixHistory.getExternalXpubVolume();
+    this.externalXpubLastTime = mixHistory.getExternalXpubLastTime();
   }
 
   public long getStartupTime() {
     return startupTime;
   }
 
-  public int getNbMixed() {
-    return nbMixed;
+  public int getMixedCount() {
+    return mixedCount;
   }
 
-  public int getNbFailed() {
-    return nbFailed;
+  public int getFailedCount() {
+    return failedCount;
+  }
+
+  public Long getMixedLastTime() {
+    return mixedLastTime;
+  }
+
+  public Long getFailedLastTime() {
+    return failedLastTime;
   }
 
   public long getMixedVolume() {
     return mixedVolume;
+  }
+
+  public int getExternalXpubCount() {
+    return externalXpubCount;
+  }
+
+  public long getExternalXpubVolume() {
+    return externalXpubVolume;
+  }
+
+  public Long getExternalXpubLastTime() {
+    return externalXpubLastTime;
   }
 }

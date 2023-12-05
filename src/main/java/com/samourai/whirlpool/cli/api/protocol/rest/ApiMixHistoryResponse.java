@@ -1,28 +1,19 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiMixHistory;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiMixResult;
-import com.samourai.whirlpool.client.wallet.beans.MixHistory;
+import com.samourai.whirlpool.client.wallet.beans.MixResult;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class ApiMixHistoryResponse {
   private Collection<ApiMixResult> mixResults;
-  private ApiMixHistory mixHistory;
 
-  public ApiMixHistoryResponse(MixHistory mixHistory) {
+  public ApiMixHistoryResponse(Collection<MixResult> mixResults) {
     this.mixResults =
-        mixHistory.getMixResultsDesc().stream()
-            .map(o -> new ApiMixResult(o))
-            .collect(Collectors.toList());
-    this.mixHistory = new ApiMixHistory(mixHistory);
+        mixResults.stream().map(o -> new ApiMixResult(o)).collect(Collectors.toList());
   }
 
   public Collection<ApiMixResult> getMixResults() {
     return mixResults;
-  }
-
-  public ApiMixHistory getMixHistory() {
-    return mixHistory;
   }
 }
