@@ -16,6 +16,7 @@ public class CliApiEndpoint {
   public static final String REST_WALLET_DEPOSIT = REST_PREFIX + "wallet/deposit";
 
   public static final String REST_MIX = REST_PREFIX + "mix";
+  public static final String REST_MIX_HISTORY = REST_PREFIX + "mix/history";
   public static final String REST_MIX_START = REST_PREFIX + "mix/start";
   public static final String REST_MIX_STOP = REST_PREFIX + "mix/stop";
 
@@ -37,6 +38,7 @@ public class CliApiEndpoint {
         REST_POOLS,
         REST_WALLET_DEPOSIT,
         REST_MIX,
+        REST_MIX_HISTORY,
         REST_MIX_START,
         REST_MIX_STOP,
         REST_UTXOS,

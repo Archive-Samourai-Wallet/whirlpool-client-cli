@@ -2,9 +2,11 @@ package com.samourai.whirlpool.cli.api.controllers.rest.mix;
 
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiMixHistoryResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiWalletStateResponse;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.MixHistory;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,12 +20,23 @@ public class MixController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX, method = RequestMethod.GET)
-  public ApiWalletStateResponse wallet(@RequestHeader HttpHeaders headers) throws Exception {
+  public ApiWalletStateResponse mix(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     MixingState mixingState = whirlpoolWallet.getMixingState();
+    MixHistory mixHistory = whirlpoolWallet.getMixHistory();
     int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
-    return new ApiWalletStateResponse(mixingState, latestBlockHeight);
+    return new ApiWalletStateResponse(mixingState, mixHistory, latestBlockHeight);
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_MIX_HISTORY, method = RequestMethod.GET)
+  public ApiMixHistoryResponse mixHistory(@RequestHeader HttpHeaders headers) throws Exception {
+    checkHeaders(headers);
+
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    MixHistory mixHistory = whirlpoolWallet.getMixHistory();
+    ApiMixHistoryResponse response = new ApiMixHistoryResponse(mixHistory);
+    return response;
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_START, method = RequestMethod.POST)
