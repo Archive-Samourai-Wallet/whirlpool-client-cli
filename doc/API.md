@@ -93,6 +93,11 @@ Response:
         "externalXpubVolume":0,
         "externalXpubLastTime":0,
     },
+    "lastBlock":{
+        "hash":"0000000000000c4a3a870be4bd03e29b846a1e4840fffc8d1b57c25cfd0357be",
+        "height":2541830,
+        "time":1701691160201
+    }
 }
 ```
 

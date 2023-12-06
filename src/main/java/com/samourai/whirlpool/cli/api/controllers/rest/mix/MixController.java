@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.mix;
 
+import com.samourai.wallet.api.backend.beans.WalletResponse;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiMixHistoryResponse;
@@ -25,8 +26,8 @@ public class MixController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     MixingState mixingState = whirlpoolWallet.getMixingState();
     MixHistory mixHistory = whirlpoolWallet.getMixHistory();
-    int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
-    return new ApiWalletStateResponse(mixingState, mixHistory, latestBlockHeight);
+    WalletResponse.InfoBlock lastBlock = whirlpoolWallet.getChainSupplier().getLatestBlock();
+    return new ApiWalletStateResponse(mixingState, mixHistory, lastBlock);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_HISTORY, method = RequestMethod.GET)

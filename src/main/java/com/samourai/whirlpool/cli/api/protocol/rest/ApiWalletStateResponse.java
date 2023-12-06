@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import com.samourai.wallet.api.backend.beans.WalletResponse;
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiChainBlock;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiMixHistory;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxo;
 import com.samourai.whirlpool.client.wallet.beans.MixHistory;
@@ -13,17 +15,19 @@ public class ApiWalletStateResponse {
   private int nbQueued;
   private Collection<ApiUtxo> threads;
   private ApiMixHistory mixHistory;
+  private ApiChainBlock lastBlock;
 
   public ApiWalletStateResponse(
-      MixingState mixingState, MixHistory mixHistory, int latestBlockHeight) {
+      MixingState mixingState, MixHistory mixHistory, WalletResponse.InfoBlock lastBlock) {
     this.started = mixingState.isStarted();
     this.nbMixing = mixingState.getNbMixing();
     this.nbQueued = mixingState.getNbQueued();
     this.threads =
         mixingState.getUtxosMixing().stream()
-            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, latestBlockHeight))
+            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, lastBlock.height))
             .collect(Collectors.toList());
     this.mixHistory = new ApiMixHistory(mixHistory);
+    this.lastBlock = new ApiChainBlock(lastBlock);
   }
 
   public boolean isStarted() {
@@ -44,5 +48,9 @@ public class ApiWalletStateResponse {
 
   public ApiMixHistory getMixHistory() {
     return mixHistory;
+  }
+
+  public ApiChainBlock getLastBlock() {
+    return lastBlock;
   }
 }
