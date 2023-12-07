@@ -109,6 +109,14 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
 
   private void printXPubHistory() throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    if (!cliConfig.isExternalDestinationConfigured()) {
+      log.error("No external XPub configured yet. Use --set-external-xpub to configure.");
+      return;
+    }
+    if (!cliConfig.isExternalDestinationEnabled()) {
+      log.error("External XPub is DISABLED. Use --set-external-xpub-enabled=true to enable.");
+      return;
+    }
     log.info(DebugUtils.getDebugXPubHistory(whirlpoolWallet));
   }
 }

@@ -101,7 +101,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + "), P[O]stmix("
               + nbPostmix
               + "), "
-              + (cliConfig.getExternalDestination() != null
+              + (whirlpoolWallet.getConfig().getExternalDestination() != null
                   ? "[X]Pub(" + mixHistory.getExternalXpubCount() + "), "
                   : "")
               + "[H]istory("

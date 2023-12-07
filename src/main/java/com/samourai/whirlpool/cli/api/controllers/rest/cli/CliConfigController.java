@@ -8,7 +8,6 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigResponse;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
-import com.samourai.whirlpool.cli.services.CliWalletService;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class CliConfigController extends AbstractRestController {
   @Autowired private CliConfig cliConfig;
   @Autowired private CliConfigService cliConfigService;
-  @Autowired private CliWalletService cliWalletService;
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_CONFIG, method = RequestMethod.GET)
   public ApiCliConfigResponse getCliConfig(@RequestHeader HttpHeaders headers) throws Exception {

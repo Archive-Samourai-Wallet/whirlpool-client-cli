@@ -32,6 +32,7 @@ public class ApplicationArgs {
   private static final String ARG_API_KEY = "api-key";
   public static final String ARG_INIT = "init";
   public static final String ARG_SET_EXTERNAL_XPUB = "set-external-xpub";
+  public static final String ARG_SET_EXTERNAL_XPUB_ENABLED = "set-external-xpub-enabled";
   private static final String ARG_AUTHENTICATE = "authenticate";
   public static final String ARG_DUMP_PAYLOAD = "dump-payload";
   private static final String ARG_RESYNC = "resync";
@@ -128,6 +129,24 @@ public class ApplicationArgs {
 
   public boolean isSetExternalXpub() {
     return args.containsOption(ARG_SET_EXTERNAL_XPUB);
+  }
+
+  public boolean isSetExternalXpubEnabled() {
+    return args.containsOption(ARG_SET_EXTERNAL_XPUB_ENABLED);
+  }
+
+  public Boolean getSetExternalXpubEnabled() {
+    if (!isSetExternalXpubEnabled()) {
+      return null;
+    }
+    // default value is "true" when missing
+    boolean value =
+        (args.getOptionValues(ARG_SET_EXTERNAL_XPUB_ENABLED).isEmpty()
+            || args.getOptionValues(ARG_SET_EXTERNAL_XPUB_ENABLED)
+                .iterator()
+                .next()
+                .equalsIgnoreCase("true"));
+    return value;
   }
 
   public boolean isAuthenticate() {

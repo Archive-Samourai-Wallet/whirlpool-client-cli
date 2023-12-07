@@ -21,6 +21,7 @@ public class ApiCliConfig {
   private Boolean dojo;
   private String proxy;
   private ApiMixConfig mix;
+  private ApiExternalDestinationConfig externalDestination;
 
   public static final String KEY_SERVER = "cli.server";
   private static final String KEY_SCODE = "cli.scode";
@@ -44,6 +45,7 @@ public class ApiCliConfig {
     this.dojo = cliConfig.getDojo().isEnabled();
     this.proxy = cliConfig.getProxy();
     this.mix = new ApiMixConfig(cliConfig.getMix());
+    this.externalDestination = new ApiExternalDestinationConfig(cliConfig.getExternalDestination());
   }
 
   public void toProperties(Properties props) throws NotifiableException {
@@ -74,6 +76,10 @@ public class ApiCliConfig {
 
     if (mix != null) {
       mix.toProperties(props);
+    }
+
+    if (externalDestination != null) {
+      externalDestination.toProperties(props);
     }
   }
 
@@ -123,6 +129,14 @@ public class ApiCliConfig {
 
   public void setMix(ApiMixConfig mix) {
     this.mix = mix;
+  }
+
+  public ApiExternalDestinationConfig getExternalDestination() {
+    return externalDestination;
+  }
+
+  public void setExternalDestination(ApiExternalDestinationConfig externalDestination) {
+    this.externalDestination = externalDestination;
   }
 
   public static class ApiMixConfig {
@@ -221,6 +235,29 @@ public class ApiCliConfig {
 
     public void setAutoMix(Boolean autoMix) {
       this.autoMix = autoMix;
+    }
+  }
+
+  public static class ApiExternalDestinationConfig {
+    private boolean enabled;
+
+    public ApiExternalDestinationConfig() {}
+
+    public ApiExternalDestinationConfig(
+        CliConfigFile.ExternalDestinationConfig externalDestinationConfig) {
+      this.enabled = !externalDestinationConfig.isDisabled();
+    }
+
+    public void toProperties(Properties props) throws NotifiableException {
+      props.put(CliConfigService.KEY_EXTERNAL_DESTINATION_DISABLED, Boolean.toString(!enabled));
+    }
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
     }
   }
 }

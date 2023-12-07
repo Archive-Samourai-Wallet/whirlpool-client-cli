@@ -13,7 +13,6 @@ import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
-import com.samourai.whirlpool.cli.run.RunSetExternalXpub;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -201,26 +200,23 @@ public class CliService {
     }
     cliConfigService.setCliStatus(CliStatus.READY);
 
-    boolean isXpub = appArgs.isSetExternalXpub();
     String commandToRun = RunCliCommand.getCommandToRun(appArgs);
     boolean hasCommandToRun = (commandToRun != null);
-    if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
+    if (!appArgs.isAuthenticate() && listen && commandToRun == null) {
       // no passphrase but listening => keep listening
       return keepRunningNoAuth();
     }
 
     // authenticate
+    String seedPassphrase = null;
     CliWallet cliWallet = null;
     while (cliWallet == null) {
       // authenticate to open wallet
       String reason = null;
-      if (isXpub) {
-        reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
-      } else if (commandToRun != null) {
+      if (commandToRun != null) {
         reason = "to run --" + commandToRun;
       }
 
-      String seedPassphrase;
       try {
         seedPassphrase = authenticate(reason);
       } catch (NoUserInputException e) {
@@ -234,12 +230,6 @@ public class CliService {
                 ? cliWalletService.getSessionWallet()
                 : cliWalletService.openWallet(seedPassphrase);
 
-        // set-destination
-        if (appArgs.isSetExternalXpub()) {
-          new RunSetExternalXpub(cliConfigService).run(params, cliWallet, seedPassphrase);
-          return CliResult.EXIT_SUCCESS;
-        }
-
         log.info(CliUtils.LOG_SEPARATOR);
         log.info("⣿ AUTHENTICATION SUCCESS");
         log.info(CliUtils.LOG_SEPARATOR);
@@ -252,7 +242,8 @@ public class CliService {
     }
     if (hasCommandToRun) {
       // execute specific command
-      new RunCliCommand(appArgs, cliWalletService).run();
+      new RunCliCommand(appArgs, cliWalletService, cliConfigService, cliConfig)
+          .run(params, seedPassphrase);
       return CliResult.EXIT_SUCCESS;
     } else {
       // start wallet

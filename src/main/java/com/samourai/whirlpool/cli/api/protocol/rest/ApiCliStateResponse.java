@@ -35,8 +35,9 @@ public class ApiCliStateResponse {
     this.dojo = cliConfig.isDojoEnabled();
     this.version = cliConfig.getBuildVersion();
     this.externalDestination =
-        externalDestination != null
-            ? new ApiCliStateExternalDestination(externalDestination)
+        cliConfig.isExternalDestinationConfigured()
+            ? new ApiCliStateExternalDestination(
+                externalDestination, cliConfig.getExternalDestination())
             : null;
   }
 
