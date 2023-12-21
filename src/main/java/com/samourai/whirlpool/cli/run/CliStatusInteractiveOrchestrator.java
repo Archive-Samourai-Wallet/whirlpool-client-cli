@@ -52,6 +52,10 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
             printDebug();
           } else if (car.equals('L')) {
             printPools();
+          } else if (car.equals('H')) {
+            printMixHistory();
+          } else if (car.equals('X')) {
+            printXPubHistory();
           }
         } else {
           if (log.isDebugEnabled()) {
@@ -96,5 +100,23 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
   private void printPools() throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     log.info(DebugUtils.getDebugPools(whirlpoolWallet.getPoolSupplier()));
+  }
+
+  private void printMixHistory() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebugMixHistory(whirlpoolWallet));
+  }
+
+  private void printXPubHistory() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    if (!cliConfig.isExternalDestinationConfigured()) {
+      log.error("No external XPub configured yet. Use --set-external-xpub to configure.");
+      return;
+    }
+    if (!cliConfig.isExternalDestinationEnabled()) {
+      log.error("External XPub is DISABLED. Use --set-external-xpub-enabled=true to enable.");
+      return;
+    }
+    log.info(DebugUtils.getDebugXPubHistory(whirlpoolWallet));
   }
 }

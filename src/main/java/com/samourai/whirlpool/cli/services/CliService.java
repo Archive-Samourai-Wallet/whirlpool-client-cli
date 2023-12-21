@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.http.client.HttpProxy;
 import com.samourai.wallet.util.SystemUtil;
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.beans.CliStatus;
@@ -12,7 +13,6 @@ import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
-import com.samourai.whirlpool.cli.run.RunSetExternalXpub;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -100,7 +100,36 @@ public class CliService {
     dirLockFile.delete();
   }
 
-  public CliResult run(boolean listen) throws Exception {
+  public void run(boolean listen) {
+    Thread t =
+        new Thread(
+            () -> {
+              try {
+                CliResult cliResult = doRun(listen);
+                switch (cliResult) {
+                  case RESTART:
+                    Application.restart();
+                    return;
+                  case EXIT_SUCCESS:
+                    Application.exit(0);
+                    return;
+                  case KEEP_RUNNING:
+                    return;
+                }
+              } catch (NotifiableException e) {
+                CliUtils.notifyError(e.getMessage());
+              } catch (IllegalArgumentException e) {
+                log.error("Invalid arguments: " + e.getMessage());
+              } catch (Exception e) {
+                log.error("", e);
+              }
+              Application.exit(1); // error
+            });
+    t.setName("CliService.run");
+    t.start();
+  }
+
+  protected CliResult doRun(boolean listen) throws Exception {
     String[] args = appArgs.getApplicationArguments().getSourceArgs();
 
     log.info("------------ whirlpool-client-cli starting ------------");
@@ -171,26 +200,23 @@ public class CliService {
     }
     cliConfigService.setCliStatus(CliStatus.READY);
 
-    boolean isXpub = appArgs.isSetExternalXpub();
     String commandToRun = RunCliCommand.getCommandToRun(appArgs);
     boolean hasCommandToRun = (commandToRun != null);
-    if (!appArgs.isAuthenticate() && listen && commandToRun == null && !isXpub) {
+    if (!appArgs.isAuthenticate() && listen && commandToRun == null) {
       // no passphrase but listening => keep listening
       return keepRunningNoAuth();
     }
 
     // authenticate
+    String seedPassphrase = null;
     CliWallet cliWallet = null;
     while (cliWallet == null) {
       // authenticate to open wallet
       String reason = null;
-      if (isXpub) {
-        reason = "to run --" + ApplicationArgs.ARG_SET_EXTERNAL_XPUB;
-      } else if (commandToRun != null) {
+      if (commandToRun != null) {
         reason = "to run --" + commandToRun;
       }
 
-      String seedPassphrase;
       try {
         seedPassphrase = authenticate(reason);
       } catch (NoUserInputException e) {
@@ -204,12 +230,6 @@ public class CliService {
                 ? cliWalletService.getSessionWallet()
                 : cliWalletService.openWallet(seedPassphrase);
 
-        // set-destination
-        if (appArgs.isSetExternalXpub()) {
-          new RunSetExternalXpub(cliConfigService).run(params, cliWallet, seedPassphrase);
-          return CliResult.EXIT_SUCCESS;
-        }
-
         log.info(CliUtils.LOG_SEPARATOR);
         log.info("⣿ AUTHENTICATION SUCCESS");
         log.info(CliUtils.LOG_SEPARATOR);
@@ -222,7 +242,8 @@ public class CliService {
     }
     if (hasCommandToRun) {
       // execute specific command
-      new RunCliCommand(appArgs, cliWalletService).run();
+      new RunCliCommand(appArgs, cliWalletService, cliConfigService, cliConfig)
+          .run(params, seedPassphrase);
       return CliResult.EXIT_SUCCESS;
     } else {
       // start wallet
@@ -273,17 +294,29 @@ public class CliService {
 
     // disconnect Tor
     if (cliTorClientService != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("shutting down: Tor");
+      }
       cliTorClientService.shutdown();
     }
 
-    // stop httpClient
-    httpClientService.stop();
-
     // close cliWallet
+    if (log.isDebugEnabled()) {
+      log.debug("shutting down: cliWallet");
+    }
     cliWalletService.closeWallet();
+
+    // stop httpClient
+    if (log.isDebugEnabled()) {
+      log.debug("shutting down: httpClient");
+    }
+    httpClientService.stop();
 
     // stop cliStatusOrchestrator
     if (cliStatusOrchestrator != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("shutting down: cliStatusOrchestrator");
+      }
       cliStatusOrchestrator.stop();
     }
   }

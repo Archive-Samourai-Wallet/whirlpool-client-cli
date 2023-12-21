@@ -155,6 +155,14 @@ public abstract class CliConfigFile {
     return externalDestination;
   }
 
+  public boolean isExternalDestinationConfigured() {
+    return externalDestination != null && !StringUtils.isEmpty(externalDestination.getXpub());
+  }
+
+  public boolean isExternalDestinationEnabled() {
+    return isExternalDestinationConfigured() && !externalDestination.isDisabled();
+  }
+
   public void setExternalDestination(ExternalDestinationConfig externalDestination) {
     this.externalDestination = externalDestination;
   }
@@ -391,6 +399,7 @@ public abstract class CliConfigFile {
     @NotEmpty private int startIndex;
     @NotEmpty private int mixs;
     @NotEmpty private int mixsRandomFactor;
+    @NotEmpty private boolean disabled;
 
     public ExternalDestinationConfig() {}
 
@@ -400,6 +409,7 @@ public abstract class CliConfigFile {
       this.startIndex = copy.startIndex;
       this.mixs = copy.mixs;
       this.mixsRandomFactor = copy.mixsRandomFactor;
+      this.disabled = copy.disabled;
     }
 
     public String getXpub() {
@@ -442,6 +452,14 @@ public abstract class CliConfigFile {
       this.mixsRandomFactor = mixsRandomFactor;
     }
 
+    public boolean isDisabled() {
+      return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+      this.disabled = disabled;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       String str =
@@ -456,6 +474,8 @@ public abstract class CliConfigFile {
                   + mixs
                   + ", mixsRandomFactor="
                   + mixsRandomFactor
+                  + ", disabled="
+                  + disabled
               : "null");
       configInfo.put("cli/externalDestination", str);
       return configInfo;
@@ -690,7 +710,7 @@ public abstract class CliConfigFile {
 
   private ExternalDestination computeExternalDestination(String passphrase)
       throws NotifiableException {
-    if (!Strings.isEmpty(this.externalDestination.xpub)
+    if (isExternalDestinationEnabled()
         && this.externalDestination.chain >= 0
         && this.externalDestination.mixs > 0
         && this.externalDestination.mixsRandomFactor >= 0) {

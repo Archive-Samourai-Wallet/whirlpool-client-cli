@@ -50,6 +50,7 @@ public class CliConfigService {
   private static final String KEY_EXTERNAL_DESTINATION_START_INDEX =
       "cli.externalDestination.startIndex";
   private static final String KEY_EXTERNAL_DESTINATION_MIXS = "cli.externalDestination.mixs";
+  public static final String KEY_EXTERNAL_DESTINATION_DISABLED = "cli.externalDestination.disabled";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -249,6 +250,23 @@ public class CliConfigService {
     props.put(KEY_EXTERNAL_DESTINATION_CHAIN, Integer.toString(chain));
     props.put(KEY_EXTERNAL_DESTINATION_START_INDEX, Integer.toString(startIndex));
     props.put(KEY_EXTERNAL_DESTINATION_MIXS, Integer.toString(mixs));
+    props.put(KEY_EXTERNAL_DESTINATION_DISABLED, Boolean.toString(false));
+
+    // save
+    saveProperties(props);
+
+    // restart needed
+    this.setCliStatusNotReady("ExternalDestination updated, CLI restart required.");
+  }
+
+  public synchronized void setExternalDestinationDisabled(boolean disabled) throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug(" • setExternalDestinationDisabled");
+    }
+
+    // set
+    Properties props = loadProperties();
+    props.put(KEY_EXTERNAL_DESTINATION_DISABLED, Boolean.toString(disabled));
 
     // save
     saveProperties(props);
@@ -268,6 +286,7 @@ public class CliConfigService {
     props.remove(KEY_EXTERNAL_DESTINATION_CHAIN);
     props.remove(KEY_EXTERNAL_DESTINATION_START_INDEX);
     props.remove(KEY_EXTERNAL_DESTINATION_MIXS);
+    props.remove(KEY_EXTERNAL_DESTINATION_DISABLED);
 
     // save
     saveProperties(props);

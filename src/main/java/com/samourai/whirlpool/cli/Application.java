@@ -1,10 +1,8 @@
 package com.samourai.whirlpool.cli;
 
-import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
 import java.nio.channels.FileLock;
@@ -86,7 +84,6 @@ public class Application implements ApplicationRunner {
       try {
         cliService.unlockDirectory(fileLock);
       } catch (Exception e) {
-        log.error("", e);
       }
     }
 
@@ -120,28 +117,13 @@ public class Application implements ApplicationRunner {
       }
 
       fileLock = cliService.lockDirectory();
-
-      CliResult cliResult = cliService.run(listen);
-      switch (cliResult) {
-        case RESTART:
-          restart = true;
-          break;
-        case EXIT_SUCCESS:
-          exitCode = 0;
-          break;
-        case KEEP_RUNNING:
-          break;
-      }
-    } catch (NotifiableException e) {
-      exitCode = 1;
-      CliUtils.notifyError(e.getMessage());
-    } catch (IllegalArgumentException e) {
-      exitCode = 1;
-      log.error("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
       exitCode = 1;
       log.error("", e);
     }
+
+    // CliService runs in a new thread to immediately set applicationContext
+    cliService.run(listen);
   }
 
   public static void restart() {
@@ -150,21 +132,32 @@ public class Application implements ApplicationRunner {
       log.debug("Restarting CLI in " + restartDelay + "ms");
     }
 
-    // wait for restartDelay
+    // restartDelay
     try {
       Thread.sleep(restartDelay);
     } catch (InterruptedException e) {
     }
 
     // restart application
-    log.info("Restarting CLI...");
+    log.info("Shutting down for restart...");
     Thread thread =
         new Thread(
             () -> {
-              if (applicationContext != null) {
-                applicationContext.close();
+              CliUtils.closeApplicationContext(applicationContext);
+              if (log.isDebugEnabled()) {
+                log.debug("Shutdown completed, restarting in " + restartDelay + " ms");
               }
 
+              // closingDelay
+              long closingDelay = 1000;
+              try {
+                Thread.sleep(closingDelay);
+              } catch (InterruptedException e) {
+              }
+
+              if (log.isDebugEnabled()) {
+                log.debug("Restarting CLI...");
+              }
               String[] restartArgs = computeRestartArgs();
               main(restartArgs);
             });

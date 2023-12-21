@@ -8,6 +8,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
+import com.samourai.whirlpool.client.wallet.beans.MixHistory;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
@@ -58,6 +59,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
       MixingState mixingState = whirlpoolWallet.getMixingState();
+      MixHistory mixHistory = whirlpoolWallet.getMixHistory();
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
       UtxoSupplier utxoSupplier = whirlpoolWallet.getUtxoSupplier();
 
@@ -73,7 +75,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
               + (cliConfig.getTor() ? " +Tor" : "")
               + (cliConfig.isDojoEnabled() ? " +Dojo" : "")
-              + (walletConfig.getExternalDestination() != null ? " +XPub" : "")
+              + (walletConfig.getExternalDestination() != null
+                  ? " +XPub(" + ClientUtils.satToBtc(mixHistory.getExternalXpubVolume()) + ")"
+                  : "")
               + ", "
               + mixingState.getNbMixing()
               + " mixing ("
@@ -86,9 +90,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueuedMustMix()
               + "+"
               + mixingState.getNbQueuedLiquidity()
-              + "), total "
+              + "), "
               + balanceTotal
-              + "btc. Commands: [T]hreads("
+              + " BTC. Commands: [T]hreads("
               + mixingState.getNbMixing()
               + "), [D]eposit("
               + nbDeposit
@@ -96,7 +100,13 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + nbPremix
               + "), P[O]stmix("
               + nbPostmix
-              + "), [W]allet, POO[L]S, DE[B]UG\r");
+              + "), "
+              + (whirlpoolWallet.getConfig().getExternalDestination() != null
+                  ? "[X]Pub(" + mixHistory.getExternalXpubCount() + "), "
+                  : "")
+              + "[H]istory("
+              + mixHistory.getMixedCount()
+              + "), [W]allet, , POO[L]S, DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {

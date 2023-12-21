@@ -81,6 +81,69 @@ Response:
         "message":" - [MIX 1/1] ▮▮▮▮▮▯▯▯▯▯ (5/10) CONFIRMED_INPUT : joined a mix!",
         "error":null,
         "lastActivityElapsed": 23001
+    }],
+    "mixHistory":{
+        "startupTime":1701691160201,
+        "mixedCount":1,
+        "failedCount":0,
+        "mixedLastTime":1701691160201,
+        "failedLastTime":null,
+        "mixedVolume":0,
+        "externalXpubCount":0,
+        "externalXpubVolume":0,
+        "externalXpubLastTime":0,
+    },
+    "lastBlock":{
+        "hash":"0000000000000c4a3a870be4bd03e29b846a1e4840fffc8d1b57c25cfd0357be",
+        "height":2541830,
+        "time":1701691160201
+    }
+}
+```
+
+
+### Mix history: ```GET /rest/mix/history```
+Response:
+```
+{
+    "mixResults":[
+        {"time":1701691287132,
+        "success":true,
+        "poolId":"0.001btc",
+        "amount":100000,
+        "remix":true,
+        "destinationUtxo":{
+            "hash":"aec0686a81c1faeb3b37fa34aa66c96ae0cc8416d123b1e7fe4ff6102b692f69",
+            "index":3},
+        "destinationAddress":"tb1qa688llq8s4r933hh0hd5nzrpnylken7xu9g26q",
+        "destinationType":"POSTMIX",
+        "destinationPath":"m/84'/1'/2147483646'/0/12326",
+        "failUtxo":null,
+        "failReason":null,
+        "failError":null
+    }]
+}
+```
+
+### External XPub history: ```GET /rest/mix/history/externalXpub```
+Response:
+```
+{
+    "mixResults":[
+        {"time":1701691287132,
+        "success":true,
+        "poolId":"0.001btc",
+        "amount":100000,
+        "remix":true,
+        "destinationUtxo":{
+            "hash":"aec0686a81c1faeb3b37fa34aa66c96ae0cc8416d123b1e7fe4ff6102b692f69",
+            "index":3},
+        "destinationAddress":"tb1qa688llq8s4r933hh0hd5nzrpnylken7xu9g26q",
+        "destinationType":"XPUB",
+        "destinationPath":"m/84'/1'/2147483646'/0/12326",
+        "failUtxo":null,
+        "failReason":null,
+        "failError":null
     }]
 }
 ```

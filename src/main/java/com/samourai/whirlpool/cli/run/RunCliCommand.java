@@ -1,9 +1,12 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import java.lang.invoke.MethodHandles;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,18 +15,25 @@ public class RunCliCommand {
 
   private ApplicationArgs appArgs;
   private CliWalletService cliWalletService;
+  private CliConfigService cliConfigService;
+  private CliConfig cliConfig;
 
-  public RunCliCommand(ApplicationArgs appArgs, CliWalletService cliWalletService) {
+  public RunCliCommand(
+      ApplicationArgs appArgs,
+      CliWalletService cliWalletService,
+      CliConfigService cliConfigService,
+      CliConfig cliConfig) {
     this.appArgs = appArgs;
     this.cliWalletService = cliWalletService;
+    this.cliConfigService = cliConfigService;
+    this.cliConfig = cliConfig;
   }
 
-  public void run() throws Exception {
+  public void run(NetworkParameters params, String seedPassphrase) throws Exception {
+    CliWallet cliWallet = cliWalletService.getSessionWallet();
     if (appArgs.isDumpPayload()) {
       new RunDumpPayload(cliWalletService).run();
     } else if (appArgs.isAggregate()) {
-      CliWallet cliWallet = cliWalletService.getSessionWallet();
-
       String toAddress = appArgs.getAggregate();
       if (toAddress != null && !"true".equals(toAddress)) {
         // aggregate to a specific address
@@ -33,8 +43,14 @@ public class RunCliCommand {
         cliWallet.aggregate();
       }
     } else if (appArgs.isListPools()) {
-      CliWallet cliWallet = cliWalletService.getSessionWallet();
       new RunListPools(cliWallet).run();
+    } else if (appArgs.isSetExternalXpub()) {
+      // set-external-xpub
+      new RunSetExternalXpub(cliConfigService).run(params, cliWallet, seedPassphrase);
+    } else if (appArgs.isSetExternalXpubEnabled()) {
+      // enable/disable external-xpub
+      boolean enabled = appArgs.getSetExternalXpubEnabled();
+      new RunSetExternalXpubEnabled(cliConfigService).run(cliConfig, enabled);
     } else {
       throw new Exception("Unknown command.");
     }
@@ -53,6 +69,12 @@ public class RunCliCommand {
     }
     if (appArgs.isListPools()) {
       return appArgs.ARG_LIST_POOLS;
+    }
+    if (appArgs.isSetExternalXpub()) {
+      return appArgs.ARG_SET_EXTERNAL_XPUB;
+    }
+    if (appArgs.isSetExternalXpubEnabled()) {
+      return appArgs.ARG_SET_EXTERNAL_XPUB_ENABLED;
     }
     return null;
   }
