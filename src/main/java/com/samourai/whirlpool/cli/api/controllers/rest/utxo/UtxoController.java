@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.rest.utxo;
 
+import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoRef;
@@ -9,6 +10,7 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Config;
 import com.samourai.whirlpool.client.tx0.Tx0Preview;
+import com.samourai.whirlpool.client.tx0.Tx0Previews;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -63,8 +65,9 @@ public class UtxoController extends AbstractRestController {
 
     // tx0 preview
     Tx0Config tx0Config = whirlpoolWallet.getTx0Config(payload.tx0FeeTarget, payload.mixFeeTarget);
-    Tx0Preview tx0Preview =
-        whirlpoolWallet.tx0Previews(whirlpoolUtxos, tx0Config).getTx0Preview(payload.poolId);
+    Tx0Previews tx0Previews =
+        AsyncUtil.getInstance().blockingGet(whirlpoolWallet.tx0Previews(whirlpoolUtxos, tx0Config));
+    Tx0Preview tx0Preview = tx0Previews.getTx0Preview(payload.poolId);
     return new ApiTx0PreviewResponse(tx0Preview);
   }
 

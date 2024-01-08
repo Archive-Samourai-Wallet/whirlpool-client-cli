@@ -56,7 +56,6 @@ public class CliWalletService extends WhirlpoolWalletService {
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
-  private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
   private BIP47UtilGeneric bip47Util;
   private CliUpgradeService cliUpgradeService;
@@ -71,7 +70,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       JavaHttpClientService httpClientService,
-      JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService,
       BIP47UtilGeneric bip47Util,
       CliUpgradeService cliUpgradeService) {
@@ -83,7 +81,6 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.httpClientService = httpClientService;
-    this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
     this.bip47Util = bip47Util;
     this.cliUpgradeService = cliUpgradeService;
@@ -144,7 +141,6 @@ public class CliWalletService extends WhirlpoolWalletService {
               sorobanWalletService,
               httpClientService,
               rpcClientService,
-              stompClientService,
               cliTorClientService,
               bip47Util,
               passphrase);

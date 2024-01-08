@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.rest;
 
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.protocol.rest.RestErrorResponse;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -4,7 +4,6 @@ import com.samourai.http.client.HttpProxy;
 import com.samourai.http.client.IHttpClientService;
 import com.samourai.soroban.client.rpc.RpcClientService;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
-import com.samourai.stomp.client.IStompClientService;
 import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
@@ -655,7 +654,6 @@ public abstract class CliConfigFile {
       SorobanWalletService sorobanWalletService,
       IHttpClientService httpClientService,
       RpcClientService rpcClientService,
-      IStompClientService stompClientService,
       TorClientService torClientService,
       BIP47UtilGeneric bip47Util,
       String passphrase)
@@ -671,7 +669,6 @@ public abstract class CliConfigFile {
             sorobanWalletService,
             httpClientService,
             rpcClientService,
-            stompClientService,
             torClientService,
             bip47Util,
             whirlpoolNetwork,
@@ -698,7 +695,6 @@ public abstract class CliConfigFile {
     config.setExternalDestination(ed);
 
     config.setResyncOnFirstRun(true);
-    config.setFeeOpReturnImplV0();
     return config;
   }
 

@@ -79,12 +79,16 @@ public class CliServicesConfig {
 
   @Bean
   RpcClientService rpcClientService(
-      IHttpClientService httpClientService, CliConfig cliConfig, NetworkParameters params) {
+      IHttpClientService httpClientService,
+      CryptoUtil cryptoUtil,
+      BIP47UtilGeneric bip47Util,
+      CliConfig cliConfig,
+      NetworkParameters params) {
     boolean onion =
         cliConfig.getTor()
             && cliConfig.getTorConfig().getSoroban().isEnabled()
             && cliConfig.getTorConfig().getSoroban().isOnion();
-    return new RpcClientService(httpClientService, onion, params);
+    return new RpcClientService(httpClientService, cryptoUtil, bip47Util, onion, params);
   }
 
   @Bean
