@@ -392,7 +392,6 @@ public abstract class CliConfigFile {
   public static class ExternalDestinationConfig {
     @NotEmpty private String xpub;
     @NotEmpty private int chain;
-    @NotEmpty private int startIndex;
     @NotEmpty private int mixs;
     @NotEmpty private int mixsRandomFactor;
     @NotEmpty private boolean disabled;
@@ -402,7 +401,6 @@ public abstract class CliConfigFile {
     public ExternalDestinationConfig(ExternalDestinationConfig copy) {
       this.xpub = copy.xpub;
       this.chain = copy.chain;
-      this.startIndex = copy.startIndex;
       this.mixs = copy.mixs;
       this.mixsRandomFactor = copy.mixsRandomFactor;
       this.disabled = copy.disabled;
@@ -422,14 +420,6 @@ public abstract class CliConfigFile {
 
     public void setChain(int chain) {
       this.chain = chain;
-    }
-
-    public int getStartIndex() {
-      return startIndex;
-    }
-
-    public void setStartIndex(int startIndex) {
-      this.startIndex = startIndex;
     }
 
     public int getMixs() {
@@ -464,8 +454,6 @@ public abstract class CliConfigFile {
                   + xpub
                   + ", chain="
                   + chain
-                  + ", startIndex="
-                  + startIndex
                   + ", mixs="
                   + mixs
                   + ", mixsRandomFactor="
@@ -700,7 +688,6 @@ public abstract class CliConfigFile {
         return new ExternalDestination(
             xpubDecrypted,
             this.externalDestination.chain,
-            this.externalDestination.startIndex,
             this.externalDestination.mixs,
             this.externalDestination.mixsRandomFactor);
       } catch (Exception e) {

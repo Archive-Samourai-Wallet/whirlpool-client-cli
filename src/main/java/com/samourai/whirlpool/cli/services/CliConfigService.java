@@ -47,8 +47,6 @@ public class CliConfigService {
   public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
   private static final String KEY_EXTERNAL_DESTINATION_XPUB = "cli.externalDestination.xpub";
   private static final String KEY_EXTERNAL_DESTINATION_CHAIN = "cli.externalDestination.chain";
-  private static final String KEY_EXTERNAL_DESTINATION_START_INDEX =
-      "cli.externalDestination.startIndex";
   private static final String KEY_EXTERNAL_DESTINATION_MIXS = "cli.externalDestination.mixs";
   public static final String KEY_EXTERNAL_DESTINATION_DISABLED = "cli.externalDestination.disabled";
 
@@ -222,7 +220,7 @@ public class CliConfigService {
   }
 
   public synchronized void setExternalDestination(
-      String xpub, int chain, int startIndex, int mixs, String passphrase) throws Exception {
+      String xpub, int chain, int mixs, String passphrase) throws Exception {
     if (log.isDebugEnabled()) {
       log.debug(" • setExternalDestination");
     }
@@ -237,9 +235,6 @@ public class CliConfigService {
     if (chain < 0) {
       throw new NotifiableException("Invalid externalDestination.chain");
     }
-    if (startIndex < 0) {
-      throw new NotifiableException("Invalid externalDestination.startIndex");
-    }
     if (mixs < 1) {
       throw new NotifiableException("Invalid externalDestination.mixs");
     }
@@ -248,7 +243,6 @@ public class CliConfigService {
     Properties props = loadProperties();
     props.put(KEY_EXTERNAL_DESTINATION_XPUB, xpubEncrypted);
     props.put(KEY_EXTERNAL_DESTINATION_CHAIN, Integer.toString(chain));
-    props.put(KEY_EXTERNAL_DESTINATION_START_INDEX, Integer.toString(startIndex));
     props.put(KEY_EXTERNAL_DESTINATION_MIXS, Integer.toString(mixs));
     props.put(KEY_EXTERNAL_DESTINATION_DISABLED, Boolean.toString(false));
 
@@ -284,7 +278,6 @@ public class CliConfigService {
     Properties props = loadProperties();
     props.remove(KEY_EXTERNAL_DESTINATION_XPUB);
     props.remove(KEY_EXTERNAL_DESTINATION_CHAIN);
-    props.remove(KEY_EXTERNAL_DESTINATION_START_INDEX);
     props.remove(KEY_EXTERNAL_DESTINATION_MIXS);
     props.remove(KEY_EXTERNAL_DESTINATION_DISABLED);
 
