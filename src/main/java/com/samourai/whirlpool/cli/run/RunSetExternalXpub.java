@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
-import com.samourai.wallet.hd.Chain;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.wallet.util.XPubUtil;
 import com.samourai.whirlpool.cli.services.CliConfigService;
@@ -61,7 +60,7 @@ public class RunSetExternalXpub {
       IIndexHandler indexHandlerExternal =
           cliWallet.getWalletStateSupplier().getIndexHandlerExternal();
       IPostmixHandler postmixHandler =
-          new XPubPostmixHandler(indexHandlerExternal, params, xpub, Chain.RECEIVE.getIndex());
+          new XPubPostmixHandler(indexHandlerExternal, params, xpub, chain);
       int startIndex =
           cliWallet
               .getPostmixIndexService()
