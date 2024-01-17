@@ -1,11 +1,14 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.wallet.util.XPubUtil;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
+import com.samourai.whirlpool.client.mix.handler.XPubPostmixHandler;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import org.apache.commons.lang3.StringUtils;
@@ -47,18 +50,22 @@ public class RunSetExternalXpub {
       int chain = CliUtils.readUserInputRequiredInt("Chain?(0)", 0, 0);
       log.info("⣿ ");
 
-      // startIndex
-      log.info(
-          "⣿ • Starting index for derivation path m/84'/..'/"
-              + chain
-              + "/<starting index> (use 0 for standard):");
-      int startIndex = CliUtils.readUserInputRequiredInt("Starting index?(0)", 0, 0);
-      log.info("⣿ ");
-
       // mixs
       log.info("⣿ • Number of mixs to achieve before sending funds:");
       int mixs = CliUtils.readUserInputRequiredInt("Mixs?(>0)", 1);
       log.info("⣿ ");
+
+      // startIndex
+      log.info("⣿ Looking for the next unused index, please wait...");
+      IIndexHandler indexHandlerExternal =
+          cliWallet.getWalletStateSupplier().getIndexHandlerExternal();
+      IPostmixHandler postmixHandler =
+          new XPubPostmixHandler(indexHandlerExternal, params, xpub, chain);
+      int startIndex =
+          cliWallet
+              .getPostmixIndexService()
+              .resetPostmixIndex(postmixHandler, cliWallet.getSeenBackend());
+      log.info("⣿ Using next unused index: " + startIndex);
 
       // print addresses
       log.info(CliUtils.LOG_SEPARATOR);
@@ -69,11 +76,11 @@ public class RunSetExternalXpub {
               + mixs
               + " (re)mixs. This threshold may randomly slightly increase to improve your privacy.");
       log.info("⣿ XPub: " + xpub);
-      log.info("⣿ Derivation path: m/84'/...'/...'/" + chain + "/" + startIndex + "+");
+      log.info("⣿ Derivation path: " + xPubUtil.getPathSegwit(startIndex, chain, params) + '+');
       log.info("⣿ Sample destination addresses:");
       for (int i = startIndex; i < startIndex + 3; i++) {
         String address = xPubUtil.getAddressBech32(xpub, i, chain, params);
-        log.info("⣿ m/84'/...'/...'/" + chain + "/" + i + ": " + address);
+        log.info("⣿ " + xPubUtil.getPathSegwit(i, chain, params) + ": " + address);
       }
 
       // validate
@@ -83,10 +90,7 @@ public class RunSetExternalXpub {
       }
 
       // set configuration
-      cliConfigService.setExternalDestination(xpub, chain, startIndex, mixs, passphrase);
-
-      // set next postmix index
-      cliWallet.getWalletStateSupplier().getIndexHandlerExternal().set(startIndex, true);
+      cliConfigService.setExternalDestination(xpub, chain, mixs, passphrase);
     } else {
       log.info("⣿ This will unset external XPub. Your funds will stay on your POSTMIX wallet.");
 

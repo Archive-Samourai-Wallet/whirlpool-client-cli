@@ -9,6 +9,7 @@ import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.MixParams;
+import com.samourai.whirlpool.client.mix.handler.MixDestination;
 import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
@@ -69,8 +70,8 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   @Override
-  public void onMixSuccess(MixParams mixParams, Utxo receiveUtxo) {
-    super.onMixSuccess(mixParams, receiveUtxo);
+  public void onMixSuccess(MixParams mixParams, Utxo receiveUtxo, MixDestination mixDestination) {
+    super.onMixSuccess(mixParams, receiveUtxo, mixDestination);
 
     // change http Tor identity
     if (cliConfig.getTor()) {
