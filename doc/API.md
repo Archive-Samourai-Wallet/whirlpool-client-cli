@@ -256,7 +256,7 @@ Response:
     "dojoUrl": "",
     "tor": true,
     "dojo": true,
-    "externalDestination":{"xpub":"tpu...re9","mixs":5}}
+    "externalDestination":{"xpub":"tpu...re9","mixs":5,"enabled":true}}
 }
 ```
 

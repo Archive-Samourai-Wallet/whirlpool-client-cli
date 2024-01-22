@@ -15,6 +15,8 @@
 | ---------|------------ |
 | --dump-payload | Dump pairing-payload of current wallet and exit |
 | --resync | Resynchronize mix counters on startup (startup will be slower) |
+| --set-external-xpub | Configure mixing-to external XPub  |
+| --set-external-xpub-enabled=true/false | Enable/disable mixing-to external XPub (once configured with --set-external-xpub)  |
 
 
 #### Debugging
