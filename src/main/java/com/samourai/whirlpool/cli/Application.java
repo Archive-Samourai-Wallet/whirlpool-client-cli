@@ -3,11 +3,6 @@ package com.samourai.whirlpool.cli;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.protocol.SorobanProtocolWhirlpool;
-import java.lang.invoke.MethodHandles;
-import java.nio.channels.FileLock;
-import java.util.Arrays;
-import javax.annotation.PreDestroy;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +16,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
+
+import javax.annotation.PreDestroy;
+import java.lang.invoke.MethodHandles;
+import java.nio.channels.FileLock;
+import java.util.Arrays;
 
 /** Main application. */
 @SpringBootApplication
@@ -103,7 +103,6 @@ public class Application implements ApplicationRunner {
     }
     if (log.isDebugEnabled()) {
       log.debug("[cli/debug] debug=" + debug + ", debugClient=" + debugClient);
-      log.debug("[cli/protocolVersion] " + SorobanProtocolWhirlpool.PROTOCOL_VERSION);
       log.debug("[cli/listen] " + listen);
     }
 
