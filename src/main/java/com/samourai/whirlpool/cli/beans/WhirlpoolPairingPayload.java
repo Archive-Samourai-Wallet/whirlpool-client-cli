@@ -22,8 +22,8 @@ public class WhirlpoolPairingPayload extends PairingPayload {
   public WhirlpoolPairingPayload(
       PairingNetwork network, String mnemonicEncrypted, Boolean passphrase, PairingDojo dojo) {
     super(
-        PairingType.WHIRLPOOL_GUI,
-        PairingVersion.V3_0_0,
+        PairingType.SAMOURAI_WALLET_FULL,
+        PairingVersion.V1_0_0,
         network,
         mnemonicEncrypted,
         passphrase,
@@ -62,8 +62,9 @@ public class WhirlpoolPairingPayload extends PairingPayload {
       throw new NotifiableException("Invalid pairing payload");
     }
 
-    // passphrase=true for V1
-    if (pairingPayload.getPairing().getPassphrase() == null
+    // passphrase=true for WHIRLPOOL_GUI V1
+    if (PairingType.WHIRLPOOL_GUI.equals(pairingPayload.getPairing().getType())
+        && pairingPayload.getPairing().getPassphrase() == null
         && PairingVersion.V1_0_0.equals(pairingPayload.getPairing().getVersion())) {
       pairingPayload.getPairing().setPassphrase(true);
     }
@@ -80,14 +81,23 @@ public class WhirlpoolPairingPayload extends PairingPayload {
     }
 
     // whirlpool validation
-    if (!PairingType.WHIRLPOOL_GUI.equals(getPairing().getType())) {
-      throw new NotifiableException("Unsupported pairing.type");
+    switch (getPairing().getType()) {
+      case WHIRLPOOL_GUI:
+        if (!PairingVersion.V1_0_0.equals(getPairing().getVersion())
+            && !PairingVersion.V2_0_0.equals(getPairing().getVersion())
+            && !PairingVersion.V3_0_0.equals(getPairing().getVersion())) {
+          throw new NotifiableException("Unsupported pairing.version");
+        }
+        break;
+      case SAMOURAI_WALLET_FULL:
+        if (!PairingVersion.V1_0_0.equals(getPairing().getVersion())) {
+          throw new NotifiableException("Unsupported pairing.version");
+        }
+        break;
+      default:
+        throw new NotifiableException("Unsupported pairing.type");
     }
-    if (!PairingVersion.V1_0_0.equals(getPairing().getVersion())
-        && !PairingVersion.V2_0_0.equals(getPairing().getVersion())
-        && !PairingVersion.V3_0_0.equals(getPairing().getVersion())) {
-      throw new NotifiableException("Unsupported pairing.version");
-    }
+
     if (getPairing().getPassphrase() == null) {
       throw new NotifiableException("Invalid pairing.passphrase");
     }

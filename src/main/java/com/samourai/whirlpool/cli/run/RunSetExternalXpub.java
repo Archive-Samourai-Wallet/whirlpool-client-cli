@@ -8,6 +8,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
+import com.samourai.whirlpool.client.mix.handler.MixDestination;
 import com.samourai.whirlpool.client.mix.handler.XPubPostmixHandler;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
@@ -76,11 +77,12 @@ public class RunSetExternalXpub {
               + mixs
               + " (re)mixs. This threshold may randomly slightly increase to improve your privacy.");
       log.info("⣿ XPub: " + xpub);
-      log.info("⣿ Derivation path: " + xPubUtil.getPathSegwit(startIndex, chain, params) + '+');
+      log.info(
+          "⣿ Derivation path: " + postmixHandler.computeDestination(startIndex).getPath() + '+');
       log.info("⣿ Sample destination addresses:");
       for (int i = startIndex; i < startIndex + 3; i++) {
-        String address = xPubUtil.getAddressBech32(xpub, i, chain, params);
-        log.info("⣿ " + xPubUtil.getPathSegwit(i, chain, params) + ": " + address);
+        MixDestination mixDestination = postmixHandler.computeDestination(i);
+        log.info("⣿ " + mixDestination.getAddress() + ": " + mixDestination.getPath());
       }
 
       // validate

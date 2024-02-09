@@ -61,6 +61,16 @@ public class WhirlpoolPairingPayloadTest {
         PairingNetwork.TESTNET,
         "ih6Jz5eNNdJLdVLTK0W4w23qhr/sT1DUhH46k2nI7j0vp+PKK5LDjYFFY8+SC5Phm9tTBQ47UqFxYvlDElXR0Q==",
         false);
+
+    // valid SAMOURAI_WALLET_FULL 1.0.0
+    payload =
+        "{\"pairing\":{\"type\":\"samourai.wallet.full\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"ih6Jz5eNNdJLdVLTK0W4w23qhr/sT1DUhH46k2nI7j0vp+PKK5LDjYFFY8+SC5Phm9tTBQ47UqFxYvlDElXR0Q==\",\"passphrase\":false}}";
+    parse(
+        payload,
+        PairingVersion.V1_0_0,
+        PairingNetwork.TESTNET,
+        "ih6Jz5eNNdJLdVLTK0W4w23qhr/sT1DUhH46k2nI7j0vp+PKK5LDjYFFY8+SC5Phm9tTBQ47UqFxYvlDElXR0Q==",
+        false);
   }
 
   @Test
