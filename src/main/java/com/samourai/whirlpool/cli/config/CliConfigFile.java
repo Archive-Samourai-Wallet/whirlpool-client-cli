@@ -239,6 +239,7 @@ public abstract class CliConfigFile {
     @NotEmpty private int tx0MaxRetry;
     @NotEmpty private boolean autoMix;
     private Map<String, Long> overspend;
+    @NotEmpty private boolean testMode;
 
     public MixConfig() {}
 
@@ -252,6 +253,7 @@ public abstract class CliConfigFile {
       this.tx0MaxRetry = copy.tx0MaxRetry;
       this.autoMix = copy.autoMix;
       this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
+      this.testMode = copy.testMode;
     }
 
     public int getClients() {
@@ -327,6 +329,14 @@ public abstract class CliConfigFile {
       this.overspend = overspend;
     }
 
+    public boolean isTestMode() {
+      return testMode;
+    }
+
+    public void setTestMode(boolean testMode) {
+      this.testMode = testMode;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/mix/clients", Integer.toString(clients));
@@ -339,6 +349,7 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/tx0MaxRetry", Integer.toString(tx0MaxRetry));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
+      configInfo.put("cli/mix/testMode", Boolean.toString(testMode));
       return configInfo;
     }
   }

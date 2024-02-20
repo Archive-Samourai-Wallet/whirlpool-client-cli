@@ -68,6 +68,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       int nbPostmix = utxoSupplier.findUtxos(WhirlpoolAccount.POSTMIX).size();
       double balanceTotal = ClientUtils.satToBtc(utxoSupplier.getBalanceTotal());
 
+      int nbPools = whirlpoolWallet.getPoolSupplier().getPools().size();
+      int nbCoordinators = whirlpoolWallet.getCoordinatorSupplier().getCoordinators().size();
+
       System.out.print(
           "⣿ Whirlpool "
               + (mixingState.isStarted() ? "STARTED" : "STOPPED")
@@ -92,7 +95,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueuedLiquidity()
               + "), "
               + balanceTotal
-              + " BTC. Commands: [T]hreads("
+              + " BTC. [T]hreads("
               + mixingState.getNbMixing()
               + "), [D]eposit("
               + nbDeposit
@@ -106,7 +109,11 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
                   : "")
               + "[H]istory("
               + mixHistory.getMixedCount()
-              + "), [W]allet, , POO[L]S, DE[B]UG\r");
+              + "), [W]allet, , POO[L]S("
+              + nbPools
+              + "), [C]OORDINATORS("
+              + nbCoordinators
+              + "), DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {
