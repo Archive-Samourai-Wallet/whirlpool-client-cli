@@ -1,14 +1,13 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.IHttpClientService;
-import com.samourai.soroban.client.rpc.RpcClientService;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
-import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
+import com.samourai.wallet.constants.WhirlpoolNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.crypto.CryptoUtil;
+import com.samourai.wallet.httpClient.HttpProxy;
+import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -16,8 +15,6 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.ExternalDestination;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolNetwork;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DataSourceFactory;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public abstract class CliConfigFile {
   private int version; // 0 for versions < 1
-  private WhirlpoolServer server;
+  private WhirlpoolNetwork server; // not renamed for backward compatibility
   private String scode;
   private String partner;
   @NotEmpty private boolean tor;
@@ -94,11 +91,13 @@ public abstract class CliConfigFile {
     this.version = version;
   }
 
-  public WhirlpoolServer getServer() {
+  @Deprecated
+  public WhirlpoolNetwork getServer() {
     return server;
   }
 
-  public void setServer(WhirlpoolServer server) {
+  @Deprecated
+  public void setServer(WhirlpoolNetwork server) {
     this.server = server;
   }
 
@@ -652,14 +651,11 @@ public abstract class CliConfigFile {
       CryptoUtil cryptoUtil,
       SorobanWalletService sorobanWalletService,
       IHttpClientService httpClientService,
-      RpcClientService rpcClientService,
-      TorClientService torClientService,
       BIP47UtilGeneric bip47Util,
       String passphrase)
       throws NotifiableException {
     boolean torOnionCoordinator =
         tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
-    WhirlpoolNetwork whirlpoolNetwork = server.getWhirlpoolNetwork();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             dataSourceFactory,
@@ -667,10 +663,8 @@ public abstract class CliConfigFile {
             cryptoUtil,
             sorobanWalletService,
             httpClientService,
-            rpcClientService,
-            torClientService,
             bip47Util,
-            whirlpoolNetwork,
+            server,
             false,
             torOnionCoordinator);
     if (!Strings.isEmpty(scode)) {
@@ -695,12 +689,6 @@ public abstract class CliConfigFile {
 
     config.setResyncOnFirstRun(true);
     return config;
-  }
-
-  public String computeServerUrl() {
-    boolean useOnion = tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
-    String serverUrl = server.getServerUrl(useOnion);
-    return serverUrl;
   }
 
   private ExternalDestination computeExternalDestination(String passphrase)

@@ -13,8 +13,6 @@ public class ApiCliStateResponse {
   private Integer torProgress;
 
   private String network;
-  private String serverUrl;
-  private String serverName;
   private String dojoUrl;
   private boolean tor;
   private boolean dojo;
@@ -27,9 +25,7 @@ public class ApiCliStateResponse {
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
     this.torProgress = cliState.getTorProgress();
-    this.network = cliConfig.getServer().getWhirlpoolNetwork().getParams().getPaymentProtocolId();
-    this.serverUrl = cliConfig.computeServerUrl();
-    this.serverName = cliConfig.getServer().name();
+    this.network = cliConfig.getWhirlpoolNetwork().getParams().getPaymentProtocolId();
     this.dojoUrl = cliConfig.getDojo().getUrl();
     this.tor = cliConfig.getTor();
     this.dojo = cliConfig.isDojoEnabled();
@@ -59,14 +55,6 @@ public class ApiCliStateResponse {
 
   public String getNetwork() {
     return network;
-  }
-
-  public String getServerUrl() {
-    return serverUrl;
-  }
-
-  public String getServerName() {
-    return serverName;
   }
 
   public String getDojoUrl() {

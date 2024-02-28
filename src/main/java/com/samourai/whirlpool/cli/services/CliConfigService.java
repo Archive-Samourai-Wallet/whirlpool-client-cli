@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.constants.WhirlpoolNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.SystemUtil;
@@ -14,7 +15,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.SortedProperties;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import io.reactivex.functions.Consumer;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -129,15 +129,15 @@ public class CliConfigService {
     String encryptedMnemonic = pairing.getMnemonic();
     boolean appendPassphrase = pairing.getPassphrase();
     PairingNetwork pairingNetwork = pairing.getNetwork();
-    WhirlpoolServer whirlpoolServer =
+    WhirlpoolNetwork whirlpoolNetwork =
         PairingNetwork.MAINNET.equals(pairingNetwork)
-            ? WhirlpoolServer.MAINNET
-            : WhirlpoolServer.TESTNET;
+            ? WhirlpoolNetwork.MAINNET
+            : WhirlpoolNetwork.TESTNET;
 
     return initialize(
         encryptedMnemonic,
         appendPassphrase,
-        whirlpoolServer,
+        whirlpoolNetwork,
         tor,
         dojoUrl,
         dojoApiKeyEncrypted,
@@ -147,7 +147,7 @@ public class CliConfigService {
   public synchronized String initialize(
       String encryptedMnemonic,
       boolean appendPassphrase,
-      WhirlpoolServer whirlpoolServer,
+      WhirlpoolNetwork whirlpoolNetwork,
       boolean tor,
       String dojoUrl,
       String dojoApiKeyEncrypted,
@@ -156,8 +156,8 @@ public class CliConfigService {
     if (log.isDebugEnabled()) {
       log.debug(" • initialize");
     }
-    if (whirlpoolServer == null) {
-      throw new NotifiableException("Invalid server");
+    if (whirlpoolNetwork == null) {
+      throw new NotifiableException("Invalid whirlpoolNetwork");
     }
     if (StringUtils.isEmpty(encryptedMnemonic)) {
       throw new NotifiableException("Invalid mnemonic");
@@ -176,7 +176,7 @@ public class CliConfigService {
     props.put(KEY_APIKEY, apiKey);
     props.put(KEY_SEED, encryptedMnemonic);
     props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
-    props.put(ApiCliConfig.KEY_SERVER, whirlpoolServer.name());
+    props.put(ApiCliConfig.KEY_SERVER, whirlpoolNetwork.name());
     props.put(ApiCliConfig.KEY_TOR, Boolean.toString(tor));
     if (dojoUrl != null) {
       props.put(KEY_DOJO_URL, dojoUrl);

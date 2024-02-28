@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.wallet.constants.WhirlpoolAccount;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -10,7 +11,6 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.MixHistory;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;

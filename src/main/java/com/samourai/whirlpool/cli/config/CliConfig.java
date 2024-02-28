@@ -1,19 +1,18 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.IHttpClientService;
-import com.samourai.soroban.client.rpc.RpcClientService;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
-import com.samourai.tor.client.TorClientService;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
+import com.samourai.wallet.constants.WhirlpoolNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.httpClient.HttpUsage;
+import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.websocket.client.IWebsocketClient;
+import com.samourai.wallet.websocketClient.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -42,8 +41,6 @@ public class CliConfig extends CliConfigFile {
       CryptoUtil cryptoUtil,
       SorobanWalletService sorobanWalletService,
       JavaHttpClientService httpClientService,
-      RpcClientService rpcClientService,
-      TorClientService torClientService,
       BIP47UtilGeneric bip47Util,
       String passphrase)
       throws Exception {
@@ -57,8 +54,6 @@ public class CliConfig extends CliConfigFile {
             cryptoUtil,
             sorobanWalletService,
             httpClientService,
-            rpcClientService,
-            torClientService,
             bip47Util,
             passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
@@ -84,7 +79,7 @@ public class CliConfig extends CliConfigFile {
 
     // Samourai backend
     boolean isTestnet =
-        FormatsUtilGeneric.getInstance().isTestNet(getServer().getWhirlpoolNetwork().getParams());
+        FormatsUtilGeneric.getInstance().isTestNet(getWhirlpoolNetwork().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
     boolean useOnion =
         getTor()
@@ -95,6 +90,10 @@ public class CliConfig extends CliConfigFile {
 
   protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
     return AESUtil.decrypt(apiKey, new CharSequenceX(passphrase));
+  }
+
+  public WhirlpoolNetwork getWhirlpoolNetwork() {
+    return getServer();
   }
 
   public boolean isAutoTx0Aggregate() {
@@ -162,7 +161,6 @@ public class CliConfig extends CliConfigFile {
 
     // coordinator
     if (getTorConfig().getCoordinator().isEnabled()) {
-      httpUsages.add(HttpUsage.COORDINATOR_WEBSOCKET);
       httpUsages.add(HttpUsage.COORDINATOR_REST);
       httpUsages.add(HttpUsage.COORDINATOR_REGISTER_OUTPUT);
     }

@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.IHttpClientService;
 import com.samourai.soroban.client.rpc.RpcClientService;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
@@ -11,12 +10,13 @@ import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.bipFormat.BIP_FORMAT;
 import com.samourai.wallet.bipFormat.BipFormatSupplier;
+import com.samourai.wallet.constants.WhirlpoolNetwork;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
+import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolNetwork;
 import java.lang.invoke.MethodHandles;
 import org.apache.catalina.connector.Connector;
 import org.bitcoinj.core.NetworkParameters;
@@ -58,7 +58,7 @@ public class CliServicesConfig {
 
   @Bean
   WhirlpoolNetwork whirlpoolNetwork(CliConfig cliConfig) {
-    return cliConfig.getServer().getWhirlpoolNetwork();
+    return cliConfig.getWhirlpoolNetwork();
   }
 
   @Bean

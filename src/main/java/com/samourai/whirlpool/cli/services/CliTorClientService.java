@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.HttpUsage;
+import com.samourai.http.client.IHttpProxySupplier;
 import com.samourai.tor.client.JavaTorClient;
-import com.samourai.tor.client.TorClientService;
+import com.samourai.wallet.httpClient.HttpProxy;
+import com.samourai.wallet.httpClient.HttpUsage;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CliTorClientService extends TorClientService {
+public class CliTorClientService implements IHttpProxySupplier {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private Optional<JavaTorClient> torClient;
@@ -73,12 +73,15 @@ public class CliTorClientService extends TorClientService {
     }
   }
 
-  public Optional<HttpProxy> getTorProxy(HttpUsage httpUsage) {
+  @Override
+  public Optional<HttpProxy> getHttpProxy(HttpUsage httpUsage) {
     boolean isTorUsage = torHttpUsages.contains(httpUsage);
     if (isTorUsage && torClient.isPresent()) {
+      // use Tor proxy
       return torClient.get().getTorProxy(httpUsage);
     }
-    return Optional.empty();
+    // use default proxy
+    return cliConfig.getCliProxy();
   }
 
   public Optional<Integer> getProgress() {

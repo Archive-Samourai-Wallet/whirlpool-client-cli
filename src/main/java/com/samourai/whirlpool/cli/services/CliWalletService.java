@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
-import com.samourai.soroban.client.rpc.RpcClientService;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
@@ -52,7 +51,6 @@ public class CliWalletService extends WhirlpoolWalletService {
   private ISecretPointFactory secretPointFactory;
   private CryptoUtil cryptoUtil;
   private SorobanWalletService sorobanWalletService;
-  private RpcClientService rpcClientService;
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
@@ -66,7 +64,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       ISecretPointFactory secretPointFactory,
       CryptoUtil cryptoUtil,
       SorobanWalletService sorobanWalletService,
-      RpcClientService rpcClientService,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       JavaHttpClientService httpClientService,
@@ -77,7 +74,6 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.secretPointFactory = secretPointFactory;
     this.cryptoUtil = cryptoUtil;
     this.sorobanWalletService = sorobanWalletService;
-    this.rpcClientService = rpcClientService;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.httpClientService = httpClientService;
@@ -140,8 +136,6 @@ public class CliWalletService extends WhirlpoolWalletService {
               cryptoUtil,
               sorobanWalletService,
               httpClientService,
-              rpcClientService,
-              cliTorClientService,
               bip47Util,
               passphrase);
 
@@ -217,7 +211,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public String computePairingPayload() throws Exception {
     PairingNetwork pairingNetwork =
-        formatUtils.isTestNet(cliConfig.getServer().getWhirlpoolNetwork().getParams())
+        formatUtils.isTestNet(cliConfig.getWhirlpoolNetwork().getParams())
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
 

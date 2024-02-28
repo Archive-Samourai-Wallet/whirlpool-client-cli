@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.http.client.HttpProxy;
+import com.samourai.wallet.httpClient.HttpProxy;
 import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.ApplicationArgs;
@@ -156,7 +156,7 @@ public class CliService {
     cliTorClientService.connect();
 
     // initialize bitcoinj context
-    NetworkParameters params = cliConfig.getServer().getWhirlpoolNetwork().getParams();
+    NetworkParameters params = cliConfig.getWhirlpoolNetwork().getParams();
     new Context(params);
 
     // check init

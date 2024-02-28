@@ -1,8 +1,8 @@
 package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.DefaultSettings;
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.HttpProxyProtocol;
+import com.samourai.wallet.httpClient.HttpProxy;
+import com.samourai.wallet.httpClient.HttpProxyProtocol;
 import java.util.Optional;
 
 public class JavaTorSettings extends DefaultSettings {

@@ -2,9 +2,9 @@ package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorSettings;
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.SamouraiTorInstaller;
+import com.samourai.wallet.httpClient.HttpProxy;
+import com.samourai.wallet.httpClient.HttpUsage;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
