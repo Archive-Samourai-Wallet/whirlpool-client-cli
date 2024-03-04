@@ -211,7 +211,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public String computePairingPayload() throws Exception {
     PairingNetwork pairingNetwork =
-        formatUtils.isTestNet(cliConfig.getWhirlpoolNetwork().getParams())
+        formatUtils.isTestNet(cliConfig.getSamouraiNetwork().getParams())
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
 

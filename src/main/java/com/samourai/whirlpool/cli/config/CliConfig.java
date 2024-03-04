@@ -4,7 +4,8 @@ import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
-import com.samourai.wallet.constants.WhirlpoolNetwork;
+import com.samourai.wallet.constants.BIP_WALLETS;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
@@ -68,7 +69,7 @@ public class CliConfig extends CliConfigFile {
     // Dojo backend
     if (isDojoEnabled()) {
       String dojoUrl = getDojo().getUrl();
-      return new DojoDataSourceFactory(dojoUrl, null, wsClient) {
+      return new DojoDataSourceFactory(dojoUrl, null, wsClient, BIP_WALLETS.WHIRLPOOL) {
         @Override
         protected String computeDojoApiKey(
             WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w, String passphrase) throws Exception {
@@ -79,20 +80,20 @@ public class CliConfig extends CliConfigFile {
 
     // Samourai backend
     boolean isTestnet =
-        FormatsUtilGeneric.getInstance().isTestNet(getWhirlpoolNetwork().getParams());
+        FormatsUtilGeneric.getInstance().isTestNet(getSamouraiNetwork().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
     boolean useOnion =
         getTor()
             && getTorConfig().getBackend().isEnabled()
             && getTorConfig().getBackend().isOnion();
-    return new DojoDataSourceFactory(backendServer, useOnion, wsClient);
+    return new DojoDataSourceFactory(backendServer, useOnion, wsClient, BIP_WALLETS.WHIRLPOOL);
   }
 
   protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
     return AESUtil.decrypt(apiKey, new CharSequenceX(passphrase));
   }
 
-  public WhirlpoolNetwork getWhirlpoolNetwork() {
+  public SamouraiNetwork getSamouraiNetwork() {
     return getServer();
   }
 

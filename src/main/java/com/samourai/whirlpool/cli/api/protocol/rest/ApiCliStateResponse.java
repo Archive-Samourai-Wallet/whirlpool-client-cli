@@ -25,7 +25,7 @@ public class ApiCliStateResponse {
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
     this.torProgress = cliState.getTorProgress();
-    this.network = cliConfig.getWhirlpoolNetwork().getParams().getPaymentProtocolId();
+    this.network = cliConfig.getSamouraiNetwork().getParams().getPaymentProtocolId();
     this.dojoUrl = cliConfig.getDojo().getUrl();
     this.tor = cliConfig.getTor();
     this.dojo = cliConfig.isDojoEnabled();

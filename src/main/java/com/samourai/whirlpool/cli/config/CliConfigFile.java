@@ -3,7 +3,7 @@ package com.samourai.whirlpool.cli.config;
 import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
-import com.samourai.wallet.constants.WhirlpoolNetwork;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.httpClient.HttpProxy;
@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public abstract class CliConfigFile {
   private int version; // 0 for versions < 1
-  private WhirlpoolNetwork server; // not renamed for backward compatibility
+  private SamouraiNetwork server; // not renamed for backward compatibility
   private String scode;
   private String partner;
   @NotEmpty private boolean tor;
@@ -92,12 +92,12 @@ public abstract class CliConfigFile {
   }
 
   @Deprecated
-  public WhirlpoolNetwork getServer() {
+  public SamouraiNetwork getServer() {
     return server;
   }
 
   @Deprecated
-  public void setServer(WhirlpoolNetwork server) {
+  public void setServer(SamouraiNetwork server) {
     this.server = server;
   }
 

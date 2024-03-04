@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
-import com.samourai.wallet.constants.WhirlpoolNetwork;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.httpClient.HttpProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
@@ -39,7 +39,7 @@ public class ApiCliConfig {
   public ApiCliConfig() {}
 
   public ApiCliConfig(CliConfig cliConfig) {
-    this.server = cliConfig.getWhirlpoolNetwork().name();
+    this.server = cliConfig.getSamouraiNetwork().name();
     this.scode = cliConfig.getScode();
     this.tor = cliConfig.getTor();
     this.dojo = cliConfig.getDojo().isEnabled();
@@ -50,10 +50,10 @@ public class ApiCliConfig {
 
   public void toProperties(Properties props) throws NotifiableException {
     // server is mandatory
-    WhirlpoolNetwork whirlpoolNetwork =
-        WhirlpoolNetwork.find(server)
+    SamouraiNetwork samouraiNetwork =
+        SamouraiNetwork.find(server)
             .orElseThrow(() -> new NotifiableException("Invalid value for: server"));
-    props.put(KEY_SERVER, whirlpoolNetwork.name());
+    props.put(KEY_SERVER, samouraiNetwork.name());
 
     if (scode != null) {
       props.put(KEY_SCODE, scode.trim());

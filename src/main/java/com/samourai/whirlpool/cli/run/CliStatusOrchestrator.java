@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.wallet.constants.WhirlpoolAccount;
+import com.samourai.wallet.constants.SamouraiAccount;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -63,9 +63,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
       UtxoSupplier utxoSupplier = whirlpoolWallet.getUtxoSupplier();
 
-      int nbDeposit = utxoSupplier.findUtxos(WhirlpoolAccount.DEPOSIT).size();
-      int nbPremix = utxoSupplier.findUtxos(WhirlpoolAccount.PREMIX).size();
-      int nbPostmix = utxoSupplier.findUtxos(WhirlpoolAccount.POSTMIX).size();
+      int nbDeposit = utxoSupplier.findUtxos(SamouraiAccount.DEPOSIT).size();
+      int nbPremix = utxoSupplier.findUtxos(SamouraiAccount.PREMIX).size();
+      int nbPostmix = utxoSupplier.findUtxos(SamouraiAccount.POSTMIX).size();
       double balanceTotal = ClientUtils.satToBtc(utxoSupplier.getBalanceTotal());
 
       int nbPools = whirlpoolWallet.getPoolSupplier().getPools().size();

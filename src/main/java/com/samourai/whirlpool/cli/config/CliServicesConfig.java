@@ -10,7 +10,7 @@ import com.samourai.wallet.bip47.rpc.java.SecretPointFactoryJava;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.bipFormat.BIP_FORMAT;
 import com.samourai.wallet.bipFormat.BipFormatSupplier;
-import com.samourai.wallet.constants.WhirlpoolNetwork;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
@@ -57,13 +57,13 @@ public class CliServicesConfig {
   }
 
   @Bean
-  WhirlpoolNetwork whirlpoolNetwork(CliConfig cliConfig) {
-    return cliConfig.getWhirlpoolNetwork();
+  SamouraiNetwork samouraiNetwork(CliConfig cliConfig) {
+    return cliConfig.getSamouraiNetwork();
   }
 
   @Bean
-  NetworkParameters networkParameters(WhirlpoolNetwork whirlpoolNetwork) {
-    return whirlpoolNetwork.getParams();
+  NetworkParameters networkParameters(SamouraiNetwork samouraiNetwork) {
+    return samouraiNetwork.getParams();
   }
 
   @Bean

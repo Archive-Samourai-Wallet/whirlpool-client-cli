@@ -3,7 +3,7 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
-import com.samourai.wallet.constants.WhirlpoolNetwork;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.SystemUtil;
@@ -129,15 +129,15 @@ public class CliConfigService {
     String encryptedMnemonic = pairing.getMnemonic();
     boolean appendPassphrase = pairing.getPassphrase();
     PairingNetwork pairingNetwork = pairing.getNetwork();
-    WhirlpoolNetwork whirlpoolNetwork =
+    SamouraiNetwork samouraiNetwork =
         PairingNetwork.MAINNET.equals(pairingNetwork)
-            ? WhirlpoolNetwork.MAINNET
-            : WhirlpoolNetwork.TESTNET;
+            ? SamouraiNetwork.MAINNET
+            : SamouraiNetwork.TESTNET;
 
     return initialize(
         encryptedMnemonic,
         appendPassphrase,
-        whirlpoolNetwork,
+        samouraiNetwork,
         tor,
         dojoUrl,
         dojoApiKeyEncrypted,
@@ -147,7 +147,7 @@ public class CliConfigService {
   public synchronized String initialize(
       String encryptedMnemonic,
       boolean appendPassphrase,
-      WhirlpoolNetwork whirlpoolNetwork,
+      SamouraiNetwork samouraiNetwork,
       boolean tor,
       String dojoUrl,
       String dojoApiKeyEncrypted,
@@ -156,8 +156,8 @@ public class CliConfigService {
     if (log.isDebugEnabled()) {
       log.debug(" • initialize");
     }
-    if (whirlpoolNetwork == null) {
-      throw new NotifiableException("Invalid whirlpoolNetwork");
+    if (samouraiNetwork == null) {
+      throw new NotifiableException("Invalid samouraiNetwork");
     }
     if (StringUtils.isEmpty(encryptedMnemonic)) {
       throw new NotifiableException("Invalid mnemonic");
@@ -176,7 +176,7 @@ public class CliConfigService {
     props.put(KEY_APIKEY, apiKey);
     props.put(KEY_SEED, encryptedMnemonic);
     props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
-    props.put(ApiCliConfig.KEY_SERVER, whirlpoolNetwork.name());
+    props.put(ApiCliConfig.KEY_SERVER, samouraiNetwork.name());
     props.put(ApiCliConfig.KEY_TOR, Boolean.toString(tor));
     if (dojoUrl != null) {
       props.put(KEY_DOJO_URL, dojoUrl);
