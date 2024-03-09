@@ -1,9 +1,7 @@
 package com.samourai.whirlpool.client.test;
 
 import com.samourai.http.client.JettyHttpClient;
-import com.samourai.wallet.httpClient.HttpUsage;
 import com.samourai.wallet.httpClient.IHttpClient;
-import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import org.junit.jupiter.api.AfterEach;

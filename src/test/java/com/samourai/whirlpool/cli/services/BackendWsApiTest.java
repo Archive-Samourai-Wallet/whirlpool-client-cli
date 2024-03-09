@@ -6,14 +6,13 @@ import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.websocketClient.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
 import com.samourai.whirlpool.client.test.AbstractTest;
+import java.lang.invoke.MethodHandles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.lang.invoke.MethodHandles;
 
 @SpringBootTest
 public class BackendWsApiTest extends AbstractTest {
