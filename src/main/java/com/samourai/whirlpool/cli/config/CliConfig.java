@@ -160,12 +160,6 @@ public class CliConfig extends CliConfigFile {
       httpUsages.add(HttpUsage.BACKEND);
     }
 
-    // coordinator
-    if (getTorConfig().getCoordinator().isEnabled()) {
-      httpUsages.add(HttpUsage.COORDINATOR_REST);
-      httpUsages.add(HttpUsage.COORDINATOR_REGISTER_OUTPUT);
-    }
-
     // soroban
     if (getTorConfig().getSoroban().isEnabled()) {
       httpUsages.add(HttpUsage.SOROBAN);

@@ -5,6 +5,7 @@ import com.msopentech.thali.toronionproxy.TorSettings;
 import com.samourai.tor.client.utils.SamouraiTorInstaller;
 import com.samourai.wallet.httpClient.HttpProxy;
 import com.samourai.wallet.httpClient.HttpUsage;
+import com.samourai.wallet.util.ShutdownException;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -188,7 +189,7 @@ public class JavaTorClient {
       log.debug("Connecting Tor...");
     }
 
-    torInstance.start();
+    getTorInstance().start();
     started = true;
   }
 
@@ -196,7 +197,7 @@ public class JavaTorClient {
     if (!started) {
       connect();
     }
-    torInstance.waitReady();
+    getTorInstance().waitReady();
     log.info("Tor is ready");
   }
 
@@ -211,25 +212,27 @@ public class JavaTorClient {
         log.debug("Changing Tor identity");
       }
 
-      torInstance.changeIdentity();
+      getTorInstance().changeIdentity();
     }
   }
 
   public void shutdown() {
     started = false;
-    torInstance.clear();
-    torInstance = null;
+    if (torInstance != null) {
+      torInstance.clear();
+      torInstance = null;
+    }
   }
 
   public int getProgress() {
     if (torInstance == null) {
       return 0;
     }
-    return torInstance.getProgress();
+    return getTorInstance().getProgress();
   }
 
   public Optional<HttpProxy> getTorProxy(HttpUsage httpUsage) {
-    return torInstance.getTorProxy(httpUsage);
+    return getTorInstance().getTorProxy(httpUsage);
   }
 
   private TorSettings computeTorSettings() throws Exception {
@@ -245,5 +248,12 @@ public class JavaTorClient {
     }
     TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy(), customTorrc);
     return torSettings;
+  }
+
+  private TorOnionProxyInstance getTorInstance() {
+    if (torInstance == null) {
+      throw new ShutdownException("Tor service was stopped");
+    }
+    return torInstance;
   }
 }

@@ -26,7 +26,7 @@ public class AbstractTest {
     // LogbackUtils.setLogLevel("root", Level.DEBUG.toString());
     CliUtils.setLogLevel(true, false);
 
-    httpClient = new JettyHttpClient(requestTimeout, null, ClientUtils.USER_AGENT);
+    httpClient = new JettyHttpClient(requestTimeout, null, ClientUtils.USER_AGENT, null);
   }
 
   @AfterEach

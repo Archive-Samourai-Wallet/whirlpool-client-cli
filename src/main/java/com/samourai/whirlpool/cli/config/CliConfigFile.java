@@ -482,7 +482,6 @@ public abstract class CliConfigFile {
   public static class TorConfig {
     @NotEmpty private String executable;
     private CliTorExecutableMode executableMode;
-    @NotEmpty private TorConfigItem coordinator;
     @NotEmpty private TorConfigItem backend;
     @NotEmpty private TorConfigItem soroban;
     private String customTorrc;
@@ -492,7 +491,6 @@ public abstract class CliConfigFile {
 
     public TorConfig(TorConfig copy) {
       this.executable = copy.executable;
-      this.coordinator = copy.coordinator;
       this.backend = copy.backend;
       this.soroban = copy.soroban;
       this.customTorrc = copy.customTorrc;
@@ -514,14 +512,6 @@ public abstract class CliConfigFile {
                 .orElse(CliTorExecutableMode.SPECIFIED);
       }
       return executableMode;
-    }
-
-    public TorConfigItem getCoordinator() {
-      return coordinator;
-    }
-
-    public void setCoordinator(TorConfigItem coordinator) {
-      this.coordinator = coordinator;
     }
 
     public TorConfigItem getBackend() {
@@ -559,8 +549,8 @@ public abstract class CliConfigFile {
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/tor/executable", executable);
-      configInfo.put("cli/tor/coordinator", coordinator.toString());
       configInfo.put("cli/tor/backend", backend.toString());
+      configInfo.put("cli/tor/soroban", soroban.toString());
       configInfo.put("cli/tor/customTorrc", customTorrc != null ? customTorrc : "null");
       configInfo.put("cli/tor/fileCreationTimeout", Integer.toString(fileCreationTimeout));
       return configInfo;
@@ -654,8 +644,7 @@ public abstract class CliConfigFile {
       BIP47UtilGeneric bip47Util,
       String passphrase)
       throws NotifiableException {
-    boolean torOnionCoordinator =
-        tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
+    boolean torOnionSoroban = tor && torConfig.soroban.enabled && torConfig.soroban.onion;
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             dataSourceFactory,
@@ -666,7 +655,7 @@ public abstract class CliConfigFile {
             bip47Util,
             server,
             false,
-            torOnionCoordinator);
+            torOnionSoroban);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
