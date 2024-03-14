@@ -4,13 +4,13 @@ import com.samourai.wallet.util.AsyncUtil;
 import com.samourai.whirlpool.cli.api.controllers.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxoRef;
-import com.samourai.whirlpool.cli.api.protocol.rest.*;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0PreviewRequest;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0PreviewResponse;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0Request;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0Response;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.tx0.Tx0;
-import com.samourai.whirlpool.client.tx0.Tx0Config;
-import com.samourai.whirlpool.client.tx0.Tx0Preview;
-import com.samourai.whirlpool.client.tx0.Tx0Previews;
+import com.samourai.whirlpool.client.tx0.*;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -64,9 +64,9 @@ public class UtxoController extends AbstractRestController {
     }
 
     // tx0 preview
-    Tx0Config tx0Config = whirlpoolWallet.getTx0Config(payload.tx0FeeTarget, payload.mixFeeTarget);
-    Tx0Previews tx0Previews =
-        AsyncUtil.getInstance().blockingGet(whirlpoolWallet.tx0Previews(whirlpoolUtxos, tx0Config));
+    Tx0Info tx0Info = AsyncUtil.getInstance().blockingGet(whirlpoolWallet.fetchTx0Info());
+    Tx0Config tx0Config = tx0Info.getTx0Config(payload.tx0FeeTarget, payload.mixFeeTarget);
+    Tx0Previews tx0Previews = tx0Info.tx0Previews(whirlpoolUtxos, tx0Config);
     Tx0Preview tx0Preview = tx0Previews.getTx0Preview(payload.poolId);
     return new ApiTx0PreviewResponse(tx0Preview);
   }
@@ -87,8 +87,15 @@ public class UtxoController extends AbstractRestController {
     }
 
     // tx0
-    Tx0Config tx0Config = whirlpoolWallet.getTx0Config(payload.tx0FeeTarget, payload.mixFeeTarget);
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxos, pool, tx0Config);
+    Tx0Info tx0Info = AsyncUtil.getInstance().blockingGet(whirlpoolWallet.fetchTx0Info());
+    Tx0Config tx0Config = tx0Info.getTx0Config(payload.tx0FeeTarget, payload.mixFeeTarget);
+    Tx0 tx0 =
+        tx0Info.tx0(
+            whirlpoolWallet.getWalletSupplier(),
+            whirlpoolWallet.getUtxoSupplier(),
+            whirlpoolUtxos,
+            pool,
+            tx0Config);
     return new ApiTx0Response(tx0);
   }
 

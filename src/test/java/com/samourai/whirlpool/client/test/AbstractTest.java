@@ -3,7 +3,6 @@ package com.samourai.whirlpool.client.test;
 import com.samourai.http.client.JettyHttpClient;
 import com.samourai.wallet.httpClient.IHttpClient;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.utils.ClientUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +25,7 @@ public class AbstractTest {
     // LogbackUtils.setLogLevel("root", Level.DEBUG.toString());
     CliUtils.setLogLevel(true, false);
 
-    httpClient = new JettyHttpClient(requestTimeout, null, ClientUtils.USER_AGENT, null);
+    httpClient = new JettyHttpClient(requestTimeout, null, null);
   }
 
   @AfterEach
