@@ -252,7 +252,7 @@ public class JavaTorClient {
 
   private TorOnionProxyInstance getTorInstance() {
     if (torInstance == null) {
-      throw new ShutdownException("Tor service was stopped");
+      throw new ShutdownException("Shutting down");
     }
     return torInstance;
   }

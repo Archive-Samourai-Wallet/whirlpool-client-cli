@@ -114,6 +114,9 @@ public class CliService {
                     Application.exit(0);
                     return;
                   case KEEP_RUNNING:
+                    synchronized (this) {
+                      wait();
+                    }
                     return;
                 }
               } catch (NotifiableException e) {
