@@ -235,7 +235,6 @@ public abstract class CliConfigFile {
     @NotEmpty private int clientDelay;
     @NotEmpty private int autoTx0Delay;
     @NotEmpty private int tx0MaxOutputs;
-    @NotEmpty private int tx0MaxRetry;
     @NotEmpty private boolean autoMix;
     private Map<String, Long> overspend;
     @NotEmpty private boolean testMode;
@@ -249,7 +248,6 @@ public abstract class CliConfigFile {
       this.clientDelay = copy.clientDelay;
       this.autoTx0Delay = copy.autoTx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
-      this.tx0MaxRetry = copy.tx0MaxRetry;
       this.autoMix = copy.autoMix;
       this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
       this.testMode = copy.testMode;
@@ -304,14 +302,6 @@ public abstract class CliConfigFile {
       this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
-    public int getTx0MaxRetry() {
-      return tx0MaxRetry;
-    }
-
-    public void setTx0MaxRetry(int tx0MaxRetry) {
-      this.tx0MaxRetry = tx0MaxRetry;
-    }
-
     public boolean isAutoMix() {
       return autoMix;
     }
@@ -345,7 +335,6 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/autoTx0Delay", Integer.toString(autoTx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
-      configInfo.put("cli/mix/tx0MaxRetry", Integer.toString(tx0MaxRetry));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
       configInfo.put("cli/mix/testMode", Boolean.toString(testMode));
@@ -669,7 +658,6 @@ public abstract class CliConfigFile {
     config.setClientDelay(mix.getClientDelay());
     config.setAutoTx0Delay(mix.getAutoTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
-    config.setTx0MaxRetry(mix.getTx0MaxRetry());
     config.setAutoMix(mix.isAutoMix());
     config.setOverspend(mix.getOverspend());
 
