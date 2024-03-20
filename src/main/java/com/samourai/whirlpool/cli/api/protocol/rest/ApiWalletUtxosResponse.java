@@ -3,9 +3,9 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 import com.google.common.primitives.Ints;
 import com.samourai.wallet.bipFormat.BIP_FORMAT;
 import com.samourai.wallet.bipFormat.BipFormat;
+import com.samourai.wallet.constants.SamouraiAccount;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoState;
 import java.util.Collection;
@@ -45,21 +45,21 @@ public class ApiWalletUtxosResponse {
         };
     this.deposit =
         computeApiWallet(
-            WhirlpoolAccount.DEPOSIT,
+            SamouraiAccount.DEPOSIT,
             BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
             comparator);
     this.premix =
         computeApiWallet(
-            WhirlpoolAccount.PREMIX,
+            SamouraiAccount.PREMIX,
             BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
             comparator);
     this.postmix =
         computeApiWallet(
-            WhirlpoolAccount.POSTMIX,
+            SamouraiAccount.POSTMIX,
             BIP_FORMAT.SEGWIT_NATIVE,
             whirlpoolWallet,
             latestBlockHeight,
@@ -69,13 +69,13 @@ public class ApiWalletUtxosResponse {
   }
 
   private ApiWallet computeApiWallet(
-      WhirlpoolAccount account,
+      SamouraiAccount account,
       BipFormat bipFormat,
       WhirlpoolWallet whirlpoolWallet,
       int latestBlockHeight,
       Comparator<WhirlpoolUtxo> comparator) {
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
-    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, bipFormat).getPub();
+    String zpub = whirlpoolWallet.getWalletSupplier().getWallet(account, bipFormat).getBipPub();
     return new ApiWallet(utxos, zpub, latestBlockHeight, comparator);
   }
 

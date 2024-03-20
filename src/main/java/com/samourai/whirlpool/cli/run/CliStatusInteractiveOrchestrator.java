@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.wallet.constants.SamouraiAccount;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -7,7 +8,6 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.DebugUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
@@ -41,11 +41,11 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
           if (car.equals('T')) {
             printThreads();
           } else if (car.equals('D')) {
-            printUtxos(WhirlpoolAccount.DEPOSIT);
+            printUtxos(SamouraiAccount.DEPOSIT);
           } else if (car.equals('P')) {
-            printUtxos(WhirlpoolAccount.PREMIX);
+            printUtxos(SamouraiAccount.PREMIX);
           } else if (car.equals('O')) {
-            printUtxos(WhirlpoolAccount.POSTMIX);
+            printUtxos(SamouraiAccount.POSTMIX);
           } else if (car.equals('W')) {
             printWallet();
           } else if (car.equals('B')) {
@@ -56,6 +56,8 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
             printMixHistory();
           } else if (car.equals('X')) {
             printXPubHistory();
+          } else if (car.equals('C')) {
+            printCoordinators();
           }
         } else {
           if (log.isDebugEnabled()) {
@@ -77,7 +79,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
     }
   }
 
-  private void printUtxos(WhirlpoolAccount account) throws Exception {
+  private void printUtxos(SamouraiAccount account) throws Exception {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     Collection<WhirlpoolUtxo> utxos = whirlpoolWallet.getUtxoSupplier().findUtxos(account);
     int latestBlockHeight = whirlpoolWallet.getChainSupplier().getLatestBlock().height;
@@ -118,5 +120,10 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
       return;
     }
     log.info(DebugUtils.getDebugXPubHistory(whirlpoolWallet));
+  }
+
+  private void printCoordinators() throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    log.info(DebugUtils.getDebugCoordinators(whirlpoolWallet.getCoordinatorSupplier()));
   }
 }

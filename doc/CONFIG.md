@@ -46,8 +46,10 @@ You can customize it for your needs:
 | ----------- | ----------- | ----------- |
 | cli.torConfig.coordinator.enabled | true | Enable Tor for whirlpool coordinator (when cli.tor=true) |
 | cli.torConfig.backend.enabled | true | Enable Tor for wallet backend (when cli.tor=true) |
+| cli.torConfig.soroban.enabled | true | Enable Tor for Soroban (when cli.tor=true) |
 | cli.torConfig.coordinator.onion | true | Use Tor hidden services (instead of clearnet over Tor) for whirlpool server |
 | cli.torConfig.backend.onion | true | Use Tor hidden services (instead of clearnet over Tor) for wallet backend |
+| cli.torConfig.soroban.onion | true | Use Tor hidden services (instead of clearnet over Tor) for Soroban |
 | cli.torConfig.executable | auto | - `auto` : use embedded tor or detect a local Tor install when your system is not supported.<br/>- `local` : detect a local tor install<br/>- `/path/to/bin/tor` : use your own tor binary|
 | cli.torConfig.customTorrc |  | `/path/to/torrc` : custom tor configuration to append to Torrc|
 | cli.torConfig.fileCreationTimeout | 20 | Tor startup timeout (in seconds)|
@@ -82,12 +84,10 @@ You can configure your own cert:
 | ----------- | ----------- | ----------- |
 | cli.proxy | - | Custom proxy to connect through. |
 | cli.requestTimeout | 30000 | HTTP requests timeout |
-| cli.tx0MinConfirmations | 0 | Confirmations required for TX0 |
 | cli.mix.tx0MaxOutputs | 0 | Max premixs to create per TX0 (0 for max) |
-| cli.mix.tx0MaxRetry | 5 | Max retry on tx0 failure |
 | cli.mix.clients | 5 | Max simultaneous mixing clients.<br/>(Increasing this value won't make you mix faster.) |
 | cli.mix.clientsPerPool | 1 | Max simultaneous mixing clients per pool.<br/>(Increasing this value won't make you mix faster.) |
-| cli.mix.liquidityClient | true | Enable 1 additional thread for remixing POSTMIXS simultaneously while mixing threads are busy with PREMIXS.<br/>When enabled, cli.mix.clientsPerPool may be excessed by 1. |
+| cli.mix.extraLiquidityClientsPerPool | 1 | Max additional mixing clients per pool for remixing POSTMIXS simultaneously while mixing threads are busy with PREMIXS.<br/>This may lead to more mixing threads than cli.mix.clientsPerPool, but cli.mix.clients will never be exceeded. |
 | cli.mix.clientDelay | 15 | Connecting delay (seconds) between each mixing client |
 | cli.mix.autoTx0Delay | 60 | Delay (seconds) between each auto-tx0 (when --auto-tx0) |
 | cli.seedAppendPassphrase | *generated on --init* | Use passphrase as additional seed word (always true for wallets created with SW, may be false for external wallets imported into SW) |

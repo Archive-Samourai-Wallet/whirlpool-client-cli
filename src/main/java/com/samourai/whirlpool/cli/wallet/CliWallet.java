@@ -8,14 +8,10 @@ import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.mix.MixParams;
-import com.samourai.whirlpool.client.mix.handler.MixDestination;
-import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.data.dataSource.DojoDataSource;
-import com.samourai.whirlpool.protocol.beans.Utxo;
 import io.reactivex.Completable;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -67,26 +63,6 @@ public class CliWallet extends WhirlpoolWallet {
     // get Tor ready before mixing
     cliTorClientService.waitReady();
     super.mix(whirlpoolUtxo);
-  }
-
-  @Override
-  public void onMixSuccess(MixParams mixParams, Utxo receiveUtxo, MixDestination mixDestination) {
-    super.onMixSuccess(mixParams, receiveUtxo, mixDestination);
-
-    // change http Tor identity
-    if (cliConfig.getTor()) {
-      httpClientService.changeIdentityRest();
-    }
-  }
-
-  @Override
-  public void onMixFail(MixParams mixParams, MixFailReason failReason, String notifiableError) {
-    super.onMixFail(mixParams, failReason, notifiableError);
-
-    // change http Tor identity
-    if (cliConfig.getTor()) {
-      httpClientService.changeIdentityRest();
-    }
   }
 
   public void resyncMixsDone() {

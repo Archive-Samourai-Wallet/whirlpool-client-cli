@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.http.client.IHttpClientService;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.api.backend.websocket.BackendWsApi;
-import com.samourai.websocket.client.IWebsocketClient;
+import com.samourai.wallet.httpClient.IHttpClientService;
+import com.samourai.wallet.websocketClient.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import java.lang.invoke.MethodHandles;

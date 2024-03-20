@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.wallet.constants.SamouraiAccount;
 import com.samourai.wallet.util.AbstractOrchestrator;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
@@ -10,7 +11,6 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.MixHistory;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.data.utxo.UtxoSupplier;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -63,10 +63,13 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
       UtxoSupplier utxoSupplier = whirlpoolWallet.getUtxoSupplier();
 
-      int nbDeposit = utxoSupplier.findUtxos(WhirlpoolAccount.DEPOSIT).size();
-      int nbPremix = utxoSupplier.findUtxos(WhirlpoolAccount.PREMIX).size();
-      int nbPostmix = utxoSupplier.findUtxos(WhirlpoolAccount.POSTMIX).size();
+      int nbDeposit = utxoSupplier.findUtxos(SamouraiAccount.DEPOSIT).size();
+      int nbPremix = utxoSupplier.findUtxos(SamouraiAccount.PREMIX).size();
+      int nbPostmix = utxoSupplier.findUtxos(SamouraiAccount.POSTMIX).size();
       double balanceTotal = ClientUtils.satToBtc(utxoSupplier.getBalanceTotal());
+
+      int nbPools = whirlpoolWallet.getPoolSupplier().getPools().size();
+      int nbCoordinators = whirlpoolWallet.getCoordinatorSupplier().getCoordinators().size();
 
       System.out.print(
           "⣿ Whirlpool "
@@ -92,7 +95,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueuedLiquidity()
               + "), "
               + balanceTotal
-              + " BTC. Commands: [T]hreads("
+              + " BTC. [T]hreads("
               + mixingState.getNbMixing()
               + "), [D]eposit("
               + nbDeposit
@@ -106,7 +109,11 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
                   : "")
               + "[H]istory("
               + mixHistory.getMixedCount()
-              + "), [W]allet, , POO[L]S, DE[B]UG\r");
+              + "), [W]allet, , POO[L]S("
+              + nbPools
+              + "), [C]OORDINATORS("
+              + nbCoordinators
+              + "), DE[B]UG\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {

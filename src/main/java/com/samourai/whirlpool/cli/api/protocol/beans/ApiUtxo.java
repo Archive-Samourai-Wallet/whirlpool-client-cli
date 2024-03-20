@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.wallet.api.backend.beans.UnspentOutput;
+import com.samourai.wallet.constants.SamouraiAccount;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.wallet.beans.*;
 
@@ -12,7 +13,7 @@ public class ApiUtxo {
   private String path;
   private String address;
 
-  private WhirlpoolAccount account;
+  private SamouraiAccount account;
   private WhirlpoolUtxoStatus status;
   private MixStep mixStep;
   private MixableStatus mixableStatus;
@@ -76,7 +77,7 @@ public class ApiUtxo {
     return address;
   }
 
-  public WhirlpoolAccount getAccount() {
+  public SamouraiAccount getAccount() {
     return account;
   }
 

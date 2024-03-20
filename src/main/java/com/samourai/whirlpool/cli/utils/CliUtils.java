@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.cli.utils;
 
 import ch.qos.logback.classic.Level;
-import com.samourai.http.client.HttpProxy;
-import com.samourai.http.client.HttpProxyProtocol;
+import com.samourai.wallet.httpClient.HttpProxy;
+import com.samourai.wallet.httpClient.HttpProxyProtocol;
+import com.samourai.wallet.util.LogbackUtils;
 import com.samourai.whirlpool.cli.exception.NoUserInputException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.utils.LogbackUtils;
 import java.io.Closeable;
 import java.io.Console;
 import java.io.File;
@@ -268,8 +268,7 @@ public class CliUtils {
 
   public static void setLogLevel(boolean isDebug, boolean isDebugClient) {
     Level whirlpoolLevel = isDebug ? (isDebugClient ? Level.TRACE : Level.DEBUG) : Level.INFO;
-    Level whirlpoolClientLevel = isDebugClient ? Level.TRACE : Level.INFO;
-    ClientUtils.setLogLevel(whirlpoolLevel, whirlpoolClientLevel);
+    ClientUtils.setLogLevel(whirlpoolLevel.toString());
 
     LogbackUtils.setLogLevel(
         "com.msopentech.thali.toronionproxy", org.slf4j.event.Level.WARN.toString());

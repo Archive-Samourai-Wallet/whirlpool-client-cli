@@ -1,6 +1,8 @@
 package com.samourai.websocket.client;
 
-import com.samourai.http.client.HttpUsage;
+import com.samourai.wallet.httpClient.HttpUsage;
+import com.samourai.wallet.websocketClient.IWebsocketClient;
+import com.samourai.wallet.websocketClient.IWebsocketClientListener;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;

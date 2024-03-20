@@ -1,16 +1,19 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.HttpUsage;
-import com.samourai.http.client.IHttpClientService;
-import com.samourai.stomp.client.IStompClientService;
-import com.samourai.tor.client.TorClientService;
+import com.samourai.soroban.client.wallet.SorobanWalletService;
 import com.samourai.wallet.api.backend.BackendServer;
+import com.samourai.wallet.bip47.BIP47UtilGeneric;
 import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
+import com.samourai.wallet.constants.BIP_WALLETS;
+import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
+import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.httpClient.HttpUsage;
+import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.websocket.client.IWebsocketClient;
+import com.samourai.wallet.websocketClient.IWebsocketClient;
 import com.samourai.websocket.client.JavaWebsocketClient;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -36,9 +39,10 @@ public class CliConfig extends CliConfigFile {
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       ISecretPointFactory secretPointFactory,
-      IHttpClientService httpClientService,
-      IStompClientService stompClientService,
-      TorClientService torClientService,
+      CryptoUtil cryptoUtil,
+      SorobanWalletService sorobanWalletService,
+      JavaHttpClientService httpClientService,
+      BIP47UtilGeneric bip47Util,
       String passphrase)
       throws Exception {
 
@@ -48,9 +52,10 @@ public class CliConfig extends CliConfigFile {
         super.computeWhirlpoolWalletConfig(
             dataSourceFactory,
             secretPointFactory,
+            cryptoUtil,
+            sorobanWalletService,
             httpClientService,
-            stompClientService,
-            torClientService,
+            bip47Util,
             passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
@@ -64,7 +69,7 @@ public class CliConfig extends CliConfigFile {
     // Dojo backend
     if (isDojoEnabled()) {
       String dojoUrl = getDojo().getUrl();
-      return new DojoDataSourceFactory(dojoUrl, null, wsClient) {
+      return new DojoDataSourceFactory(dojoUrl, null, wsClient, BIP_WALLETS.WHIRLPOOL) {
         @Override
         protected String computeDojoApiKey(
             WhirlpoolWallet whirlpoolWallet, HD_Wallet bip44w, String passphrase) throws Exception {
@@ -74,17 +79,22 @@ public class CliConfig extends CliConfigFile {
     }
 
     // Samourai backend
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
+    boolean isTestnet =
+        FormatsUtilGeneric.getInstance().isTestNet(getSamouraiNetwork().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
     boolean useOnion =
         getTor()
             && getTorConfig().getBackend().isEnabled()
             && getTorConfig().getBackend().isOnion();
-    return new DojoDataSourceFactory(backendServer, useOnion, wsClient);
+    return new DojoDataSourceFactory(backendServer, useOnion, wsClient, BIP_WALLETS.WHIRLPOOL);
   }
 
   protected static String decryptDojoApiKey(String apiKey, String passphrase) throws Exception {
     return AESUtil.decrypt(apiKey, new CharSequenceX(passphrase));
+  }
+
+  public SamouraiNetwork getSamouraiNetwork() {
+    return getServer();
   }
 
   public boolean isAutoTx0Aggregate() {
@@ -150,11 +160,9 @@ public class CliConfig extends CliConfigFile {
       httpUsages.add(HttpUsage.BACKEND);
     }
 
-    // coordinator
-    if (getTorConfig().getCoordinator().isEnabled()) {
-      httpUsages.add(HttpUsage.COORDINATOR_WEBSOCKET);
-      httpUsages.add(HttpUsage.COORDINATOR_REST);
-      httpUsages.add(HttpUsage.COORDINATOR_REGISTER_OUTPUT);
+    // soroban
+    if (getTorConfig().getSoroban().isEnabled()) {
+      httpUsages.add(HttpUsage.SOROBAN);
     }
     return httpUsages;
   }

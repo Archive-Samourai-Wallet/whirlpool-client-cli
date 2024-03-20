@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.http.client.HttpProxy;
+import com.samourai.wallet.httpClient.HttpProxy;
 import com.samourai.wallet.util.SystemUtil;
 import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.ApplicationArgs;
@@ -114,6 +114,9 @@ public class CliService {
                     Application.exit(0);
                     return;
                   case KEEP_RUNNING:
+                    synchronized (this) {
+                      wait();
+                    }
                     return;
                 }
               } catch (NotifiableException e) {
@@ -156,7 +159,7 @@ public class CliService {
     cliTorClientService.connect();
 
     // initialize bitcoinj context
-    NetworkParameters params = cliConfig.getServer().getParams();
+    NetworkParameters params = cliConfig.getSamouraiNetwork().getParams();
     new Context(params);
 
     // check init
