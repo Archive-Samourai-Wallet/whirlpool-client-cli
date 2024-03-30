@@ -1,14 +1,11 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.eventbus.Subscribe;
-import com.samourai.soroban.client.wallet.SorobanWalletService;
+import com.samourai.soroban.client.SorobanConfig;
 import com.samourai.wallet.api.pairing.PairingDojo;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
-import com.samourai.wallet.bip47.BIP47UtilGeneric;
-import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -48,37 +45,28 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
-  private ISecretPointFactory secretPointFactory;
-  private CryptoUtil cryptoUtil;
-  private SorobanWalletService sorobanWalletService;
+  private SorobanConfig sorobanConfig;
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
   private JavaHttpClientService httpClientService;
   private CliTorClientService cliTorClientService;
-  private BIP47UtilGeneric bip47Util;
   private CliUpgradeService cliUpgradeService;
 
   private Set<BusyReason> busyReasons;
 
   public CliWalletService(
-      ISecretPointFactory secretPointFactory,
-      CryptoUtil cryptoUtil,
-      SorobanWalletService sorobanWalletService,
+      SorobanConfig sorobanConfig,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       JavaHttpClientService httpClientService,
       CliTorClientService cliTorClientService,
-      BIP47UtilGeneric bip47Util,
       CliUpgradeService cliUpgradeService) {
     super();
-    this.secretPointFactory = secretPointFactory;
-    this.cryptoUtil = cryptoUtil;
-    this.sorobanWalletService = sorobanWalletService;
+    this.sorobanConfig = sorobanConfig;
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.httpClientService = httpClientService;
     this.cliTorClientService = cliTorClientService;
-    this.bip47Util = bip47Util;
     this.cliUpgradeService = cliUpgradeService;
 
     this.busyReasons = new LinkedHashSet<>();
@@ -131,13 +119,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
       // open wallet
       WhirlpoolWalletConfig config =
-          cliConfig.computeWhirlpoolWalletConfig(
-              secretPointFactory,
-              cryptoUtil,
-              sorobanWalletService,
-              httpClientService,
-              bip47Util,
-              passphrase);
+          cliConfig.computeWhirlpoolWalletConfig(httpClientService, sorobanConfig, passphrase);
 
       cliWallet =
           new CliWallet(

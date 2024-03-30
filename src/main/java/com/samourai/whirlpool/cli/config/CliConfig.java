@@ -1,13 +1,10 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.soroban.client.wallet.SorobanWalletService;
+import com.samourai.soroban.client.SorobanConfig;
 import com.samourai.wallet.api.backend.BackendServer;
-import com.samourai.wallet.bip47.BIP47UtilGeneric;
-import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
 import com.samourai.wallet.constants.BIP_WALLETS;
 import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.httpClient.HttpUsage;
 import com.samourai.wallet.httpClient.IHttpClientService;
@@ -38,25 +35,13 @@ public class CliConfig extends CliConfigFile {
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
-      ISecretPointFactory secretPointFactory,
-      CryptoUtil cryptoUtil,
-      SorobanWalletService sorobanWalletService,
-      JavaHttpClientService httpClientService,
-      BIP47UtilGeneric bip47Util,
-      String passphrase)
+      JavaHttpClientService httpClientService, SorobanConfig sorobanConfig, String passphrase)
       throws Exception {
 
     DataSourceFactory dataSourceFactory = computeDataSourceFactory(httpClientService);
 
     WhirlpoolWalletConfig config =
-        super.computeWhirlpoolWalletConfig(
-            dataSourceFactory,
-            secretPointFactory,
-            cryptoUtil,
-            sorobanWalletService,
-            httpClientService,
-            bip47Util,
-            passphrase);
+        super.computeWhirlpoolWalletConfig(dataSourceFactory, sorobanConfig, passphrase);
     config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoTx0Aggregate(autoTx0Aggregate);
     return config;

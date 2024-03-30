@@ -1,13 +1,9 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.soroban.client.wallet.SorobanWalletService;
-import com.samourai.wallet.bip47.BIP47UtilGeneric;
-import com.samourai.wallet.bip47.rpc.secretPoint.ISecretPointFactory;
+import com.samourai.soroban.client.SorobanConfig;
 import com.samourai.wallet.constants.SamouraiNetwork;
 import com.samourai.wallet.crypto.AESUtil;
-import com.samourai.wallet.crypto.CryptoUtil;
 import com.samourai.wallet.httpClient.HttpProxy;
-import com.samourai.wallet.httpClient.IHttpClientService;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -625,26 +621,11 @@ public abstract class CliConfigFile {
   }
 
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
-      DataSourceFactory dataSourceFactory,
-      ISecretPointFactory secretPointFactory,
-      CryptoUtil cryptoUtil,
-      SorobanWalletService sorobanWalletService,
-      IHttpClientService httpClientService,
-      BIP47UtilGeneric bip47Util,
-      String passphrase)
+      DataSourceFactory dataSourceFactory, SorobanConfig sorobanConfig, String passphrase)
       throws NotifiableException {
-    boolean torOnionSoroban = tor && torConfig.soroban.enabled && torConfig.soroban.onion;
+
     WhirlpoolWalletConfig config =
-        new WhirlpoolWalletConfig(
-            dataSourceFactory,
-            secretPointFactory,
-            cryptoUtil,
-            sorobanWalletService,
-            httpClientService,
-            bip47Util,
-            server,
-            false,
-            torOnionSoroban);
+        new WhirlpoolWalletConfig(dataSourceFactory, sorobanConfig, false);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

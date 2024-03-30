@@ -32,7 +32,7 @@ public class ApiUtxo {
     this.index = utxo.tx_output_n;
     this.value = utxo.value;
     this.confirmations = whirlpoolUtxo.computeConfirmations(latestBlockHeight);
-    this.path = utxo.xpub.path;
+    this.path = utxo.getPath();
     this.address = utxo.addr;
 
     this.account = whirlpoolUtxo.getAccount();
